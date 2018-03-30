@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./server",
+    "lib": ["es2016", "dom", "es7", "esnext"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noImplicitAny": false,
+    "noEmitOnError": true,
+    "outDir": "build",
+    "rootDir": "server",
+    "sourceMap": true,
+    "target": "es5"
+  },
+  "include": [
+    "./server/**/*.ts",
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ]
+}
