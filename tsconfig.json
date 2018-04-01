@@ -9,13 +9,9 @@
     "outDir": "build",
     "rootDir": "server",
     "sourceMap": true,
-    "target": "es5"
+    "target": "esnext"
   },
   "include": [
-    "./server/**/*.ts",
-  ],
-  "exclude": [
-    "node_modules",
-    "**/*.spec.ts"
+    "./server/**/*.ts"
   ]
 }

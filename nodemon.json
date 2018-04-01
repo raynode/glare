@@ -6,5 +6,5 @@
   ],
   "watch": ["server"],
   "exec": "npm start",
-  "ext": "ts"
+  "ext": "ts,graphql"
 }

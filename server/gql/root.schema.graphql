@@ -1,0 +1,14 @@
+
+scalar Date
+
+interface Node {
+  ID: String!
+  created: Date
+  updated: Date
+}
+
+type Query {
+  uptime: Float
+}
+
+type Mutation

@@ -1,0 +1,31 @@
+
+input AUTH_PROVIDER_AUTH0 {
+  idToken: String!
+}
+
+
+type User implements Node {
+  ID: String!
+  auth0UserId: String!
+  created: Date!
+  updated: Date!
+
+  given_name: String
+  family_name: String
+  nickname: String
+  name: String
+  picture: String
+  gender: String
+  locale: String
+  email: String
+  email_verified: Boolean
+}
+
+extend type Query {
+  me: User
+}
+
+extend type Mutation {
+  userLoginAuth0(input: AUTH_PROVIDER_AUTH0!): User
+}
+
