@@ -8,13 +8,25 @@ import { v4 } from 'uuid'
 
 import { loadTypeDefs } from 'gql/utils/typeDefs'
 
-import { typeDefs as userTypeDefs } from './user'
+import {
+  Mutations as userMutations,
+  Query as userQuery,
+  Resolver as userResolver,
+  typeDefs as userTypeDefs,
+} from './user'
 
 const log = create('graphql')
 
 const resolvers = {
+  User: userResolver,
+
   Query: {
     uptime: () => process.uptime(),
+    ...userQuery,
+  },
+
+  Mutation: {
+    ...userMutations,
   },
 }
 
@@ -26,11 +38,11 @@ const typeDefs = [
 
 const schema = makeExecutableSchema({ typeDefs, resolvers })
 
-// addMockFunctionsToSchema({
-//   // mocks: Mocks,
-//   preserveResolvers: true,
-//   schema,
-// })
+addMockFunctionsToSchema({
+  // mocks: Mocks,
+  preserveResolvers: true,
+  schema,
+})
 
 const getUserInformation = async (authHeader: any): Promise<AuthResponse | null> => {
   if(!authHeader || typeof authHeader !== 'string')

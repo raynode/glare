@@ -16,7 +16,7 @@ const createApp = async (config, port = 3000) => {
   const app = new Koa()
   const router = new Router()
 
-  const mongo = getMongoConnection(config.mongo)
+  const mongo = getMongoConnection()
   .catch(rejection => log.error(rejection))
 
   // koaBody is needed just for POST.

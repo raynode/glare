@@ -3,6 +3,13 @@ input AUTH_PROVIDER_AUTH0 {
   idToken: String!
 }
 
+input userInput {
+  email: String!
+}
+
+input findUserByEmailInput {
+  email: String!
+}
 
 type User implements Node {
   ID: String!
@@ -10,19 +17,22 @@ type User implements Node {
   created: Date!
   updated: Date!
 
-  given_name: String
-  family_name: String
+  givenName: String
+  familyName: String
   nickname: String
   name: String
   picture: String
   gender: String
   locale: String
   email: String
-  email_verified: Boolean
+  emailVerified: Boolean
 }
 
 extend type Query {
-  me: User
+  findUserByEmail(input: findUserByEmailInput!): User!
+  me: User!
+  users: [User!]!
+  user(input: userInput!): User!
 }
 
 extend type Mutation {

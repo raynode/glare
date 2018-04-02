@@ -37,8 +37,6 @@ export const verifyToken = async token => {
     [key: string]: any,
   }
 
-  log(decoded)
-
   if(!decoded
   || !decoded.header
   || !decoded.header.kid

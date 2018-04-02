@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "DEBUG='glare*' npx nodemon",
+    "pregql2ts": "rm -rf server/gql-types.d.ts",
+    "gql2ts": "find ./server -type f -name '*.schema.graphql' -exec cat \\{\\} \\+ | ./node_modules/.bin/gql2ts > server/gql-types.d.ts",
     "start": "ts-node -r tsconfig-paths/register server",
     "test": "jest",
     "test:watch": "jest --watch"
@@ -82,6 +84,7 @@
     "@types/koa-router": "^7.0.27",
     "@types/mock-fs": "^3.6.30",
     "faker": "^4.1.0",
+    "gql2ts": "^1.7.2",
     "jest": "^22.4.3",
     "mock-fs": "^4.4.2",
     "nodemon": "^1.17.2",
