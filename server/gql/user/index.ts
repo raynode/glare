@@ -1,17 +1,25 @@
 
-import { verifyToken } from 'authorization'
+import { fetchApiAccess, verifyToken } from 'authorization'
 import Users from 'db/user'
 import { loadTypeDefs } from 'gql/utils/typeDefs'
-
+import { create } from 'logger'
 import { Document } from 'mongoose'
+
+const log = create('db', 'model', 'user')
 
 export const typeDefs = loadTypeDefs(__dirname)('user')
 
 const userLoginAuth0 = async (obj, args: { input: GQL.IAUTHPROVIDERAUTH0 }, context) => {
   const { input: { idToken }} = args
-  const user = await verifyToken(idToken)
+  const user = await verifyToken(idToken).catch(() => null)
+
   if(!user)
     throw new Error('invalid id token')
+
+  log(user)
+  const access = await fetchApiAccess(user)
+  log(access[0].access_token)
+
   // search for the user with the user.sub, as this is the id auth0 will give the user
   // @see https://auth0.com/docs/user-profile/normalized/oidc
   const entry = await Users.findOne({ auth0UserId: user.sub })

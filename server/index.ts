@@ -1,9 +1,10 @@
+import * as cors from '@koa/cors'
 import * as Koa from 'koa'
 import * as koaBody from 'koa-bodyparser' // koa-bodyparser@next
 import * as Router from 'koa-router'
 
 import { getMongoConnection } from 'db'
-import { gqlServer } from 'gql'
+import { gqlServer, subscriptions } from 'gql'
 
 import config from 'config'
 import injector from 'injector'
@@ -11,34 +12,48 @@ import log from 'logger'
 
 process.on('unhandledRejection', rejection => log.error(rejection))
 
-const createApp = async (config, port = 3000) => {
+const createApp = async (config, port = 3412) => {
   log(config)
   const app = new Koa()
-  const router = new Router()
+  const http = new Router()
 
   const mongo = getMongoConnection()
   .catch(rejection => log.error(rejection))
 
   // koaBody is needed just for POST.
-  router.post('/graphql', koaBody(), gqlServer)
-  router.get('/graphql', gqlServer)
+  http.post('/graphql', koaBody(), gqlServer)
+  http.get('/graphql', gqlServer)
 
-  router.get('/*', async ctx => {
+  http.get('/*', async ctx => {
     ctx.body = 'Hello World!'
   })
 
   app.use(async (ctx, next) => {
     log(ctx.req.url)
     await next()
-    log('done:', ctx.body.length)
+    if(ctx.body)
+      log('done:', ctx.body.length)
+    else
+      log.error('fail:', ctx.status)
   })
-  app.use(router.routes())
-  app.use(router.allowedMethods())
+  app
+    .use(cors())
+    .use(http.routes())
+    .use(http.allowedMethods())
 
-  app.listen(port)
+  const server = app.listen(port)
+
+  subscriptions({
+    path: '/graphws',
+    server,
+  })
 
   return port
 }
 
-createApp(config, 3000)
-.then(port => log('running on port', port))
+createApp(config, 3421)
+.then(port => {
+  log(`Server running on port ${port}`)
+  log(`GraphQL running on http://localhost:${port}/graphql`)
+  log(`WebSocket running on http://localhost:${port}/graphws`)
+})

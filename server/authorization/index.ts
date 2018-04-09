@@ -2,28 +2,29 @@
 import config from 'config'
 import { decode, verify } from 'jsonwebtoken'
 import * as jwk from 'jwks-rsa'
+import fetch from 'node-fetch'
 
 import { create } from 'logger'
 const log = create('auth')
 
 export interface AuthResponse {
-  given_name: string
-  family_name: string
-  nickname: string
-  name: string
-  picture: string
-  gender: string
-  locale: string
-  updated_at: string
+  at_hash: string
+  aud: string
   email: string
   email_verified: boolean
-  iss: string
-  sub: string
-  aud: string
-  iat: number
   exp: number
-  at_hash: string
+  family_name: string
+  gender: string
+  given_name: string
+  iat: number
+  iss: string
+  locale: string
+  name: string
+  nickname: string
   nonce: string
+  picture: string
+  sub: string
+  updated_at: string
 }
 
 export const verifyToken = async token => {
@@ -78,73 +79,42 @@ export const verifyToken = async token => {
   })
 }
 
-// //Retrieves the Graphcool user record using the Auth0 user id
-// const getGraphcoolUser = (auth0UserId, api) =>
-//   api
-//     .request(
-//       `
-//         query getUser($auth0UserId: String!){
-//           User(auth0UserId: $auth0UserId){
-//             id
-//           }
-//         }
-//       `,
-//       { auth0UserId }
-//     )
-//     .then(queryResult => queryResult.User)
+export interface Identity {
+  provider: string
+  access_token: string
+  expires_in: number
+  user_id: string
+  connection: string
+  isSocial: boolean
+}
 
-// //Creates a new User record.
-// const createGraphCoolUser = (auth0UserId, email, api) =>
-//   api
-//     .request(
-//       `
-//         mutation createUser($auth0UserId: String!, $email: String) {
-//           createUser(
-//             auth0UserId: $auth0UserId
-//             email: $email
-//           ){
-//             id
-//           }
-//         }
-//       `,
-//       { auth0UserId, email }
-//     )
-//     .then(queryResult => queryResult.createUser)
+export const fetchApiAccess = async (user: AuthResponse) => {
+  const json = await fetch('https://nox.eu.auth0.com/oauth/token', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      client_id: '7ApU6S4NqCvTIOknW5LV8JeQ6enGXf5M',
+      client_secret: 'xTQCj8aXgIRjAcgHNuSSTvI8CAdVICyTxU-1U1urdZgJHKqpm7xFF7RcmrztL1EH',
+      audience: 'https://nox.eu.auth0.com/api/v2/',
+      grant_type: 'client_credentials',
+    }),
+  }).then(res => res.json())
 
-// export default async event => {
-//   if (!process.env.AUTH0_DOMAIN) {
-//     return { error: 'Missing AUTH0_DOMAIN environment variable' }
-//   }
-//   if (!process.env.AUTH0_CLIENT_ID) {
-//     return { error: 'Missing AUTH0_CLIENT_ID environment variable' }
-//   }
+  log(json)
 
-//   try {
-//     const { idToken } = event.data
-//     const graphcool = fromEvent(event)
-//     const api = graphcool.api('simple/v1')
+  // const token = decode(json) as { [key: string]: any }
 
-//     const decodedToken = await verifyToken(idToken)
-//     let graphCoolUser = await getGraphcoolUser(decodedToken.sub, api)
+  // log(token)
 
-//     //If the user doesn't exist, a new record is created.
-//     if (graphCoolUser === null) {
-//       graphCoolUser = await createGraphCoolUser(
-//         decodedToken.sub,
-//         decodedToken.email,
-//         api
-//       )
-//     }
+  const headers = {
+    'content-type': 'application/json',
+    'authorization': `Bearer ${json.access_token}`,
+  }
 
-//     // custom exp does not work yet, see https://github.com/graphcool/graphcool-lib/issues/19
-//     const token = await graphcool.generateNodeToken(
-//       graphCoolUser.id,
-//       'User',
-//       decodedToken.exp
-//     )
+  const data = await fetch(`https://nox.eu.auth0.com/api/v2/users/${user.sub}`, {
+    method: 'GET',
+    headers,
+  }).then(res => res.json())
 
-//     return { data: { id: graphCoolUser.id, token } }
-//   } catch (err) {
-//     return { error: err }
-//   }
-// }
+  return data.identities as Identity[]
+}
