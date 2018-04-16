@@ -93,25 +93,19 @@ export const fetchApiAccess = async (user: AuthResponse) => {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
-      client_id: '7ApU6S4NqCvTIOknW5LV8JeQ6enGXf5M',
-      client_secret: 'xTQCj8aXgIRjAcgHNuSSTvI8CAdVICyTxU-1U1urdZgJHKqpm7xFF7RcmrztL1EH',
-      audience: 'https://nox.eu.auth0.com/api/v2/',
+      client_id: config.auth0.api.clientId,
+      client_secret: config.auth0.api.secret,
+      audience: config.auth0.api.audience,
       grant_type: 'client_credentials',
     }),
   }).then(res => res.json())
-
-  log(json)
-
-  // const token = decode(json) as { [key: string]: any }
-
-  // log(token)
 
   const headers = {
     'content-type': 'application/json',
     'authorization': `Bearer ${json.access_token}`,
   }
 
-  const data = await fetch(`https://nox.eu.auth0.com/api/v2/users/${user.sub}`, {
+  const data = await fetch(`${config.auth0.api.audience}users/${user.sub}`, {
     method: 'GET',
     headers,
   }).then(res => res.json())

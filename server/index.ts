@@ -13,7 +13,6 @@ import log from 'logger'
 process.on('unhandledRejection', rejection => log.error(rejection))
 
 const createApp = async (config, port = 3412) => {
-  log(config)
   const app = new Koa()
   const http = new Router()
 
