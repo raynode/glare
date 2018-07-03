@@ -1,9 +1,11 @@
 
 import { fetchApiAccess, verifyToken } from 'authorization'
-import Users from 'db/user'
+
+import { DBResolverMap, UserActions, Users } from 'db'
+import { User } from 'db/models'
+
 import { loadTypeDefs } from 'gql/utils/typeDefs'
 import { create } from 'logger'
-import { Document } from 'mongoose'
 
 import config from 'config'
 import { google } from 'googleapis'
@@ -33,6 +35,10 @@ const createOAuthClient = (accessToken: string) => {
 
 export const typeDefs = loadTypeDefs(__dirname)('user')
 
+// import { t, test } from 'authorization/google-auth'
+// console.log('TESTING')
+// test(t)
+
 const userLoginAuth0 = async (obj, args: { input: GQL.IAUTHPROVIDERAUTH0 }, context) => {
   const { input: { idToken }} = args
   const user = await verifyToken(idToken).catch(() => null)
@@ -40,17 +46,19 @@ const userLoginAuth0 = async (obj, args: { input: GQL.IAUTHPROVIDERAUTH0 }, cont
   if(!user)
     throw new Error('invalid id token')
 
-  log(user)
-  const access = await fetchApiAccess(user)
-  log(access)
+  // log(user)
+  // const access = await fetchApiAccess(user)
+  // log(access)
 
-  const auth = createOAuthClient(access[0].access_token)
-  // google.auth
-  const x = google.gmail('v1').users.messages.list({
-    auth,
-    userId: 'me',
-  })
-  console.log(x)
+  test(idToken)
+
+  // const auth = createOAuthClient(access[0].access_token)
+  // // google.auth
+  // const x = google.gmail('v1').users.messages.list({
+  //   auth,
+  //   userId: 'me',
+  // })
+  // console.log(x)
 
   // search for the user with the user.sub, as this is the id auth0 will give the user
   // @see https://auth0.com/docs/user-profile/normalized/oidc
@@ -74,10 +82,6 @@ const userLoginAuth0 = async (obj, args: { input: GQL.IAUTHPROVIDERAUTH0 }, cont
   return model.save()
 }
 
-// fetches all users from the mongo database
-const users = () => Users.find()
-const findUserByEmail = (email: string) => Users.findOne({ email })
-
 // a resolver is expected to export these four fields:
 // Mutations { [string]: Resolver<User> }
 // Query { [string]: Resolver<User> }
@@ -89,13 +93,13 @@ export const Mutations = {
 }
 
 export const Query = {
-  findUserByEmail: (obj, args, context) => findUserByEmail(args.input.email),
-  user: (obj, args, context) => findUserByEmail(args.input.email),
-  users : (obj, args, context) => users(),
-  me : (obj, args, context) => context.user && findUserByEmail(context.user.email),
+  findUserByEmail: (obj, args, context) => UserActions.findUserByEmail(args.input.email),
+  user: (obj, args, context) => UserActions.findUserByEmail(args.input.email),
+  users : (obj, args, context) => UserActions.users(),
+  me : (obj, args, context) => context.user && UserActions.findUserByEmail(context.user.email),
 }
 
-export const Resolver = {
+export const Resolver: DBResolverMap<User> = {
   // id needs to be mapped to the mongodb-id
-  ID: user => user._id,
+  id: user => user._id,
 }

@@ -4,7 +4,11 @@ import * as koaBody from 'koa-bodyparser' // koa-bodyparser@next
 import * as Router from 'koa-router'
 
 import { getMongoConnection } from 'db'
-import { gqlServer, subscriptions } from 'gql'
+import {
+  giqlServer,
+  gqlServer,
+  subscriptions,
+} from 'gql'
 
 import config from 'config'
 import injector from 'injector'
@@ -22,6 +26,7 @@ const createApp = async (config, port = 3412) => {
   // koaBody is needed just for POST.
   http.post('/graphql', koaBody(), gqlServer)
   http.get('/graphql', gqlServer)
+  http.get('/graphiql', giqlServer)
 
   http.get('/*', async ctx => {
     ctx.body = 'Hello World!'

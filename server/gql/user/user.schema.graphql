@@ -11,11 +11,11 @@ input findUserByEmailInput {
   email: String!
 }
 
-type User implements Node {
-  ID: String!
-  auth0UserId: String!
-  created: Date!
-  updated: Date!
+type User implements Node @model {
+  id: ID! @isUnique
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
 
   givenName: String
   familyName: String

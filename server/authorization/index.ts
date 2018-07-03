@@ -37,7 +37,7 @@ export const verifyToken = async token => {
     }
     [key: string]: any,
   }
-
+  console.log(decoded)
   if(!decoded
   || !decoded.header
   || !decoded.header.kid
@@ -105,10 +105,16 @@ export const fetchApiAccess = async (user: AuthResponse) => {
     'authorization': `Bearer ${json.access_token}`,
   }
 
+  log('JSON:')
+  log(json)
+
   const data = await fetch(`${config.auth0.api.audience}users/${user.sub}`, {
     method: 'GET',
     headers,
   }).then(res => res.json())
+
+  log('DATA:')
+  log(data)
 
   return data.identities as Identity[]
 }

@@ -1,0 +1,16 @@
+
+type Account implements Node @model {
+  createdAt: DateTime!
+  id: ID! @isUnique
+  updatedAt: DateTime!
+  users: [User!]! @relation(name: "AccountOnUser")
+  amount: Float!
+}
+
+extend type User {
+  accounts: [Account!]! @relation(name: "AccountOnUser")
+}
+
+extend type Query {
+  accounts: [Account!]!
+}

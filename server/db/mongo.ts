@@ -1,12 +1,12 @@
 
 import config from 'config'
 import { create } from 'logger'
-import { connect, connection  } from 'mongoose'
+import { connect, connection, Connection } from 'mongoose'
 
 const log = create('db', 'mongo')
 const mongoConfig = config.mongo
 
-export default () => new Promise((resolve, reject) => {
+export default () => new Promise<Connection>((resolve, reject) => {
 
   connection
     .on('error', reject)
