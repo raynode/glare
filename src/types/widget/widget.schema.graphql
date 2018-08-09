@@ -1,0 +1,8 @@
+
+type Widget {
+  name: String
+}
+
+extend type Query {
+  widgets: [Widget]
+}

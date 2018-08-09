@@ -37,3 +37,7 @@ export interface User extends Node {
   email: string
   emailVerified: boolean
 }
+
+export interface Widget extends Node {
+  name: string
+}

@@ -1,0 +1,19 @@
+
+type Expense implements Node @model {
+  account: Account! @relation(name: "ExpenseOnAccount")
+  amount: Float!
+  createdAt: DateTime!
+  file: File @relation(name: "ExpenseOnFile")
+  id: ID! @isUnique
+  purpose: String
+  updatedAt: DateTime!
+  user: User! @relation(name: "ExpenseOnUser")
+}
+
+extend type User {
+  expenses: [Expense!]! @relation(name: "ExpenseOnUser")
+}
+
+extend type Account {
+  expenses: [Expense!]! @relation(name: "ExpenseOnUser")
+}

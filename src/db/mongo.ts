@@ -9,7 +9,9 @@ const mongoConfig = config.mongo
 export default () => new Promise<Connection>((resolve, reject) => {
 
   connection
-    .on('error', reject)
+    .on('error', err => {
+      console.log(err)
+    })
     .on('close', () => log('Database connection closed.'))
     .once('open', () => {
       log('Connection established for ' + mongoConfig.uri)

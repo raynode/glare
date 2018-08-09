@@ -39,48 +39,48 @@ export const typeDefs = loadTypeDefs(__dirname)('user')
 // console.log('TESTING')
 // test(t)
 
-const userLoginAuth0 = async (obj, args: { input: GQL.IAUTHPROVIDERAUTH0 }, context) => {
-  const { input: { idToken }} = args
-  const user = await verifyToken(idToken).catch(() => null)
+// const userLoginAuth0 = async (obj, args: { input: GQL.IAUTHPROVIDERAUTH0 }, context) => {
+//   const { input: { idToken }} = args
+//   const user = await verifyToken(idToken).catch(() => null)
 
-  if(!user)
-    throw new Error('invalid id token')
+//   if(!user)
+//     throw new Error('invalid id token')
 
-  // log(user)
-  // const access = await fetchApiAccess(user)
-  // log(access)
+//   // log(user)
+//   // const access = await fetchApiAccess(user)
+//   // log(access)
 
-  test(idToken)
+//   test(idToken)
 
-  // const auth = createOAuthClient(access[0].access_token)
-  // // google.auth
-  // const x = google.gmail('v1').users.messages.list({
-  //   auth,
-  //   userId: 'me',
-  // })
-  // console.log(x)
+//   // const auth = createOAuthClient(access[0].access_token)
+//   // // google.auth
+//   // const x = google.gmail('v1').users.messages.list({
+//   //   auth,
+//   //   userId: 'me',
+//   // })
+//   // console.log(x)
 
-  // search for the user with the user.sub, as this is the id auth0 will give the user
-  // @see https://auth0.com/docs/user-profile/normalized/oidc
-  const entry = await Users.findOne({ auth0UserId: user.sub })
-  const modelData = {
-    auth0UserId: user.sub,
-    email: user.email,
-    emailVerified: user.email_verified,
-    familyName: user.family_name,
-    gender: user.gender,
-    givenName: user.given_name,
-    locale: user.locale,
-    name: user.name,
-    nickname: user.nickname,
-    picture: user.picture,
-  }
-  if(entry)
-    return entry.set(modelData).save()
+//   // search for the user with the user.sub, as this is the id auth0 will give the user
+//   // @see https://auth0.com/docs/user-profile/normalized/oidc
+//   const entry = await Users.findOne({ auth0UserId: user.sub })
+//   const modelData = {
+//     auth0UserId: user.sub,
+//     email: user.email,
+//     emailVerified: user.email_verified,
+//     familyName: user.family_name,
+//     gender: user.gender,
+//     givenName: user.given_name,
+//     locale: user.locale,
+//     name: user.name,
+//     nickname: user.nickname,
+//     picture: user.picture,
+//   }
+//   if(entry)
+//     return entry.set(modelData).save()
 
-  const model = new Users(modelData)
-  return model.save()
-}
+//   const model = new Users(modelData)
+//   return model.save()
+// }
 
 // a resolver is expected to export these four fields:
 // Mutations { [string]: Resolver<User> }
@@ -89,7 +89,7 @@ const userLoginAuth0 = async (obj, args: { input: GQL.IAUTHPROVIDERAUTH0 }, cont
 // Attachments { [other: Resolver]: { [string]: Resolver<User> } }
 
 export const Mutations = {
-  userLoginAuth0,
+  // userLoginAuth0,
 }
 
 export const Query = {

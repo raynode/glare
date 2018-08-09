@@ -1,5 +1,4 @@
 
-import { graphiqlKoa, graphqlKoa } from 'apollo-server-koa'
 import { AuthResponse, verifyToken } from 'authorization'
 import config from 'config'
 import { execute, subscribe } from 'graphql'
@@ -76,7 +75,7 @@ const resolveNode = async <T>(_, { id }): Promise<T> => {
 
 let num = 0
 
-const resolvers = {
+export const resolvers = {
   Account: { ...accountResolver, ...ExpenseAccountResolver },
   User: { ...userResolver, ...AccountUserResolver, ...ExpenseUserResolver },
   Expense: { ...expenseResolver },
@@ -93,7 +92,9 @@ const resolvers = {
   },
 
   Mutation: {
-    setNumber: (_, { n }) => {
+    setNumber: (_, { n }, ctx) => {
+      if(!ctx.user)
+        return new Error('Not authenticated to use this method')
       num = n
       pubsub.publish(Subscriptions.ChangedNumber, num)
       return num
@@ -110,7 +111,7 @@ const resolvers = {
   },
 }
 
-const typeDefs = [
+export const typeDefs = [
   loadTypeDefs(__dirname)('root'),
   userTypeDefs,
   accountTypeDefs,
@@ -149,63 +150,50 @@ const makeLogger = (user: AuthResponse | string) => {
     return log.create()
 }
 
-export const giqlServer = graphiqlKoa({
-  endpointURL: '/graphql',
-})
+// export const giqlServer = graphiqlKoa({
+//   endpointURL: '/graphql',
+//   subscriptionsEndpoint: 'ws://localhost:3421/graphws',
+// })
 
-export const gqlServer = graphqlKoa(async ctx => {
-  const tokenString = ctx.req.headers && ctx.req.headers.authorization
+// export const gqlServer = graphqlKoa(async ctx => {
+//   const tokenString = ctx.req.headers && ctx.req.headers.authorization
 
-  const user = await getUserInformation(tokenString)
-  .catch(() => null)
+//   const user = await getUserInformation(tokenString)
+//   .catch(() => null)
 
-  log('creating context', user)
+//   log('creating context', user)
 
-  const context = {
-    log,
-    user,
-  }
-  return {
+//   const context = {
+//     log,
+//     user,
+//   }
+//   return {
+//     schema,
+//     context,
+//   }
+// })
+
+export const subscriptions = (options: ServerOptions) =>
+  new SubscriptionServer({
+    execute,
     schema,
-    context,
-  }
-})
-
-export const subscriptions = (options: ServerOptions) => SubscriptionServer.create({
-  schema,
-  execute,
-  subscribe,
-  // onConnect: (connectionParams, socket: WebSocket) => {
-  //   logWs(connectionParams)
-  //   try {
-  //     // const { user } = jwt.verify(connectionParams.authToken, env('AUTH_SECRET'))
-  //     // const jwtData = jwtDecode(connectionParams.authToken)
-  //     // const timeout = jwtData.exp * 1000 - Date.now()
-  //     // debugPubSub('authenticated', jwtData)
-  //     // debugPubSub('set connection timeout', timeout)
-  //     // setTimeout(() => {
-  //     //   // let the client reconnect
-  //     //   socket.close()
-  //     // }, timeout)
-  //     return { subscriptionUser: null }
-  //   } catch (error) {
-  //     // debugPubSub('authentication failed', error.message)
-  //     return { subscriptionUser: null }
-  //   }
-  // },
-  // onOperation(message: string, params: any) {
-  //   console.log(message, params)
-  //   // setTimeout(() => {
-  //   //   R.forEach((todo: Todo) => {
-  //   //     pubsub.publish(TODO_UPDATED_TOPIC, { todoUpdated: todo })
-  //   //     debugPubSub('publish', TODO_UPDATED_TOPIC, todo)
-  //   //   }, todos)
-  //   // }, 0)
-  //   // return Promise.resolve(params)
-  // },
-}, options)
-
-// export const graphqlInstance = graphqlExpress((req: GQLRequest) => ({
-//   context: req.context,
-//   schema,
-// }))
+    subscribe,
+    onConnect: (connectionParams, socket: WebSocket) => {
+      logWs('connecting:', connectionParams)
+      try {
+        // const { user } = jwt.verify(connectionParams.authToken, env('AUTH_SECRET'))
+        // const jwtData = jwtDecode(connectionParams.authToken)
+        // const timeout = jwtData.exp * 1000 - Date.now()
+        // debugPubSub('authenticated', jwtData)
+        // debugPubSub('set connection timeout', timeout)
+        // setTimeout(() => {
+        //   // let the client reconnect
+        //   socket.close()
+        // }, timeout)
+        return { subscriptionUser: null }
+      } catch (error) {
+        // debugPubSub('authentication failed', error.message)
+      }
+      return { subscriptionUser: null }
+    },
+  }, options)

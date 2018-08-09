@@ -1,0 +1,8 @@
+
+type WidgetGroup implements Widget {
+  name: String
+}
+
+extend type Query {
+  widgetGroups: [WidgetGroup]
+}

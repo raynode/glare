@@ -37,7 +37,7 @@ export const verifyToken = async token => {
     }
     [key: string]: any,
   }
-  console.log(decoded)
+
   if(!decoded
   || !decoded.header
   || !decoded.header.kid
@@ -55,6 +55,7 @@ export const verifyToken = async token => {
   return new Promise<AuthResponse>((resolve, reject) => {
     // Retrieve the JKWS's signing key using the decode token's key identifier (kid)
     jkwsClient.getSigningKey(decoded.header.kid, (err, key) => {
+      console.log(err)
       if (err)
         return reject(err)
 

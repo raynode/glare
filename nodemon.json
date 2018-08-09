@@ -4,7 +4,7 @@
     ".git",
     "node_modules"
   ],
-  "watch": ["server"],
+  "watch": ["src"],
   "exec": "npm start",
   "ext": "ts,graphql"
 }

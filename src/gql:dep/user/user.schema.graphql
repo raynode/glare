@@ -16,7 +16,6 @@ type User implements Node @model {
   createdAt: DateTime!
   updatedAt: DateTime!
 
-
   givenName: String
   familyName: String
   nickname: String
