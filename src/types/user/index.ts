@@ -8,7 +8,7 @@ import { TypeDef } from 'types/def'
 import { User } from 'db/models'
 import { Actions } from 'db/users'
 
-import { create } from 'logger'
+import { create } from 'services/logger'
 const log = create('types', 'user')
 
 export const user: TypeDef<User> = {
@@ -29,7 +29,13 @@ export const user: TypeDef<User> = {
   Resolver: {
     id: user => user._id,
   },
-  Mutation: {},
+  Mutation: {
+    // userLogin: (_, args, context) => {
+    //   log(args)
+    //   return null
+    // },
+    userCreate: (_, { input }, context) => Actions.userCreate(input),
+  },
   Subscription: {},
   joins: [],
 }

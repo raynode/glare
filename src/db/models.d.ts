@@ -1,6 +1,13 @@
 
 import { Document, Types } from 'mongoose'
 
+export interface FindOrCreate<Find, Create> {
+  find: Find
+  create: Create
+}
+
+type Image = string
+
 export interface Node extends Document {
   id: Types.ObjectId
   createdAt: Date
@@ -40,4 +47,23 @@ export interface User extends Node {
 
 export interface Widget extends Node {
   name: string
+  type: string
+}
+
+export interface Tag extends Node {
+  tag: string
+}
+
+export interface Post extends Widget {
+  type: 'Post'
+  title: string
+  author: Types.ObjectId
+  image: Image
+  content: Widget[]
+  tags: Tag[]
+}
+
+export interface Markdown extends Widget {
+  type: 'Markdown'
+  text: string
 }

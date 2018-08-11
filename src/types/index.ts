@@ -1,12 +1,14 @@
 
 import { account } from 'types/account'
 import { expense } from 'types/expense'
+import { post } from 'types/post'
 import { root } from 'types/root'
+import { tag } from 'types/tag'
 import { user } from 'types/user'
 import { widget } from 'types/widget'
 import { widgetGroup } from 'types/widget-group'
 
-import { create } from 'logger'
+import { create } from 'services/logger'
 import { BaseBlock, Block, TypeDef } from 'types/def'
 const log = create('types')
 
@@ -15,18 +17,11 @@ const all = [
   account,
   expense,
   user,
+  tag,
   widget,
+  post,
   widgetGroup,
 ]
-
-// const Query = Object.keys(all).reduce((memo, key) => ({
-//   ...memo, ...all[key].Query,
-// }), {})
-
-// const Resolver = Object.keys(all).reduce((memo, key) => {
-//   memo[all[key].name] = all[key].Resolver || {}
-//   return memo
-// }, {})
 
 const extendBaseBlock = (base: BaseBlock<any>) => (name: string) => (block: Block<any>) => {
   log(`extending ${block.name} with ${name}`)
@@ -43,7 +38,8 @@ const extendBaseBlock = (base: BaseBlock<any>) => (name: string) => (block: Bloc
 export const resolvers = all.reduce((memo: BaseBlock<any>, block) => {
   const extender = extendBaseBlock(memo)
   memo.typeDefs.push(block.typeDefs)
-  block.joins.forEach(extender(block.name))
+  if(block.joins)
+    block.joins.forEach(extender(block.name))
   return extender('root')(block)
 }, {
   name: 'root',

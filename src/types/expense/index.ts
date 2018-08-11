@@ -8,7 +8,7 @@ import { Actions as AccountActions  } from 'db/accounts'
 import { Actions as ExpenseActions } from 'db/expenses'
 import { Actions as UserActions } from 'db/users'
 
-import { create } from 'logger'
+import { create } from 'services/logger'
 
 const log = create('db', 'model', 'expenses')
 export const typeDefs = loadTypeDefs(__dirname)('expense')

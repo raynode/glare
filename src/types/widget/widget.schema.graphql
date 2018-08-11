@@ -1,6 +1,7 @@
 
-type Widget {
+interface Widget {
   name: String
+  type: String
 }
 
 extend type Query {

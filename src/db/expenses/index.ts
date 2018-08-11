@@ -1,6 +1,6 @@
 
 import { model, Schema, Types } from 'mongoose'
-import { Expense } from '../models'
+import { Expense } from 'db/models'
 
 const ExpenseSchema = new Schema({
   amount: {

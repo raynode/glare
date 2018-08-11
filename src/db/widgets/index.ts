@@ -1,6 +1,6 @@
 
 import { Document, model, Schema, Types } from 'mongoose'
-import { Widget } from '../models'
+import { Widget } from 'db/models'
 
 const WidgetSchema = new Schema({
   name: {

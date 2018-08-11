@@ -1,0 +1,20 @@
+
+type Tag implements Node {
+  createdAt: DateTime!
+  id: ID! @isUnique
+  updatedAt: DateTime!
+
+  tag: String!
+}
+
+input CreateTagInput {
+  tag: String!
+}
+
+extend type Query {
+  tags: [Tag!]!
+}
+
+extend type Mutation {
+  createTag(input: CreateTagInput!): Tag
+}

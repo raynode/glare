@@ -4,8 +4,8 @@ import { decode, verify } from 'jsonwebtoken'
 import * as jwk from 'jwks-rsa'
 import fetch from 'node-fetch'
 
-import { create } from 'logger'
-const log = create('auth')
+import { create } from 'services/logger'
+const log = create('services', 'auth')
 
 export interface AuthResponse {
   at_hash: string

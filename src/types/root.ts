@@ -9,7 +9,7 @@ import { TypeDef } from 'types/def'
 
 import { createSubscritionResolver, pubsub, Subscriptions } from 'services/pubsub'
 
-import { create } from 'logger'
+import { create } from 'services/logger'
 const log = create('types', 'root')
 
 const resolveNode = async <T>(_, { id }): Promise<T> => {

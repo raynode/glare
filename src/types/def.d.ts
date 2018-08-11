@@ -23,5 +23,5 @@ export interface Block<Source> {
 
 interface TypeDef<Source> extends Block<Source> {
   typeDefs: string
-  joins: Array<Block<any>>
+  joins?: Array<Block<any>>
 }

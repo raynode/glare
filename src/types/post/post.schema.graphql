@@ -1,0 +1,66 @@
+
+type Post implements Node {
+  createdAt: DateTime!
+  id: ID! @isUnique
+  updatedAt: DateTime!
+
+  author: User!
+  image: String!
+  title: String!
+  content: [Widget!]!
+  tags: [Tag!]!
+}
+
+input UserCreateWithoutPostsInput {
+  givenName: String
+  familyName: String
+  nickname: String
+  name: String!
+  picture: String
+  gender: String
+  locale: String
+  email: String!
+}
+
+input UserWhereUniqueInput {
+  id: ID
+}
+
+input UserCreateOneWithoutPostInput {
+  create: UserCreateWithoutPostsInput
+  find: UserWhereUniqueInput
+}
+
+input CreatePostInput {
+  image: String!
+  name: String!
+  title: String!
+  author: UserCreateOneWithoutPostInput!
+  tags: [CreateTagInput!]
+}
+
+input UpdatePostInput {
+  id: ID
+  image: String
+  name: String
+  title: String
+  author: UserWhereUniqueInput
+  tags: [CreateTagInput!]
+}
+
+extend type User {
+  posts: [Post!]!
+}
+
+extend type Query {
+  posts: [Post!]!
+}
+
+extend type Tag {
+  posts: [Post!]!
+}
+
+extend type Mutation {
+  createPost(input: CreatePostInput): Post
+  updatePost(input: UpdatePostInput): Post
+}

@@ -9,6 +9,5 @@ configure({
   namespace,
 })
 
-const logger = create()
-export default logger
+export const log = create()
 export { create, Log }

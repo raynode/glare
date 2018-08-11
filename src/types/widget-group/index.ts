@@ -10,7 +10,7 @@ import { Account, User } from 'db/models'
 import { Accounts } from 'db/accounts'
 import { Users } from 'db/users'
 
-import { create } from 'logger'
+import { create } from 'services/logger'
 const log = create('types', 'widget-group')
 
 // query function to find all accounts

@@ -1,6 +1,6 @@
 
 import { model, Schema, Types } from 'mongoose'
-import { Account } from '../models'
+import { Account } from 'db/models'
 
 const AccountSchema = new Schema({
   users: [{

@@ -1,23 +1,22 @@
 
+import { FindOrCreate, User } from 'db/models'
 import { Document, model, Schema, Types } from 'mongoose'
-import { User } from '../models'
+
+import { create } from 'services/logger'
+const log = create('db', 'user')
 
 const UserSchema = new Schema({
-  auth0UserId: {
-    type: String,
-    required: true,
-  },
   givenName: {
     type: String,
-    required: true,
+    // required: true,
   },
   familyName: {
     type: String,
-    required: true,
+    // required: true,
   },
   nickname: {
     type: String,
-    required: false,
+    // required: false,
   },
   name: {
     type: String,
@@ -25,15 +24,15 @@ const UserSchema = new Schema({
   },
   picture: {
     type: String,
-    required: false,
+    // required: false,
   },
   gender: {
     type: String,
-    required: false,
+    // required: false,
   },
   locale: {
     type: String,
-    required: false,
+    // required: false,
   },
   email: {
     type: String,
@@ -53,8 +52,29 @@ const UserSchema = new Schema({
 
 export const Users = model('User', UserSchema)
 
+export interface UserCreateInput {
+  name: string
+  email: string
+  [key: string]: any
+}
+export interface UserFindInput {
+  id: Types.ObjectId
+}
+
 export const Actions = {
   users: async () => (await Users.find()) as User[],
   findById: async (id: Types.ObjectId) => (await Users.findById(id)) as User,
   findUserByEmail: async (email: string) => await (Users.findOne({ email })) as User,
+
+  userCreate: async (input: UserCreateInput) => {
+    const user = new Users(input)
+    log('created user:', user)
+    return user.save()
+  },
+
+  userFindOrCreate: async (input: FindOrCreate<UserFindInput, UserCreateInput>) => {
+    if(input.find)
+      return Actions.findById(input.find.id)
+    return Actions.userCreate(input.create)
+  },
 }

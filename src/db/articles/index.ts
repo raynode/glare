@@ -1,6 +1,6 @@
 
 import { model, Schema, Types } from 'mongoose'
-import { Article } from '../models'
+import { Article } from 'db/models'
 
 const ArticleSchema = new Schema({
   owner: {
