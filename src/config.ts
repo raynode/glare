@@ -1,9 +1,9 @@
 
-import { config } from 'dotenv'
+import { config as dotEnv } from 'dotenv'
 
-config()
+dotEnv()
 
-export default {
+export const config = {
   port: process.env.GLARE_PORT || 3421,
   mongo: {
     uri: process.env.MONGO_URI,
@@ -13,5 +13,19 @@ export default {
     secret: process.env.GLARE_GOOGLE_SECRET,
     mapsAPI: process.env.GLARE_GOOGLE_MAPS_API,
     redirectUri: 'localhost:3003/settings',
+  },
+  sequelize: {
+    development: {
+      use_env_variable: 'PGHOST_GLARE',
+      dialect: 'postgres',
+    },
+    test: {
+      use_env_variable: 'PGHOST_GLARE_TEST',
+      dialect: 'postgres',
+    },
+    production: {
+      use_env_variable: 'PGHOST_GLARE',
+      dialect: 'postgres',
+    },
   },
 }

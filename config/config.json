@@ -1,0 +1,14 @@
+{
+  "development": {
+    "use_env_variable": "PGHOST_GLARE",
+    "dialect": "postgres"
+  },
+  "test": {
+    "use_env_variable": "PGHOST_GLARE_TEST",
+    "dialect": "postgres"
+  },
+  "production": {
+    "use_env_variable": "PGHOST_GLARE",
+    "dialect": "postgres"
+  }
+}
