@@ -9,6 +9,13 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.UUID,
       },
+      normalized: {
+        allowNull: false,
+        defaultValue: null,
+        primaryKey: true,
+        unique: true,
+        type: Sequelize.STRING,
+      },
       tag: {
         allowNull: false,
         defaultValue: null,
@@ -35,6 +42,13 @@ module.exports = {
         allowNull: false,
       },
     })
+
+
+    await queryInterface.sequelize.query(`
+      ALTER TABLE "public"."Tags"
+        ADD CONSTRAINT tags_normalized_name_need_to_be_lowercase
+          CHECK (normalized = lower(normalized));
+    `)
   },
 
   down: async (queryInterface, Sequelize) => {

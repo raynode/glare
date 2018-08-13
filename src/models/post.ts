@@ -7,7 +7,7 @@ import { UserInstance } from 'models/user'
 export interface PostAttributes extends Partial<Node> {
   stub: string
   title: string
-  AuthorId: string
+  userId: string
   image?: string
   published?: boolean
   author?: UserInstance
@@ -17,25 +17,24 @@ export interface PostAttributes extends Partial<Node> {
 export type PostInstance = Sequelize.Instance<PostAttributes> & PostAttributes
 
 const attributes: SequelizeAttributes<PostAttributes> = {
-  id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
   stub: { type: DataTypes.STRING, allowNull: false },
   title: { type: DataTypes.STRING, allowNull: false },
   image: { type: DataTypes.STRING },
   published: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
-  AuthorId: { type: DataTypes.UUID, allowNull: false },
+  userId: { type: DataTypes.UUID, allowNull: false },
 }
 export const Post = sequelize.define<PostInstance, PostAttributes>('Post', attributes)
 
 Post.associate = models => {
   // associations can be defined here
   Post.belongsTo(models.User, {
-    foreignKey: 'AuthorId',
+    foreignKey: 'userId',
     as: 'author',
   })
 
   models.User.hasMany(Post, {
     as: 'posts',
-    foreignKey: 'AuthorId',
+    foreignKey: 'userId',
     sourceKey: 'id',
   })
 }

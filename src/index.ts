@@ -11,7 +11,7 @@ import { initialized } from 'models/init'
 import { Account } from 'models/account'
 import { Expense } from 'models/expense'
 import { Post } from 'models/post'
-import { Tag } from 'models/tag'
+import { Tag, TagLink } from 'models/tag'
 import { User } from 'models/user'
 
 const showAll = (type: string) => {
@@ -50,6 +50,17 @@ const run = async () => {
   }, Promise.resolve(true))
   log('----- Done -----')
 
+  const admin = await User.findOne({ where: { email: 'nox@raynode.de' }, include: [{
+    model: Tag,
+    as: 'tags',
+  }]})
+  const l = log.create('admin info')
+  l({
+    id: admin.id,
+    name: admin.name,
+    tags: admin.tags.map(t => t.tag),
+  })
+
   const account = await Account.findOne({
     include: [{
       model: User,
@@ -58,6 +69,11 @@ const run = async () => {
   })
   showAll('my-account')(account)
   account.owners.map(showAll('my-account-owner'))
+
+  const tag = await Tag.findOne({ where: { normalized: 'nice' }, include: [TagLink]})
+  showAll('Nicely-tagged')(tag)
+  const links = tag.TagLinks
+  links.forEach(showAll('Nicely-tagged:Thins'))
 }
 
 initialized.then(run)
@@ -65,32 +81,6 @@ initialized.then(run)
   log(err)
   log.error('Error:', err.sql)
 })
-
-// const run = async () => {
-//   const u: any = await User.findOne({
-//     where: {
-//       email: 'poster@raynode.de',
-//     },
-//   })
-//   const user = u ? u : await User.create({
-//     name: 'Autor Maximus',
-//     email: 'poster@raynode.de',
-//   })
-
-//   log('UserId:', user.id)
-
-//   const post = await Post.create({
-//     title: 'My second Post',
-//     stub: 'my-second-post',
-//     AuthorId: user.id,
-//   })
-// }
-
-// run()
-// .catch(err => {
-//   log(err)
-//   log.error('Error:', err.sql)
-// })
 
 // import { resolvers } from 'types'
 

@@ -35,7 +35,7 @@ module.exports = {
         type: Sequelize.DATE,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
-      AuthorId: {
+      userId: {
         type: Sequelize.UUID,
         // this should not be allowed, but is as the user itself might be deleted
         // allowNull : false,
