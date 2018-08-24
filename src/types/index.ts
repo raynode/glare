@@ -5,8 +5,8 @@ import { post } from 'types/post'
 import { root } from 'types/root'
 import { tag } from 'types/tag'
 import { user } from 'types/user'
-import { widget } from 'types/widget'
-import { widgetGroup } from 'types/widget-group'
+// import { widget } from 'types/widget'
+// import { widgetGroup } from 'types/widget-group'
 
 import { create } from 'services/logger'
 import { BaseBlock, Block, TypeDef } from 'types/def'
@@ -18,9 +18,9 @@ const all = [
   expense,
   user,
   tag,
-  widget,
+  // widget,
   post,
-  widgetGroup,
+  // widgetGroup,
 ]
 
 const extendBaseBlock = (base: BaseBlock<any>) => (name: string) => (block: Block<any>) => {

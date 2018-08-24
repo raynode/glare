@@ -5,6 +5,11 @@ dotEnv()
 
 export const config = {
   port: process.env.GLARE_PORT || 3421,
+  showSQL: false,
+  sentry: {
+    environment: process.env.NODE_ENV,
+    dsn: process.env.SENTRY_GLARE_DNS,
+  },
   mongo: {
     uri: process.env.MONGO_URI,
   },

@@ -76,7 +76,7 @@ Tag.associate = models => {
     if(model === 'Tag' || model === 'Tag_Link')
       return
 
-    log('working on model:', model)
+    log(`Adding tags to ${model}`)
     const Model = models[model]
 
     Model.belongsToMany(Tag, {

@@ -4,8 +4,6 @@ scalar DateTime
 type File implements Node @model {
   contentType: String!
   createdAt: DateTime!
-  # Needs to move:
-  expense: Expense @relation(name: "ExpenseOnFile")
   id: ID! @isUnique
   name: String!
   secret: String! @isUnique

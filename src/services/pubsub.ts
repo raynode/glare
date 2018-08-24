@@ -1,5 +1,5 @@
 
-import { PubSub, withFilter } from 'graphql-subscriptions'
+import { PubSub, withFilter } from 'apollo-server'
 
 export enum Subscriptions {
   ChangedNumber = 'ChangedNumber',
@@ -10,6 +10,5 @@ export const pubsub = new PubSub()
 export { withFilter }
 
 export const createSubscritionResolver = (subscrition: string) => ({
-  resolve: payload => payload,
   subscribe: () => pubsub.asyncIterator(subscrition),
 })

@@ -7,7 +7,7 @@ type Post implements Node {
   author: User!
   image: String!
   title: String!
-  content: [Widget!]!
+  # content: [Widget!]!
   tags: [Tag!]!
 }
 

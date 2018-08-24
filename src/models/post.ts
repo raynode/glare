@@ -1,5 +1,5 @@
 
-import { DataTypes, Node, sequelize, Sequelize, SequelizeAttributes } from 'services/db'
+import { DataTypes, Node, sequelize, Instance, Sequelize, SequelizeAttributes } from 'services/db'
 
 import { TagInstance } from 'models/tag'
 import { UserInstance } from 'models/user'
@@ -14,7 +14,7 @@ export interface PostAttributes extends Partial<Node> {
   tags?: TagInstance[]
 }
 
-export type PostInstance = Sequelize.Instance<PostAttributes> & PostAttributes
+export type PostInstance = Instance<PostAttributes> & PostAttributes
 
 const attributes: SequelizeAttributes<PostAttributes> = {
   stub: { type: DataTypes.STRING, allowNull: false },

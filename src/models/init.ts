@@ -1,5 +1,8 @@
 
 import { sequelize } from 'services/db'
+import { config } from 'config'
+import { create } from 'services/logger'
+const log = create('models')
 
 import { Account } from 'models/account'
 import { Expense } from 'models/expense'
@@ -16,11 +19,14 @@ export const models = {
 }
 
 const associate = (modelName: string) => {
-  console.log('------- assoc' + modelName)
   if (models[modelName].associate)
     models[modelName].associate(models)
 }
 
 Object.keys(models).forEach(associate)
 
-export const initialized = sequelize.sync()
+const sqlLogger = config.showSQL ? (sql: string) => log(sql) : false
+
+export const initialized = sequelize.sync({
+  logging: sqlLogger,
+})

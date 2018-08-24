@@ -1,10 +1,13 @@
 
 import * as Sequelize from 'sequelize'
-export {
-  Model,
-  Models,
-  Instance,
-} from 'sequelize'
+// export {
+//   Model,
+//   Models,
+//   Instance,
+// } from 'sequelize'
+export type Model<TInstance, TAttribute> = Sequelize.Model<TInstance, TAttribute>
+export type Models = Sequelize.Models
+export type Instance<TAttribute> = Sequelize.Instance<TAttribute>
 // tslint:disable-next-line
 import { DataTypeAbstract, DefineAttributeColumnOptions } from 'sequelize'
 

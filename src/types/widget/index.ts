@@ -2,8 +2,8 @@
 import { loadTypeDefs } from 'services/typeDefs'
 import { TypeDef } from 'types/def'
 
-import { Widget } from 'db/models'
-import { Widgets } from 'db/widgets'
+// import { Widget } from 'models/wi'
+// import { Widgets } from 'db/widgets'
 
 import { create } from 'services/logger'
 const log = create('types', 'widget')
