@@ -13,7 +13,7 @@ import { user } from 'types/user'
 import { create } from 'services/logger'
 const log = create('types', 'post')
 
-import { createBaseType } from 'services/bastType'
+import { createBaseType } from 'services/baseType'
 
 export const post: TypeDef<PostInstance> = {
   name: 'Post',

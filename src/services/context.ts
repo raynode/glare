@@ -12,8 +12,8 @@ export interface Context {
 }
 
 export const createContext = async (req: any): Promise<Context> => {
-  // log(req.url, req.body)
-  log(arguments)
+  log(req.url, req.body)
+  // log(arguments)
 
   // log(req.headers)
   // log(req.url)
