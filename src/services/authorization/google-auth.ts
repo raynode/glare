@@ -31,7 +31,7 @@ const createOAuthClient = (accessToken: string) => {
 
 const userLoginAuth0 = async (input: GQL.IAUTHPROVIDERAUTH0) => {
   const { idToken } = input
-  console.log(idToken)
+  console.log('IDTPKLEN:', idToken)
   const user = await verifyToken(idToken).catch(() => null)
   console.log('user:', user)
   if(!user)

@@ -14,11 +14,11 @@ import { create } from 'services/logger'
 const log = create('types', 'post')
 
 import { createBaseType } from 'services/baseType'
+  // ...createBaseType('Post', Post),
 
 export const post: TypeDef<PostInstance> = {
   name: 'Post',
   typeDefs: loadTypeDefs(__dirname)('post'),
-  ...createBaseType('Post', Post),
   Query: { posts: () => Post.findAll() },
   Resolver: {
     author: post => User.findOne({ where: { id: post.userId }}),

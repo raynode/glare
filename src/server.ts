@@ -19,24 +19,31 @@ interface ContextConnection {
 }
 
 export const server = async (log: Log) => {
-  const schema = makeExecutableSchema({
-    typeDefs: gql(resolvers.typeDefs.join('')),
-    resolvers: {
-      Query: resolvers.Query,
-      Mutation: resolvers.Mutation,
-      Subscription: resolvers.Subscription,
-      ...resolvers.Resolver,
-    },
-    logger: log.create('graphql'), // optional
-    allowUndefinedInResolve: false, // optional
-    resolverValidationOptions: {
-      requireResolversForResolveType: false,
-    }, // optional
-    // directiveResolvers = null, // optional
-    // schemaDirectives = null,  // optional
-    // parseOptions = {},  // optional
-    // inheritResolversFromInterfaces = false  // optional
-  })
+  const apolloLogger = log.create('apollo-server')
+
+  let schema
+  try {
+    schema = makeExecutableSchema({
+      typeDefs: gql(resolvers.typeDefs.join('')),
+      resolvers: {
+        Query: resolvers.Query,
+        Mutation: resolvers.Mutation,
+        Subscription: resolvers.Subscription,
+        ...resolvers.Resolver,
+      },
+      logger: { log: apolloLogger.error },
+      allowUndefinedInResolve: false, // optional
+      resolverValidationOptions: {
+        requireResolversForResolveType: false,
+      }, // optional
+      // directiveResolvers = null, // optional
+      // schemaDirectives = null,  // optional
+      // parseOptions = {},  // optional
+      // inheritResolversFromInterfaces = false  // optional
+    })
+  } catch(e) {
+    console.log('MY ERROR:', e)
+  }
 
   const server = new ApolloServer({
     cors: false,
@@ -44,7 +51,7 @@ export const server = async (log: Log) => {
     // mocks: {
     //   DateTime: () => new Date(),
     // },
-    context: async ({ req }: ContextConnection) => createContext(req),
+    context: createContext,
   })
 
   return initialized

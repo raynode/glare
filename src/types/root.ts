@@ -61,8 +61,7 @@ export const root: TypeDef<Document> = {
     },
   },
   Subscription: {
-    numberChanged: createSubscritionResolver(Subscriptions.ChangedNumber),
+    numberChanged: createSubscritionResolver(Subscriptions.ChangedNumber, () => num),
   },
   joins: [],
 }
-

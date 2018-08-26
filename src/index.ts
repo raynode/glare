@@ -1,22 +1,14 @@
 
 import { config } from 'config'
-import { log } from 'services/logger'
-import { connectSentry } from 'services/sentry'
+import { attachSentryTransport, log } from 'services/logger'
 
 const main = async () => {
-  const {
-    captureEvent,
-    captureException,
-    captureMessage,
-    installed,
-  } = await connectSentry(config.sentry)
-
-  log(`Sentry is ${installed ? '' : 'not '}connected!`)
-
   process.on('unhandledRejection', rejection => {
     log.error('unhandledRejection', rejection)
-    captureException(rejection)
   })
+
+  attachSentryTransport()
+  .catch(() => log.error('Error while connecting to sentry'))
 
   const { server } = await import('server')
   server(log)

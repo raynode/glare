@@ -10,9 +10,9 @@ export const connectSentry = async ({
   if(!dsn)
     return {
       installed: false,
-      captureEvent: (event: any) => null,
-      captureException: (event: any) => null,
-      captureMessage: (event: any) => null,
+      captureEvent: (event: any): void => null,
+      captureException: (exception: any): void => null,
+      captureMessage: (event: any): void => null,
     }
   const { init, configureScope, captureEvent, captureException, captureMessage } = await import('@sentry/node')
   init({ dsn, environment })

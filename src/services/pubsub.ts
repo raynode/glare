@@ -9,6 +9,7 @@ export enum Subscriptions {
 export const pubsub = new PubSub()
 export { withFilter }
 
-export const createSubscritionResolver = (subscrition: string) => ({
+export const createSubscritionResolver = (subscrition: string, resolve) => ({
+  resolve,
   subscribe: () => pubsub.asyncIterator(subscrition),
 })
