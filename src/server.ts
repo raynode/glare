@@ -48,6 +48,14 @@ export const server = async (log: Log) => {
   const server = new ApolloServer({
     cors: false,
     schema,
+    tracing: true,
+    playground: {
+      // Force setting, workaround: https://github.com/prisma/graphql-playground/issues/790
+      settings: {
+        'editor.theme': 'dark',
+        'editor.cursorShape': 'line',
+      },
+    },
     // mocks: {
     //   DateTime: () => new Date(),
     // },

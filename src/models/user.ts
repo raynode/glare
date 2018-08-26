@@ -17,9 +17,13 @@ export interface UserAttributes extends Partial<Node> {
   email: string
   emailVerified: boolean
   accounts?: AccountInstance[]
+  getAccounts?: () => AccountInstance[]
   expenses?: ExpenseInstance[]
+  getExpenses?: () => ExpenseInstance[]
   posts?: PostInstance[]
+  getPosts?: () => PostInstance[]
   tags?: TagInstance[]
+  getTags?: () => TagInstance[]
 }
 
 export type UserInstance = Sequelize.Instance<UserAttributes> & UserAttributes
@@ -45,5 +49,4 @@ const attributes: SequelizeAttributes<UserAttributes> = {
 
 export const User = sequelize.define<UserInstance, UserAttributes>('User', attributes)
 
-User.associate = models => {
-}
+User.associate = models => {}

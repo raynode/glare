@@ -10,8 +10,11 @@ export interface ExpenseAttributes extends Partial<Node> {
   accountId: string
   amount: number
   user?: UserInstance
+  getUser?: () => UserInstance
   account?: AccountInstance
+  getAccount?: () => AccountInstance
   tags?: TagInstance[]
+  getTags?: () => TagInstance[]
 }
 
 export type ExpenseInstance = Sequelize.Instance<ExpenseAttributes> & ExpenseAttributes
@@ -23,6 +26,11 @@ const attributes: SequelizeAttributes<ExpenseAttributes> = {
 }
 
 export const Expense = sequelize.define<ExpenseInstance, ExpenseAttributes>('Expense', attributes)
+
+export const Actions = {
+  findByAccount: (account: AccountInstance) => account.getExpenses(),
+  findByUser: async (user: UserInstance) => user.getExpenses(),
+}
 
 Expense.associate = models => {
   // associations can be defined here

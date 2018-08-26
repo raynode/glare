@@ -2,6 +2,11 @@
 import { DataTypes, Node, sequelize, Sequelize, SequelizeAttributes } from 'services/db'
 import { create } from 'services/logger'
 
+import { AccountInstance } from 'models/account'
+import { ExpenseInstance } from 'models/expense'
+import { PostInstance } from 'models/post'
+import { UserInstance } from 'models/user'
+
 const log = create('models/tag')
 
 export interface TagAttributes extends Partial<Node> {
@@ -9,6 +14,14 @@ export interface TagAttributes extends Partial<Node> {
   normalized: string
   tag: string
   TagLinks?: TagLinkInstance[]
+  account?: AccountInstance[]
+  getAccounts?: () => AccountInstance[]
+  expenses?: ExpenseInstance[]
+  getExpenses?: () => ExpenseInstance[]
+  posts?: PostInstance[]
+  getPosts?: () => PostInstance[]
+  users?: UserInstance[]
+  getUsers?: () => UserInstance[]
 }
 
 export interface TagLinkAttributes extends Partial<Node> {
@@ -59,6 +72,13 @@ export const TagLink = sequelize.define<TagLinkInstance, TagLinkAttributes>('Tag
   tableName: 'Tag_Link',
   timestamps: false,
 })
+
+export const Actions = {
+  findByAccount: (account: AccountInstance) => account.getTags(),
+  findByExpense: (expense: ExpenseInstance) => expense.getTags(),
+  findByPost: (post: PostInstance) => post.getTags(),
+  findByUser: (user: UserInstance) => user.getTags(),
+}
 
 Tag.associate = models => {
   // associations can be defined here

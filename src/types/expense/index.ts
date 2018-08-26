@@ -2,7 +2,9 @@
 import { loadTypeDefs } from 'services/typeDefs'
 import { TypeDef } from 'types/def'
 
-import { Expense, ExpenseInstance } from 'models/expense'
+import { Account } from 'models/account'
+import { Actions, Expense, ExpenseInstance } from 'models/expense'
+import { User } from 'models/user'
 
 import { create } from 'services/logger'
 
@@ -15,20 +17,20 @@ export const expense: TypeDef<ExpenseInstance> = {
   Query: {
   },
   Resolver: {
-    account : (expense: any) => expense.getAccount(),
-    user : (expense: any) => expense.getUser(),
+    account : expense => Account.findOne({ where: { id: expense.accountId }}),
+    user : expense => User.findOne({ where: { id: expense.userId }}),
   },
   Mutation: {},
   Subscription: {},
   joins: [{
     name: 'User',
     Resolver: {
-      // expenses: user => ExpenseActions.findExpensesByUserId(user._id),
+      expenses: Actions.findByUser,
     },
   }, {
     name: 'Account',
     Resolver: {
-      // expenses: account => ExpenseActions.findExpensesByAccountId(account._id),
+      expenses: Actions.findByAccount,
     },
   }],
 }

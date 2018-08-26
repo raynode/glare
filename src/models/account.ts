@@ -1,15 +1,18 @@
 
 import { DataTypes, Node, sequelize, Sequelize, SequelizeAttributes } from 'services/db'
 
-import { TagInstance } from 'models/tag'
 import { ExpenseInstance } from 'models/expense'
-import { UserInstance } from 'models/user'
+import { TagInstance } from 'models/tag'
+import { User, UserInstance } from 'models/user'
 
 export interface AccountAttributes extends Partial<Node> {
   amount: number
   expenses?: ExpenseInstance[]
+  getExpenses?: () => ExpenseInstance[]
   owners?: UserInstance[]
+  getOwners?: () => UserInstance[]
   tags?: TagInstance[]
+  getTags?: () => TagInstance[]
 }
 
 export type AccountInstance = Sequelize.Instance<AccountAttributes> & AccountAttributes
@@ -19,6 +22,10 @@ const attributes: SequelizeAttributes<AccountAttributes> = {
 }
 
 export const Account = sequelize.define<AccountInstance, AccountAttributes>('Account', attributes)
+
+export const Actions = {
+  findByUser: async (user: UserInstance) => user.getAccounts(),
+}
 
 Account.associate = models => {
   // associations can be defined here

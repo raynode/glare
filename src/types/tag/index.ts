@@ -20,6 +20,12 @@ export const tag: TypeDef<TagInstance> = {
       Tag.create(input)
     },
   },
+  Resolver: {
+    accounts: tag => tag.getAccounts(),
+    expenses: tag => tag.getExpenses(),
+    posts: tag => tag.getPosts(),
+    users: tag => tag.getUsers(),
+  },
   joins: [{
     name: 'User',
     Resolver: {

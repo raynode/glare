@@ -8,7 +8,9 @@ export interface ArticleAttributes extends Partial<Node> {
   url: string
   userId: string
   user?: UserInstance
+  getUser?: () => UserInstance
   tags?: TagInstance[]
+  getTags?: () => TagInstance[]
 }
 
 export type ArticleInstance = Sequelize.Instance<ArticleAttributes> & ArticleAttributes

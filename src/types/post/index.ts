@@ -21,7 +21,8 @@ export const post: TypeDef<PostInstance> = {
   typeDefs: loadTypeDefs(__dirname)('post'),
   Query: { posts: () => Post.findAll() },
   Resolver: {
-    author: post => User.findOne({ where: { id: post.userId }}),
+    author: post => post.getAuthor(),
+    tags: post => post.getTags(),
   },
   Mutation: {
     createPost: async (_, { input }) => {

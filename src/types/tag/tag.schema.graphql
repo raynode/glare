@@ -5,8 +5,16 @@ type Tag implements Node {
   updatedAt: DateTime!
 
   tag: String!
+
+  accounts: [Account!]!
+  expenses: [Expense!]!
+  posts: [Post!]!
+  users: [User!]!
 }
 
+extend type Account { tags: [Tag!]! }
+extend type Expense { tags: [Tag!]! }
+extend type Post { tags: [Tag!]! }
 extend type User { tags: [Tag!]! }
 
 input CreateTagInput {
