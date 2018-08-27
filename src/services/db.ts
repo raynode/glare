@@ -19,12 +19,16 @@ import { config as Config } from 'config'
 const config = Config.sequelize[env]
 
 const createSequelize = (config: any) => {
+
+  const sequelizeConfig: Sequelize.Options = {
+    logging: (sql: string) => log[Config.sequelize.logLevel](sql),
+  }
   if (config.use_env_variable) {
     log(`creating from env: ${process.env[config.use_env_variable]}`)
-    return new Sequelize(process.env[config.use_env_variable], config)
+    return new Sequelize(process.env[config.use_env_variable], sequelizeConfig)
   } else {
     log(`creating from config`)
-    return new Sequelize(config.database, config.username, config.password, config)
+    return new Sequelize(config.database, config.username, config.password, sequelizeConfig)
   }
 }
 

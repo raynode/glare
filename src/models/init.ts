@@ -1,6 +1,6 @@
 
-import { sequelize } from 'services/db'
 import { config } from 'config'
+import { sequelize } from 'services/db'
 import { create } from 'services/logger'
 const log = create('models')
 
@@ -25,8 +25,4 @@ const associate = (modelName: string) => {
 
 Object.keys(models).forEach(associate)
 
-const sqlLogger = config.showSQL ? (sql: string) => log(sql) : false
-
-export const initialized = sequelize.sync({
-  logging: sqlLogger,
-})
+export const initialized = sequelize.sync({})

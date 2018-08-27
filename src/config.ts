@@ -1,11 +1,11 @@
 
+import { LogLevel } from '@raynode/nx-logger'
 import { config as dotEnv } from 'dotenv'
 
 dotEnv()
 
 export const config = {
   port: process.env.GLARE_PORT || 3421,
-  showSQL: false,
   sentry: {
     environment: process.env.NODE_ENV,
     dsn: process.env.SENTRY_GLARE_DNS,
@@ -20,6 +20,7 @@ export const config = {
     redirectUri: 'localhost:3003/settings',
   },
   sequelize: {
+    logLevel: 'debug', // LogLevel
     development: {
       use_env_variable: 'PGHOST_GLARE',
       dialect: 'postgres',

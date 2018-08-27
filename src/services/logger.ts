@@ -2,6 +2,7 @@
 import {
   configure,
   create,
+  DEBUG,
   join,
   LogLevel,
   split,
@@ -27,8 +28,9 @@ const levelToSeverity = (level: number): Severity => {
 }
 
 configure({
-  transport,
   namespace,
+  transport,
+  verbosity: DEBUG,
 })
 
 export const verbosityFilter = (verbosityCompare: (verbosity: number) => boolean) =>
@@ -50,19 +52,24 @@ export const attachSentryTransport = async () => {
 
   if(installed) {
     const sentryTransport = async (configuration, messages, verbosity) => {
+      // initialize the event with namespaces
       const event: SentryEvent = {
         tags: {
           namespace: configuration.namespace.join('>'),
         },
       }
       if(typeof messages[0] === 'string') {
+        // if the message is a string, add message and level field
         event.message = messages.join(' ')
         event.level = levelToSeverity(configuration.verbosity)
       } else {
+        // else it is expected to be an Error instance, sentry delivers a parseError method to handle this
+        // level is not needed when sending an exception
         const parsedEvent = await parseError(messages[0])
         event.exception = parsedEvent.exception
       }
-      captureEvent(event)
+      // send the event via sentry
+      return captureEvent(event)
     }
 
     log.update({
