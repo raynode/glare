@@ -46,7 +46,7 @@ export const server = async (log: Log) => {
   }
 
   const server = new ApolloServer({
-    cors: false,
+    cors: true,
     schema,
     tracing: true,
     playground: {
