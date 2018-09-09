@@ -19,11 +19,11 @@ export interface PostAttributes extends Partial<Node> {
 export type PostInstance = Instance<PostAttributes> & PostAttributes
 
 const attributes: SequelizeAttributes<PostAttributes> = {
-  stub: { type: DataTypes.STRING, allowNull: false },
-  title: { type: DataTypes.STRING, allowNull: false },
-  image: { type: DataTypes.STRING },
-  published: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
-  userId: { type: DataTypes.UUID, allowNull: false },
+  stub: { type: Sequelize.STRING, allowNull: false },
+  title: { type: Sequelize.STRING, allowNull: false },
+  image: { type: Sequelize.STRING },
+  published: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false },
+  userId: { type: Sequelize.UUID, allowNull: false },
 }
 export const Post = sequelize.define<PostInstance, PostAttributes>('Post', attributes)
 

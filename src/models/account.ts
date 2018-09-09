@@ -18,7 +18,7 @@ export interface AccountAttributes extends Partial<Node> {
 export type AccountInstance = Sequelize.Instance<AccountAttributes> & AccountAttributes
 
 const attributes: SequelizeAttributes<AccountAttributes> = {
-  amount: { type: DataTypes.DECIMAL, allowNull: false },
+  amount: { type: Sequelize.DECIMAL, allowNull: false },
 }
 
 export const Account = sequelize.define<AccountInstance, AccountAttributes>('Account', attributes)

@@ -16,9 +16,9 @@ export interface ArticleAttributes extends Partial<Node> {
 export type ArticleInstance = Sequelize.Instance<ArticleAttributes> & ArticleAttributes
 
 const attributes: SequelizeAttributes<ArticleAttributes> = {
-  name: { type: DataTypes.STRING, allowNull: false },
-  userId: { type: DataTypes.UUID, allowNull: false },
-  url: { type: DataTypes.STRING, allowNull: false, primaryKey: true },
+  name: { type: Sequelize.STRING, allowNull: false },
+  userId: { type: Sequelize.UUID, allowNull: false },
+  url: { type: Sequelize.STRING, allowNull: false, primaryKey: true },
 }
 
 export const Bookmark = sequelize.define<ArticleInstance, ArticleAttributes>('Bookmark', attributes)

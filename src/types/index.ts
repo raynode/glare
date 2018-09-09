@@ -14,13 +14,13 @@ const log = create('types')
 
 const all = [
   root,
-  account,
-  expense,
+  // account,
+  // expense,
   user,
-  tag,
-  // widget,
-  post,
-  // widgetGroup,
+  // tag,
+  // # widget,
+  // post,
+  // # widgetGroup,
 ]
 
 const extendBaseBlock = (base: BaseBlock<any>) => (name: string) => (block: Block<any>) => {

@@ -4,7 +4,8 @@ input AUTH_PROVIDER {
 }
 
 input userInput {
-  email: String!
+  id: ID
+  email: String
 }
 
 input findUserByEmailInput {
@@ -21,6 +22,23 @@ input UserCreate {
   locale: String
   email: String!
   emailVerified: Boolean
+}
+
+input UserUpdate {
+  id: ID!
+  givenName: String
+  familyName: String
+  nickname: String
+  name: String
+  picture: String
+  gender: String
+  locale: String
+  email: String
+  emailVerified: Boolean
+}
+input UserDelete {
+  id: ID
+  email: String
 }
 
 type User implements Node @model {
@@ -43,11 +61,12 @@ extend type Query {
   findUserByEmail(input: findUserByEmailInput!): User
   me: User
   users: [User!]!
-  user(input: userInput!): User
+  user(input: userInput): User
 }
 
 extend type Mutation {
   # userLogin(input: AUTH_PROVIDER!): User
   userCreate(input: UserCreate!): User
+  userUpdate(input: UserUpdate!): User
+  userDelete(input: UserDelete!): User
 }
-

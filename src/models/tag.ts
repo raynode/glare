@@ -41,13 +41,13 @@ const tagAttributes: SequelizeAttributes<TagAttributes> = {
     type: Sequelize.UUID,
   },
   normalized: {
-    type: DataTypes.STRING,
+    type: Sequelize.STRING,
     allowNull: false,
     unique: true,
     primaryKey: true,
   },
   tag: {
-    type: DataTypes.STRING,
+    type: Sequelize.STRING,
     allowNull: false,
     unique: true,
     primaryKey: true,

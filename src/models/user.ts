@@ -7,12 +7,14 @@ import { PostInstance } from 'models/post'
 import { TagInstance } from 'models/tag'
 
 export interface UserAttributes extends Partial<Node> {
+  id: string
   givenName: string
   familyName: string
   nickname: string
   name?: string
   picture: string
   gender: string
+  state: 'admin' | 'member' | 'guest' // admin, verified, unverified
   locale: string
   email: string
   emailVerified: boolean
@@ -29,24 +31,42 @@ export interface UserAttributes extends Partial<Node> {
 export type UserInstance = Sequelize.Instance<UserAttributes> & UserAttributes
 
 const attributes: SequelizeAttributes<UserAttributes> = {
-  givenName: { type: DataTypes.STRING, allowNull: true },
-  familyName: { type: DataTypes.STRING, allowNull: true },
-  nickname: { type: DataTypes.STRING, allowNull: true },
-  name: { type: DataTypes.STRING, allowNull: false },
-  picture: { type: DataTypes.STRING, allowNull: true },
-  gender: { type: DataTypes.STRING, allowNull: true },
-  locale: { type: DataTypes.STRING, allowNull: true },
+  id: {
+    type: Sequelize.UUID,
+    allowNull: false,
+    primaryKey: true,
+    unique: true,
+    comment: 'Id of the user',
+    defaultValue: Sequelize.fn('gen_random_uuid'),
+  },
+  state: {
+    type: Sequelize.ENUM('admin', 'member', 'guest'),
+    allowUpdates: false,
+  },
+  givenName: { type: Sequelize.STRING, allowNull: true },
+  familyName: { type: Sequelize.STRING, allowNull: true },
+  nickname: { type: Sequelize.STRING, allowNull: true },
+  name: { type: Sequelize.STRING, allowNull: false },
+  picture: { type: Sequelize.STRING, allowNull: true },
+  gender: { type: Sequelize.STRING, allowNull: true },
+  locale: { type: Sequelize.STRING, allowNull: true },
   email: {
-    type: DataTypes.STRING,
+    type: Sequelize.STRING,
     allowNull: false,
     unique: true,
     set(val) {
       this.setDataValue('email', val.toLowerCase())
     },
   },
-  emailVerified: { type: DataTypes.BOOLEAN, allowNull: true },
+  emailVerified: { type: Sequelize.BOOLEAN, allowNull: true },
 }
 
 export const User = sequelize.define<UserInstance, UserAttributes>('User', attributes)
 
-User.associate = models => {}
+export const Actions = {
+  findAll: () => User.findAll(),
+  findById: (id: string) => User.findById(id),
+  findByEmail: (email: string) => User.findOne({ where: { email }}),
+}
+
+User.associate = models => { /**/ }

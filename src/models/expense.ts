@@ -20,9 +20,9 @@ export interface ExpenseAttributes extends Partial<Node> {
 export type ExpenseInstance = Sequelize.Instance<ExpenseAttributes> & ExpenseAttributes
 
 const attributes: SequelizeAttributes<ExpenseAttributes> = {
-  amount: { type: DataTypes.DECIMAL, allowNull: false },
-  accountId: { type: DataTypes.UUID, allowNull: false },
-  userId: { type: DataTypes.UUID, allowNull: false },
+  amount: { type: Sequelize.DECIMAL, allowNull: false },
+  accountId: { type: Sequelize.UUID, allowNull: false },
+  userId: { type: Sequelize.UUID, allowNull: false },
 }
 
 export const Expense = sequelize.define<ExpenseInstance, ExpenseAttributes>('Expense', attributes)
