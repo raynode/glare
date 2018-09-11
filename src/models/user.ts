@@ -41,6 +41,7 @@ const attributes: SequelizeAttributes<UserAttributes> = {
   },
   state: {
     type: Sequelize.ENUM('admin', 'member', 'guest'),
+    defaultValue: 'guest',
     allowUpdates: false,
   },
   givenName: { type: Sequelize.STRING, allowNull: true },

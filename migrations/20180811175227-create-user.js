@@ -33,6 +33,10 @@ module.exports = {
       locale: {
         type: Sequelize.STRING,
       },
+      state: {
+        type: Sequelize.ENUM('admin', 'member', 'guest'),
+        defaultValue: 'guest',
+      },
       email: {
         allowNull: false,
         type: Sequelize.STRING,

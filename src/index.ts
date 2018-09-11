@@ -5,8 +5,10 @@ import { attachSentryTransport, log } from 'services/logger'
 import { ApolloServer, gql } from 'apollo-server'
 import { initialized, models } from 'models/init'
 // import { bindingGenerator } from 'services/sequelize-graphql-binding'
-import { buildGraphQL } from './services/graphql-binding'
 import { convertToModel } from 'services/graphql-binding/convert-to-model'
+import { buildGraphQL } from './services/graphql-binding'
+
+import { map } from 'lodash'
 
 import {
   GraphQLID,
@@ -21,14 +23,10 @@ const main = async () => {
   await initialized
   // const binding = bindingGenerator()
 
-  const UserModel = convertToModel(models.User)
-  const AccountModel = convertToModel(models.Account)
-
-  const bindings = buildGraphQL([
-    AccountModel,
-    UserModel,
-    convertToModel(models.Post),
-  ])
+  const bindings = buildGraphQL(map(models, convertToModel))
+  // const bindings = buildGraphQL([
+  //   convertToModel(models.User),
+  // ])
 
   console.log(bindings)
   // const schema = null
@@ -41,15 +39,15 @@ const main = async () => {
       name: 'Query',
       fields: queryFields,
     }),
-    // mutation: new GraphQLObjectType({
-    //   name: 'Mutation',
-    //   fields: mutationFields,
-    // }),
+    mutation: new GraphQLObjectType({
+      name: 'Mutation',
+      fields: mutationFields,
+    }),
   })
 
   try {
     console.log('--- === === === printSchema(schema) === === === ---')
-    console.log(printSchema(schema))
+    // console.log(printSchema(schema))
   } catch(e) {
     console.log(e)
     console.log(e.stack)

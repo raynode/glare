@@ -1,6 +1,9 @@
 
 import {
+  GraphQLFieldResolver,
+  GraphQLInputObjectType,
   GraphQLInputType,
+  GraphQLObjectType,
   GraphQLOutputType,
   GraphQLType,
 } from 'graphql'
@@ -34,20 +37,41 @@ export type Field = BaseField & GraphQLOutputType & GraphQLInputType
 export interface BaseField {
   type: GraphQLType
   args?: Record<string, any>
+  resolve: GraphQLFieldResolver<any, any>
   description?: string
 }
 
 export interface Association {
+  as: string
+  single: boolean
   source: Model
   target: Model
 }
 export type Associations = Record<string, Association>
 
+export type OrderDirections = 'ASC' | 'DESC'
+export type FindFn<Result> = (
+  where: any,
+  order: Dictionary<OrderDirections>,
+  offset: number,
+  limit: number,
+) => Promise<Result>
+
 export interface Model {
+  initialized?: boolean
   name: string
   attributes: Attributes
   associations: Associations
   inspect?: () => string
+  findOne: FindFn<any>
+  findMany: FindFn<any[]>
+  deleteMany: FindFn<any[]>
+  updateOne: FindFn<any>
+  fields?: Dictionary<BaseField>
+  filterFields?: Dictionary<BaseField>
+  type?: GraphQLObjectType
+  listType?: GraphQLObjectType
+  where?: { type: GraphQLInputObjectType }
 }
 export type Models = Record<string, Model>
 

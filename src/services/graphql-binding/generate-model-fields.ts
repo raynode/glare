@@ -61,7 +61,7 @@ export const generateModelFilters = (model: Model, config: BuildConfiguration): 
     filters: true,
   }), {})
 
-const WITH_DESC = !false
+const WITH_DESC = false
 
 const generateListFilters = <Type>(field: string, type: BaseField) => ({
   [`${field}_in`]: { ...type, description: WITH_DESC && `${field} is found in this list` },
@@ -78,9 +78,9 @@ const generateArithmeticFilters = <Type>(field: string, type: BaseField) => ({
 
 const generateStringFilters = <Type>(field: string, type: BaseField) => ({
   [`${field}_contains`]: { ...type, description: WITH_DESC && `${field} contains this part` },
-  [`${field}_not_contains`]: { ...type, description: WITH_DESC && `${field} does not contain this part` },
+  // [`${field}_not_contains`]: { ...type, description: WITH_DESC && `${field} does not contain this part` },
   [`${field}_starts_with`]: { ...type, description: WITH_DESC && `${field} starts with this part` },
-  [`${field}_not_starts_with`]: { ...type, description: WITH_DESC && `${field} does not start with this part` },
+  // [`${field}_not_starts_with`]: { ...type, description: WITH_DESC && `${field} does not start with this part` },
   [`${field}_ends_with`]: { ...type, description: WITH_DESC && `${field} ends with this part` },
-  [`${field}_not_ends_with`]: { ...type, description: WITH_DESC && `${field} does not end with this part` },
+  // [`${field}_not_ends_with`]: { ...type, description: WITH_DESC && `${field} does not end with this part` },
 })

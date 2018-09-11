@@ -1,4 +1,3 @@
-'use strict';
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
@@ -8,6 +7,7 @@ module.exports = {
       familyName: 'Kopelke',
       nickname: 'Nox',
       name: 'Tobias',
+      state: 'admin',
       picture: 'none...',
       email: 'nox@raynode.de',
       emailVerified: true,
@@ -16,6 +16,7 @@ module.exports = {
       familyName: 'Test',
       nickname: 'TTest',
       name: 'Mr. Test',
+      state: 'member',
       picture: 'none...',
       email: 'test@raynode.de',
       emailVerified: true,
@@ -62,7 +63,7 @@ module.exports = {
       userId,
     }])
 
-    const getTagId = (tag: string) => queryInterface.rawSelect('Tags', { where: { tag }}, ['id'])
+    const getTagId = tag => queryInterface.rawSelect('Tags', { where: { tag }}, ['id'])
 
     const postId = await queryInterface.rawSelect('Posts', {
       where: {

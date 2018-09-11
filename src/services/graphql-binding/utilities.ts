@@ -25,5 +25,7 @@ export const arrayConcat = <Type>(array: Type[][]): Type[] =>
   [].concat.apply([], array)
 
 // convert an GraphGLType to a List of the same Type
-export const toGraphQLList = <Result extends GraphQLType = GraphQLType>(type: GraphQLType): Result =>
-  new GraphQLList(new GraphQLNonNull(type)) as any
+export const toGraphQLList = <Result extends GraphQLType = GraphQLType>(type: GraphQLType, nonNull = false): Result =>
+  nonNull
+  ? new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(type))) as any
+  : new GraphQLList(new GraphQLNonNull(type)) as any

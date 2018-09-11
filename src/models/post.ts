@@ -1,10 +1,18 @@
 
-import { DataTypes, Node, sequelize, Instance, Sequelize, SequelizeAttributes } from 'services/db'
+import {
+  DataTypes,
+  Instance,
+  Node,
+  sequelize,
+  Sequelize,
+  SequelizeAttributes,
+} from 'services/db'
 
 import { TagInstance } from 'models/tag'
 import { UserInstance } from 'models/user'
 
 export interface PostAttributes extends Partial<Node> {
+  id: string
   stub: string
   title: string
   userId: string
@@ -19,6 +27,14 @@ export interface PostAttributes extends Partial<Node> {
 export type PostInstance = Instance<PostAttributes> & PostAttributes
 
 const attributes: SequelizeAttributes<PostAttributes> = {
+  id: {
+    type: Sequelize.UUID,
+    allowNull: false,
+    primaryKey: true,
+    unique: true,
+    comment: 'Id of the user',
+    defaultValue: Sequelize.fn('gen_random_uuid'),
+  },
   stub: { type: Sequelize.STRING, allowNull: false },
   title: { type: Sequelize.STRING, allowNull: false },
   image: { type: Sequelize.STRING },

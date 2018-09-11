@@ -1,10 +1,11 @@
 
 import { convertAttributeToField } from './convert-attribute-to-field'
+import { generateModelArgsParser } from './generate-model-args-parser'
 import { generateModelAssociationFields } from './generate-model-association-fields'
 import { generateModelFields, generateModelFilters } from './generate-model-fields'
 import * as guards from './sequelize-type-guards'
 import { toGraphQL } from './type-mapper'
-import { BuildConfiguration, Field, ListItem, Model, ThunkField } from './types'
+import { Association, BuildConfiguration, Field, ListItem, Model, ThunkField } from './types'
 import { listReducer, toGraphQLList } from './utilities'
 
 import {
@@ -88,90 +89,81 @@ export const createOutputObject = (name: string, fields: Dictionary<Field | Thun
     fields: fieldResolver(name, fields, isOutputType, 'Fields did include a non-output field!') as any,
   })
 
-// const createLinkFieldFactory = (modelTypes: Dictionary<Field>) => (name: string, field: string) => ({
-//   [name]: () => modelTypes[field],
-// })
+export const generateInitialModelData = (configuration: BuildConfiguration) => (model: Model) => {
+  console.log('===> ', model.name)
+  if(model.initialized)
+    return model
+  model.initialized = true
+  model.fields = generateModelFields(model, configuration)
+  model.filterFields = generateModelFilters(model, configuration)
 
-// const createModelTypesReducer = (linkFieldFactory: (name: string, field: string) => Dictionary<ThunkField>) =>
-//   (state: Dictionary<ThunkField>, modelName: string) => ({
-//     ...state,
-//     ...linkFieldFactory(modelName, modelName),
-//   })
+  model.type = new GraphQLObjectType({
+    name: model.name,
+    fields: () => model.fields as GraphQLFieldConfigMap<any, any>,
+  })
+  model.listType = toGraphQLList(model.type, true)
+  model.where = {
+    type: new GraphQLInputObjectType({
+      name: `${model.name}Filter`,
+      fields: () => model.filterFields as GraphQLInputFieldConfigMap,
+    }),
+  }
+  return model
+}
 
-// const getAssociationFields = (associations: string[], modelTypes: Dictionary<GraphQLObjectType>) => {
-//   const x = createLinkFieldFactory(modelTypes as any)
-//   const r = createModelTypesReducer(createLinkFieldFactory(modelTypes as any))
-//   const xy: Dictionary<ThunkField> = associations.reduce((memo: Dictionary<ThunkField>, modelName) => ({
-//     ...memo,
-//     ...x(modelName, modelName),
-//   }), {})
-//   const res = mapValues(keyBy(associations.map(modelName => ({
-//     key: modelName,
-//     type: () => modelTypes[modelName],
-//   })), 'key'), 'type')
-//   console.log(res)
-//   console.log(xy)
-//   return xy
-// }
+export const addModelToFields = (model: Model, initialModelData: (model: Model) => Model) =>
+  (association: Association) => {
+    const targetModel = initialModelData(association.target)
+    model.fields[association.as] = {
+      type: association.single ? targetModel.type : targetModel.listType,
+      // args: { where: targetModel.where },
+      resolve: async (instance, args) => {
+        const fn = `get${capitalize(association.as)}`
+        if(!instance[fn])
+          throw new Error(`Problems with ${model.name}:${targetModel.name}`)
+        return instance[fn]()
+      },
+    }
+  }
 
 export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
   const configuration = { ...defaultBuildConfiguration, ...config }
-  // const fields: Dictionary<Dictionary<Dictionary<any>>> = {}
-  // const filters: Dictionary<Dictionary<Field>> = {}
-  // const modelTypes: Dictionary<any> = {}
-  // const linkFieldFactory = createLinkFieldFactory(modelTypes)
-
-  // models.forEach(model => {
-  //   fields[model.name] = {
-  //     basic: generateModelFields(model, configuration),
-  //   }
-  // })
-
-  // models.forEach(model => {
-  //   fields[model.name].withAssociations = {
-  //     ...fields[model.name].basic,
-  //     ...getAssociationFields(generateModelAssociationFields(model, models, configuration), modelTypes),
-  //   }
-  //   fields[model.name].extended = {
-  //     ...fields[model.name].basic,
-  //     ...linkFieldFactory('AND', `${model.name}Filter`),
-  //   }
-  // })
+  const initialModelData = generateInitialModelData(configuration)
+  models.forEach(initialModelData)
+  models.forEach(model => map(model.associations, addModelToFields(model, initialModelData)))
 
   const bindings = models.reduce((memo: Binding, model) => {
+    const argsParser = generateModelArgsParser(config, model)
 
-    const fields = generateModelFields(model, configuration)
-    const filterFields = generateModelFilters(model, configuration)
-
-    // const filterType = new GraphQLObjectType({ name: model.name, fields: () => fields })
-    // const filterTypeList = toGraphQLList<GraphQLInputType>(filterType)
-    // const inputFieldConfig = {
-    //   AND: { type: filterTypeList },
-    //   OR: { type: filterTypeList },
-    // }
-
-    const type = new GraphQLObjectType({
-      name: model.name,
-      fields: () => fields as GraphQLFieldConfigMap<any, any>,
-    })
-    // const listType = toGraphQLList(type)
-    // const where = { type: createInputObject(`${model.name}Filter`, fields)}
-    // const update = {}
-
-    // modelTypes[`${model.name}Basic`] = type
-    // modelTypes[`${model.name}Filter`] = type
-    // modelTypes[`${model.name}`] = { type, args: { where } }
-    const where = new GraphQLInputObjectType({
-      name: `${model.name}Filter`,
-      fields: () => filterFields as GraphQLInputFieldConfigMap,
-    })
-    // const order = undefined
-    memo.queryFields[`${model.name}`] = { type, args: { where: { type: where } }}
+    memo.queryFields[`${model.name}`] = {
+      type: model.type,
+      args: { where: model.where },
+      resolve: async (_, args) => {
+        console.log(`find: ${model.name}`, args)
+        const where = argsParser(args.where)
+        console.log(where)
+        const data = await model.findOne(where, null, 0, 100)
+        console.log(data)
+        return data
+      },
+    }
     // memo.queryFields[`${model.name}`] = { type, args: { where } }
-    // memo.queryFields[`${pluralize(name)}`] = { type: new GraphQLNonNull(listType), args: { where }}
+    memo.queryFields[`${pluralize(model.name)}`] = {
+      type: model.listType,
+      args: { where: model.where },
+      resolve: async (_, args) => {
+        console.log(`find all: ${model.name}s`, args)
+        const where = argsParser(args.where)
+        console.log(where)
+        const data = await model.findMany(where, null, 0, 100)
+        console.log(data.length)
+        return data
+      },
+    }
 
-    // memo.mutationFields[`update${model.name}`] = { type }
-    //   // [`delete${pluralize(name)}`]: { type: many, args: { where }}
+    memo.mutationFields[`create${model.name}`] = { type: model.type, args: { where: model.where }}
+    memo.mutationFields[`update${model.name}`] = { type: model.type, args: { where: model.where }}
+    memo.mutationFields[`delete${pluralize(model.name)}`] = { type: model.listType, args: { where: model.where }}
 
     return memo
   }, {

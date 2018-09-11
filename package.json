@@ -5,9 +5,11 @@
   "main": "index.js",
   "scripts": {
     "dev": "DEBUG='glare*' npx nodemon",
-    "pregql2ts": "rm -rf src/gql-types.d.ts",
-    "gql2ts": "find ./src -type f -name '*.schema.graphql' -exec cat \\{\\} \\+ | ./node_modules/.bin/gql2ts > src/gql-types.d.ts",
     "start": "ts-node -r tsconfig-paths/register src",
+    "migrations:undo": "sequelize db:migrate:undo:all",
+    "migrations:all": "sequelize db:migrate",
+    "migrations:seed": "sequelize db:seed:all",
+    "migrations": "npm run migrations:undo; npm run migrations:all; npm run migrations:seed",
     "test": "jest",
     "test:watch": "jest --watch"
   },
