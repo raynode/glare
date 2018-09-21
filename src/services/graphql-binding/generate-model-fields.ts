@@ -1,86 +1,173 @@
 
-import { convertAttributeToField } from './convert-attribute-to-field'
+import {
+  GraphQLInputFieldConfig,
+  GraphQLInputFieldConfigMap,
+  GraphQLInputType,
+  isInputType,
+} from 'graphql'
+
 import {
   Attribute,
   BaseField,
   BuildConfiguration,
   Field,
-  FieldFactory,
-  ListItem,
   Model,
 } from './types'
-import { arrayConcat, listMapFn, toGraphQLList } from './utilities'
 
-import { GraphQLType } from 'graphql'
-import { collectionGenerator } from './collections'
+import {
+  nonNullGraphQL,
+  toGraphQLList,
+} from './utilities'
 
-import { Dictionary, flatMap, keyBy, mapValues, reduce } from 'lodash'
+import {
+  Dictionary,
+  filter,
+  forEach,
+  mapValues,
+  pickBy,
+  reduce,
+} from 'lodash'
 
-export interface AttributeFlags {
-  filters: boolean
+interface FieldGroup {
+  name: string
+  field: BaseField
+  attribute: Attribute
 }
 
-const paddedAttributeGraphQLMapper = (model: Model, config: BuildConfiguration) =>
-  (attribute: Attribute, name: string) => config.attributeGraphQLMapper(name, attribute, model, config)
+export const mapToGraphQLInputFieldConfigMap = (fields: Dictionary<BaseField>): GraphQLInputFieldConfigMap =>
+  // filter all not input types, cast to any as typescript does not recognize this
+  pickBy(fields, field => isInputType(field.type)) as any
 
-const createAttributeMapper = (model: Model, config: BuildConfiguration, flags: AttributeFlags) =>
-  (fields: Dictionary<BaseField>, attribute: Attribute, name: string) => {
-    const { type } = attribute
+export type AttributeModifier = (field: FieldGroup, config: BuildConfiguration) => Dictionary<FieldGroup>
+export type FieldsModifier = (fields: Dictionary<FieldGroup>, config: BuildConfiguration) => Dictionary<FieldGroup>
 
-    if(!config.isAttributeVisible(type))
-      return fields
+export type FieldsMapper = (groups: Dictionary<FieldGroup>) => Dictionary<FieldGroup>
+export type FieldGroupUpdater = (group: FieldGroup, name: string) => Dictionary<FieldGroup>
+export type FieldGroupsUpdater = (groups: Dictionary<FieldGroup>, name: string, group: FieldGroup) =>
+  Dictionary<FieldGroup>
 
-    const field = config.attributeGraphQLMapper(name, attribute, model, config)
+const groupsToFields = (groups: Dictionary<FieldGroup>): Dictionary<BaseField> =>
+  mapValues(groups, group => group.field)
 
-    // add the basic type
-    fields[name] = field
+const createGroupGenerator = (model: Model, config: BuildConfiguration) => (attribute: Attribute, name: string) => ({
+  name,
+  attribute,
+  field: config.attributeGraphQLMapper(name, attribute, model, config),
+})
 
-    // add filter fields?
-    if(flags.filters) {
-      // add all extras for arithmetic filter
-      if(config.isArithmeticAttribute(type))
-        Object.assign(fields, generateArithmeticFilters(name, field))
-      // add all extras for string filter
-      if(config.isStringAttribute(type))
-        Object.assign(fields, generateStringFilters(name, field))
-      // add all extras for list filter
-      if(config.isListAttribute(type))
-        Object.assign(fields, generateListFilters(name, { type: toGraphQLList(field.type) }))
-    }
-    return fields
+export const attributeModifiersToFieldsModifier = (attributeModifiers: AttributeModifier[]): FieldsModifier =>
+  (fields, config) => reduce(fields, (fields: Dictionary<FieldGroup>, field) =>
+    attributeModifiers.reduce((fields, attributeModifier) => ({
+      ...fields,
+      ...attributeModifier(field, config),
+    }), fields), fields)
+
+export const attributeModifiersToFieldsModifierX = (attributeModifiers: AttributeModifier[]): FieldsModifier =>
+  (fields, config) =>
+    reduce(attributeModifiers, (fields, attributeModifier) =>
+      reduce(fields, (fields, field) => ({ ...fields, ...attributeModifier(field, config) }), {})
+    , fields)
+
+export const toFieldDictonary = (field: FieldGroup) => ({ [field.name]: field })
+export const toFieldDictonaryWithNameDesc = ({ attribute, field }: FieldGroup, name: string, description: string) =>
+  toFieldDictonary({
+    attribute,
+    field: { ...field, description },
+    name,
+  })
+
+export const allAttributes: AttributeModifier = ({ attribute, field, name }) => toFieldDictonary({
+  name,
+  attribute,
+  field,
+})
+
+export const fieldGenerator = (fields: Dictionary<FieldGroup>, config: BuildConfiguration) =>
+  (attributeModifiers: AttributeModifier[] = [], fieldsModifiers: FieldsModifier[] = []) =>
+    groupsToFields(reduce(
+      // walk through the modifiers
+      [attributeModifiersToFieldsModifier(attributeModifiers), ...fieldsModifiers],
+      // apply each
+      (groups, modifier) => modifier(groups, config),
+      // for a copy of all the fields
+      { ...fields },
+    ))
+
+export const createFieldsGenerator = (model: Model, config: BuildConfiguration) =>
+  fieldGenerator(mapValues(model.attributes, createGroupGenerator(model, config)), config)
+
+export const toListFieldGroup = (field: FieldGroup): FieldGroup =>
+  ({ ...field, field: {...field.field, type: toGraphQLList(field.field.type)} })
+
+export const requiredAttributeModifier: AttributeModifier = ({ attribute, field, name }) => toFieldDictonary({
+  name,
+  attribute,
+  field: attribute.allowNull ? field : { ...field, type: nonNullGraphQL(field.type) },
+})
+
+export const listAttributeTypeModifier: AttributeModifier = ({ attribute, field, name }, config) => toFieldDictonary({
+  name,
+  attribute,
+  field: config.isListAttribute(attribute.type) ? { ...field, type: toGraphQLList(field.type) } : field,
+})
+
+export const stringAttributeModifier: AttributeModifier = (field, config) =>
+  !config.isStringAttribute(field.attribute.type) ? toFieldDictonary(field) : {
+    ...toFieldDictonaryWithNameDesc(field, `${field.name}_contains`, `${field.name} contains this part`),
+    ...toFieldDictonaryWithNameDesc(field, `${field.name}_starts_with`, `${field.name} starts with this part`),
+    ...toFieldDictonaryWithNameDesc(field, `${field.name}_ends_with`, `${field.name} ends with this part`),
   }
 
-// const cache = collectionGenerator<Array<ListItem<Field>>>({})
-export const generateModelFields = (model: Model, config: BuildConfiguration): Dictionary<BaseField> =>
-  reduce(model.attributes, createAttributeMapper(model, config, {
-    filters: false,
-  }), {})
+export const listAttributeModifier: AttributeModifier = (field, config) =>
+  !config.isListAttribute(field.attribute.type) ? toFieldDictonary(field) : {
+    ...toFieldDictonaryWithNameDesc(
+      toListFieldGroup(field), `${field.name}_in`, `${field.name} is found in this list`,
+    ),
+    ...toFieldDictonaryWithNameDesc(
+      toListFieldGroup(field), `${field.name}_not_in`, `${field.name} is not found in this list`,
+    ),
+  }
 
-export const generateModelFilters = (model: Model, config: BuildConfiguration): Dictionary<BaseField> =>
-  reduce(model.attributes, createAttributeMapper(model, config, {
-    filters: true,
-  }), {})
+export const arithmeticAttributeModifier: AttributeModifier = (field, config) =>
+  !config.isArithmeticAttribute(field.attribute.type) ? toFieldDictonary(field) : {
+    ...toFieldDictonaryWithNameDesc(field, `${field.name}_not`, `${field.name} is not this value`),
+    ...toFieldDictonaryWithNameDesc(field, `${field.name}_lt`, `${field.name} is less than this value`),
+    ...toFieldDictonaryWithNameDesc(field, `${field.name}_lte`, `${field.name} is less or equal than this value`),
+    ...toFieldDictonaryWithNameDesc(field, `${field.name}_gt`, `${field.name} is greater than this value`),
+    ...toFieldDictonaryWithNameDesc(field, `${field.name}_gte`, `${field.name} is greater or equal than this value`),
+  }
 
-const WITH_DESC = false
+const filterFields = (fields: Dictionary<FieldGroup>, fieldFilter: (field: FieldGroup) => boolean) => {
+  const result: Dictionary<FieldGroup> = {}
+  filter(fields, fieldFilter).forEach(field => result[field.name] = field)
+  return result
+}
 
-const generateListFilters = <Type>(field: string, type: BaseField) => ({
-  [`${field}_in`]: { ...type, description: WITH_DESC && `${field} is found in this list` },
-  [`${field}_not_in`]: { ...type, description: WITH_DESC && `${field} is not found in this list` },
-})
+export const createFilterModifier = (fieldFilter: (field: FieldGroup) => boolean): FieldsModifier =>
+  fields => filterFields(fields, fieldFilter)
 
-const generateArithmeticFilters = <Type>(field: string, type: BaseField) => ({
-  [`${field}_not`]: { ...type, description: WITH_DESC && `${field} is not this value` },
-  [`${field}_lt`]: { ...type, description: WITH_DESC && `${field} is less than this value` },
-  [`${field}_lte`]: { ...type, description: WITH_DESC && `${field} is less or equal than this value` },
-  [`${field}_gt`]: { ...type, description: WITH_DESC && `${field} is greater than this value` },
-  [`${field}_gte`]: { ...type, description: WITH_DESC && `${field} is greater or equal than this value` },
-})
+export const orderAttributeModifier: AttributeModifier = (field, config) => toFieldDictonary(field)
 
-const generateStringFilters = <Type>(field: string, type: BaseField) => ({
-  [`${field}_contains`]: { ...type, description: WITH_DESC && `${field} contains this part` },
-  // [`${field}_not_contains`]: { ...type, description: WITH_DESC && `${field} does not contain this part` },
-  [`${field}_starts_with`]: { ...type, description: WITH_DESC && `${field} starts with this part` },
-  // [`${field}_not_starts_with`]: { ...type, description: WITH_DESC && `${field} does not start with this part` },
-  [`${field}_ends_with`]: { ...type, description: WITH_DESC && `${field} ends with this part` },
-  // [`${field}_not_ends_with`]: { ...type, description: WITH_DESC && `${field} does not end with this part` },
-})
+export const removeDescriptionAttributeModifier: AttributeModifier = field => {
+  delete field.field.description
+  return toFieldDictonary(field)
+}
+
+export const removeDescriptionModifier: FieldsModifier = (fields, config) => {
+  forEach(fields, field => removeDescriptionAttributeModifier(field, config))
+  return fields
+}
+
+export const removeNotUpdateableModifier: FieldsModifier = fields =>
+  filterFields(fields, ({ attribute }) => attribute.hasOwnProperty('allowUpdate') ? attribute.allowUpdate : true)
+
+export const AttributeModifiers = {
+  allAttributes,
+  arithmeticAttributeModifier,
+  listAttributeModifier,
+  listAttributeTypeModifier,
+  removeDescriptionAttributeModifier,
+  removeNotUpdateableModifier,
+  requiredAttributeModifier,
+  stringAttributeModifier,
+}

@@ -34,6 +34,7 @@ const attributes: SequelizeAttributes<UserAttributes> = {
   id: {
     type: Sequelize.UUID,
     allowNull: false,
+    allowUpdates: false,
     primaryKey: true,
     unique: true,
     comment: 'Id of the user',
@@ -60,6 +61,16 @@ const attributes: SequelizeAttributes<UserAttributes> = {
     },
   },
   emailVerified: { type: Sequelize.BOOLEAN, allowNull: true },
+  createdAt: {
+    allowNull: false,
+    type: Sequelize.DATE,
+    defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+  },
+  updatedAt: {
+    allowNull: false,
+    type: Sequelize.DATE,
+    defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+  },
 }
 
 export const User = sequelize.define<UserInstance, UserAttributes>('User', attributes)

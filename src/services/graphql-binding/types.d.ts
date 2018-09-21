@@ -1,9 +1,11 @@
 
 import {
+  GraphQLEnumType,
   GraphQLFieldResolver,
   GraphQLInputObjectType,
   GraphQLInputType,
   GraphQLObjectType,
+  GraphQLInputFieldConfigMap,
   GraphQLOutputType,
   GraphQLType,
 } from 'graphql'
@@ -25,6 +27,7 @@ export interface ListItem<Type> {
 
 export interface Attribute {
   allowUpdate: boolean
+  allowNull: boolean
   comment: string
   type: DBType
 }
@@ -37,7 +40,7 @@ export type Field = BaseField & GraphQLOutputType & GraphQLInputType
 export interface BaseField {
   type: GraphQLType
   args?: Record<string, any>
-  resolve: GraphQLFieldResolver<any, any>
+  resolve?: GraphQLFieldResolver<any, any>
   description?: string
 }
 
@@ -56,21 +59,51 @@ export type FindFn<Result> = (
   offset: number,
   limit: number,
 ) => Promise<Result>
+export type UpdateFn<Result> = (
+  where: any,
+  order: Dictionary<OrderDirections>,
+  data: any,
+) => Promise<Result>
 
-export interface Model {
-  initialized?: boolean
-  name: string
-  attributes: Attributes
+export interface Methods<Type> {
+  findMany: FindFn<Type[]>
+  findOne: FindFn<Type>
+  deleteMany: FindFn<Type[]>
+  update: UpdateFn<Type>
+}
+
+type ModelQueryName = 'findOne' | 'findMany'
+type ModelMutationNames = 'createOne' | 'updateOne' | 'deleteMany'
+type ModelSubsciptionNames = 'create' | 'update' | 'delete'
+type ModelInputNames = 'filters' | 'updateData' | 'createData'
+type ModelNames = ModelQueryName | ModelMutationNames | ModelSubsciptionNames | ModelInputNames
+
+type InputTypesNames = 'page' | 'create' | 'update'
+type OutputTypesNames = 'model' | 'list'
+type EnumTypesNames = 'order'
+
+export interface Model<Type = any> {
+  inputTypes?: Record<InputTypesNames, GraphQLInputObjectType>
+  outputTypes?: Record<OutputTypesNames, GraphQLObjectType>
+  enumTypes?: Record<EnumTypesNames, GraphQLEnumType>
+  fieldNames?: Record<InputTypesNames | OutputTypesNames | EnumTypesNames, string>
+
+  methods: Methods<Type>
+
   associations: Associations
-  inspect?: () => string
-  findOne: FindFn<any>
-  findMany: FindFn<any[]>
-  deleteMany: FindFn<any[]>
-  updateOne: FindFn<any>
+  attributes: Attributes
+  createFields?: Dictionary<BaseField>
+  createType?: GraphQLInputObjectType
   fields?: Dictionary<BaseField>
   filterFields?: Dictionary<BaseField>
-  type?: GraphQLObjectType
+  updateFields?: GraphQLInputFieldConfigMap
+  initialized?: boolean
+  inspect?: () => string
   listType?: GraphQLObjectType
+  name: string
+  names: Record<ModelNames, string>
+  type?: GraphQLObjectType
+  updateType?: GraphQLInputObjectType
   where?: { type: GraphQLInputObjectType }
 }
 export type Models = Record<string, Model>

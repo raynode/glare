@@ -8,6 +8,8 @@ import { initialized, models } from 'models/init'
 import { convertToModel } from 'services/graphql-binding/convert-to-model'
 import { buildGraphQL } from './services/graphql-binding'
 
+import { post } from 'request'
+
 import { map } from 'lodash'
 
 import {
@@ -23,12 +25,13 @@ const main = async () => {
   await initialized
   // const binding = bindingGenerator()
 
-  const bindings = buildGraphQL(map(models, convertToModel))
-  // const bindings = buildGraphQL([
-  //   convertToModel(models.User),
-  // ])
+  // const bindings = buildGraphQL(map(models, convertToModel))
+  const bindings = buildGraphQL([
+    convertToModel(models.User),
+    convertToModel(models.Post),
+  ])
 
-  console.log(bindings)
+  // console.log(bindings)
   // const schema = null
 
   // const { type: UserType, queryFields, mutationFields } = binding(models.User)
@@ -47,7 +50,7 @@ const main = async () => {
 
   try {
     console.log('--- === === === printSchema(schema) === === === ---')
-    // console.log(printSchema(schema))
+    console.log(printSchema(schema))
   } catch(e) {
     console.log(e)
     console.log(e.stack)
@@ -93,5 +96,58 @@ const main2 = async () => {
   })
 }
 
+const p = (query: string, variables = {}, operationName: string = null) => new Promise<any>(
+  resolve => {
+    // log(query, variables)
+    post(`http://localhost:${config.port}/`, {
+      body: { operationName, variables, query },
+      json: true,
+      headers: { 'accept': 'application/json', 'content-type': 'application/json' },
+    }, (err, res, body) => err ? resolve(err) : resolve(body.data))
+  })
+
 main()
 .catch(err => log.error('Main threw an error:', err))
+.then(async () => {
+  log('Trying:')
+
+  const user = await p(`{
+    User(where: {
+      state: member
+    }) {
+      __typename
+      id
+      name
+    }
+  }`)
+
+  log(user)
+  const name = user && user.name
+  const names = [
+    'Alfred',
+    'Berta',
+    'Cloe',
+    'Dieter',
+    'Emil',
+    'Frank',
+  ].filter(value => value !== name)
+  log(names)
+  const newName = names[Math.floor(Math.random() * 5)]
+  log(newName)
+  try {
+    const mutation = await p(`mutation UpdateUser($id: ID!, $name: String!) {
+      updateUser(
+        where: { id: $id }
+        data: { name: $name }
+      ) {
+        id
+        name
+      }
+    }`, {
+      id: user.User.id,
+      name: newName,
+    }, 'UpdateUser')
+    log('result:', mutation)
+  } catch(e) { log(e) }
+
+})

@@ -39,7 +39,7 @@ const attributes: SequelizeAttributes<PostAttributes> = {
   title: { type: Sequelize.STRING, allowNull: false },
   image: { type: Sequelize.STRING },
   published: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false },
-  userId: { type: Sequelize.UUID, allowNull: false },
+  userId: { type: Sequelize.UUID, allowNull: false, visible: false },
 }
 export const Post = sequelize.define<PostInstance, PostAttributes>('Post', attributes)
 

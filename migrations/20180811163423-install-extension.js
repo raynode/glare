@@ -7,12 +7,12 @@ module.exports = {
     await queryInterface.sequelize.query('CREATE EXTENSION IF NOT EXISTS pgcrypto;')
     queryInterface.sequelize.query(`
 CREATE OR REPLACE FUNCTION updateUpdatedAt()
-    RETURNS TRIGGER AS '
-  BEGIN
-    NEW.updatedAt = NOW();
-    RETURN NEW;
-  END;
-' LANGUAGE 'plpgsql'
+  RETURNS TRIGGER AS $$
+    BEGIN
+      NEW."updatedAt" = NOW();
+      RETURN NEW;
+    END;
+  $$ LANGUAGE 'plpgsql'
     `)
   },
   down: async (queryInterface, Sequelize) => {

@@ -4,7 +4,7 @@ export interface HandlerProps<Type, Result> {
   onAdd?: (name: string, type: Type) => Result
 }
 
-export const collectionGenerator = <Type extends {}, Result = Type>({
+export const collectionGenerator = <Type, Result = Type>({
   onAdd = (name, type): Result => type as any,
 }: HandlerProps<Type, Result>) => {
 
@@ -13,12 +13,14 @@ export const collectionGenerator = <Type extends {}, Result = Type>({
   const has = (name: string) => collection.hasOwnProperty(name)
   const get = (name: string) => collection[name]
   const add = (name: string, type: Type) => collection[name] = onAdd(name, type)
+  const ifn = (name: string, fn: () => Type) => has(name) ? get(name) : add(name, fn())
   const handle = (name: string, type: Type) =>
     has(name) ? get(name) : add(name, type)
 
   return {
     all,
     has,
+    ifn,
     get,
     add,
     handle,

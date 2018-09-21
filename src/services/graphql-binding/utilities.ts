@@ -24,8 +24,14 @@ export const arrayUnique = <Type>(array: Type[]): Type[] =>
 export const arrayConcat = <Type>(array: Type[][]): Type[] =>
   [].concat.apply([], array)
 
+export const nonNullGraphQL = <Result extends GraphQLType>(type: GraphQLType): Result =>
+  new GraphQLNonNull(type) as any
+
+export const graphQLList = <Result extends GraphQLType = GraphQLType>(type: GraphQLType): Result =>
+  new GraphQLList(nonNullGraphQL(type)) as any
+
 // convert an GraphGLType to a List of the same Type
 export const toGraphQLList = <Result extends GraphQLType = GraphQLType>(type: GraphQLType, nonNull = false): Result =>
   nonNull
-  ? new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(type))) as any
-  : new GraphQLList(new GraphQLNonNull(type)) as any
+  ? nonNullGraphQL(graphQLList(type))
+  : graphQLList(type)

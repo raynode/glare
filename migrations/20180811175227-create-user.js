@@ -58,9 +58,10 @@ module.exports = {
     })
 
     await queryInterface.sequelize.query(`
-      CREATE TRIGGER updateUpdatedAt BEFORE UPDATE
-        ON "public"."Users" FOR EACH ROW EXECUTE PROCEDURE
-          updateUpdatedAt()
+      CREATE TRIGGER updateUsersUpdatedAt
+        BEFORE UPDATE ON "public"."Users"
+          FOR EACH ROW
+            EXECUTE PROCEDURE updateUpdatedAt()
     `)
 
     await queryInterface.sequelize.query(`

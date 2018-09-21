@@ -35,7 +35,9 @@ export interface Node {
 }
 
 export interface DataAttributes extends Sequelize.DefineAttributeColumnOptions {
-  allowUpdates?: boolean
+  allowUpdates?: boolean // = true
+  required?: boolean // = false
+  visible?: boolean // = true
 }
 
 export type SequelizeAttributes<Attributes extends { [key: string]: any }> = {

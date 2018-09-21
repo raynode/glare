@@ -20,7 +20,7 @@ export const config = {
     redirectUri: 'localhost:3003/settings',
   },
   sequelize: {
-    logLevel: false, // 'debug', // LogLevel
+    logLevel: 'warn', // false, // 'debug', // LogLevel
     development: {
       use_env_variable: 'PGHOST_GLARE',
       dialect: 'postgres',

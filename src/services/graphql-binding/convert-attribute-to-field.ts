@@ -11,9 +11,9 @@ export const convertAttributeToField =
     const result: BaseField = {
       type: config.typeModelMapper(attribute.type),
     }
-
     if (result.type instanceof GraphQLEnumType) {
       const name = model.name
+      // @TODO update to use a method from config: config.enumNames
       const typeName = `${name}${capitalize(key)}EnumType`
       result.type = enums.handle(typeName, result.type)
     }
