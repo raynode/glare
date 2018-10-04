@@ -8,6 +8,7 @@ import {
   createFilterModifier,
   mapToGraphQLInputFieldConfigMap,
   removeDescriptionModifier,
+  removeInvisibleAttributes,
 } from './generate-model-fields'
 import * as guards from './sequelize-type-guards'
 import { toGraphQL } from './type-mapper'
@@ -75,32 +76,6 @@ interface Binding {
   mutationFields: Record<string, GraphQLFieldConfig<any, any>>
 }
 
-const isField = (field: Field | ThunkField): field is Field => !!(field as any).type
-
-export const fieldResolver = (
-  name: string,
-  fields: Dictionary<Field | ThunkField>,
-  filter: (val: any) => boolean,
-  error: string,
-) => (): Dictionary<Field> => {
-  const mappedFields = mapValues(fields, field => isField(field) ? field : field())
-  if(some(mappedFields, field => isInputType(field)))
-    throw new Error(error)
-  return mappedFields
-}
-
-export const createInputObject = (name: string, fields: Dictionary<Field | ThunkField >) =>
-  new GraphQLInputObjectType({
-    name,
-    fields: fieldResolver(name, fields, isInputType, 'Fields did include a non-input field!') as any,
-  })
-
-export const createOutputObject = (name: string, fields: Dictionary<Field | ThunkField>) =>
-  new GraphQLObjectType({
-    name,
-    fields: fieldResolver(name, fields, isOutputType, 'Fields did include a non-output field!') as any,
-  })
-
 export const generateInitialModelData = (configuration: BuildConfiguration) => (model: Model) => {
   if(model.initialized)
     return model
@@ -141,30 +116,31 @@ export const generateInitialModelData = (configuration: BuildConfiguration) => (
 
   model.fields = fieldsGenerator([
     AttributeModifiers.requiredAttributeModifier,
-  ], [ removeDescriptionModifier ])
+  ], [ removeInvisibleAttributes, removeDescriptionModifier ])
   model.createFields = fieldsGenerator([
     AttributeModifiers.requiredAttributeModifier,
   ], [
+    removeInvisibleAttributes,
     removeDescriptionModifier,
     AttributeModifiers.removeNotUpdateableModifier,
-    createFilterModifier(({ name }) => !/createdAt|updatedAt/.test(name)),
+    createFilterModifier(({ name }) => !/id|createdAt|updatedAt/.test(name)),
   ])
   model.updateFields = mapToGraphQLInputFieldConfigMap(fieldsGenerator([
-  ], [ removeDescriptionModifier ]))
+  ], [ removeInvisibleAttributes, removeDescriptionModifier ]))
   model.filterFields = fieldsGenerator([
     AttributeModifiers.listAttributeTypeModifier,
     AttributeModifiers.stringAttributeModifier,
     AttributeModifiers.listAttributeModifier,
     AttributeModifiers.arithmeticAttributeModifier,
-  ], [ removeDescriptionModifier ])
+  ], [ removeInvisibleAttributes, removeDescriptionModifier ])
 
-  const type = new GraphQLObjectType({
+  model.type = new GraphQLObjectType({
     name: model.name,
     fields: () => model.fields as GraphQLFieldConfigMap<any, any>,
   })
   model.outputTypes = {
-    list: outputTypes.ifn(model.fieldNames.list, () => toGraphQLList(type, true)),
-    model: outputTypes.ifn(model.fieldNames.model, () => type),
+    list: outputTypes.ifn(model.fieldNames.list, () => toGraphQLList(model.type, true)),
+    model: outputTypes.ifn(model.fieldNames.model, () => model.type),
   }
 
   const buildOrderEnum = (model: Model) => {
@@ -181,33 +157,36 @@ export const generateInitialModelData = (configuration: BuildConfiguration) => (
   model.enumTypes = {
     order: enumTypes.ifn(model.fieldNames.order, () => buildOrderEnum(model)),
   }
-
-  model.type = type
   model.createType = new GraphQLInputObjectType({
     name: model.names.createData,
     fields: () => {
       console.log('CREATE:', model.createFields)
+      console.log('NORMAL:', model.fields)
       return model.createFields as GraphQLInputFieldConfigMap
     },
   })
   model.listType = toGraphQLList(model.type, true)
-  model.where = {
-    type: new GraphQLInputObjectType({
-      name: model.names.filters,
-      fields: () => model.filterFields as GraphQLInputFieldConfigMap,
-    }),
-  }
   return model
 }
 
+// hier werden die Associazionen zu den fields etc hinzugefügt!
 export const addModelToFields = (model: Model, initialModelData: (model: Model) => Model) =>
-  (association: Association) => {
-    const targetModel = initialModelData(association.target)
-    model.fields[association.as] = {
-      type: association.single ? targetModel.type : targetModel.listType,
+  ({ as, single, target, allowNull = true }: Association) => {
+    console.log('============>', model.name, target, 'as', as)
+    const targetModel = initialModelData(target)
+    const type = single ? targetModel.type : targetModel.listType
+    const findModel = new GraphQLInputObjectType({
+      name: `${model.name}${targetModel.names.filters}`,
+      fields: () => targetModel.filterFields as GraphQLInputFieldConfigMap,
+    })
+    model.createFields[as] = {
+      type: allowNull ? findModel : nonNullGraphQL(findModel),
+    }
+    model.fields[as] = {
+      type,
       // args: { where: targetModel.where },
       resolve: async (instance, args) => {
-        const fn = `get${capitalize(association.as)}`
+        const fn = `get${capitalize(as)}`
         if(!instance[fn])
           throw new Error(`Problems with ${model.name}:${targetModel.name}`)
         return instance[fn]()
@@ -246,12 +225,13 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
     */
 
     const findOneResolver = async (_, args): Promise<Instance<Attr>> => {
-      console.log(`find: ${model.name}`, args)
       const where = argsParser(args.where)
-      console.log(where)
       return model.methods.findOne(where, null, 0, 100)
-      // console.log(data)
-      // return data
+    }
+
+    const findManyResolver = async (_, args): Promise<Array<Instance<Attr>>> => {
+      const where = argsParser(args.where)
+      return model.methods.findMany(where, null, 0, 100)
     }
 
     memo.queryFields[model.names.findOne] = {
@@ -273,14 +253,13 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
       },
     }
 
-
     memo.mutationFields[model.names.createOne] = {
       type: model.outputTypes.model,
       args: { data: { type: nonNullGraphQL(model.createType) } },
-      resolve: (_, args) => {
-        console.log('create ' + model.name)
-        console.log(args)
-        return null
+      resolve: async (_, args) => {
+        console.log('CREATING:', args)
+        // Need to find all Assoz-Fields and resolve them first!
+        return model.methods.createOne(args.data)
       },
     }
 
@@ -292,16 +271,21 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
       },
       resolve: async (_, args) => {
         const instance = await findOneResolver(_, args)
-        console.log('update ', model.name, '-with:', args.data)
         await instance.update(args.data)
-        console.log('update ', instance.get('name'))
         return instance
       },
     }
-    // memo.mutationFields[model.names.deleteMany] = {
-    //   type: model.outputTypes.list,
-    //   args: { where: model.where },
-    // }
+    memo.mutationFields[model.names.deleteMany] = {
+      type: model.outputTypes.list,
+      args: {
+        where: { type: nonNullGraphQL(whereFilter)},
+      },
+      resolve: async (_, args) => {
+        const instances = await findManyResolver(_, args)
+        await Promise.all(instances.map(instance => instance.destroy()))
+        return instances
+      },
+    }
 
     return memo
   }, {

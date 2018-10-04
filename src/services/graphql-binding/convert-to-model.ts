@@ -45,6 +45,7 @@ export const convertToModel = <Attr, Inst extends Instance<Attr> & Attr>(rawMode
       updateOne: `update${name}`,
     },
     methods: {
+      createOne: async data => rawModel.create(data),
       findOne: async (where, order, offset, limit) => rawModel.findOne({ where }),
       findMany: async (where, order, offset, limit) => rawModel.findAll({ where }),
       deleteMany: async (where, order, offset, limit) => rawModel.findAll({ where }),
@@ -55,21 +56,24 @@ export const convertToModel = <Attr, Inst extends Instance<Attr> & Attr>(rawMode
   // add incomplete-model to cache to prevent loops
   models[name] = model
 
-  const associatedModelnames = map(localModel.associations, association => ({
-    as: association.as,
-    modelName: capitalize(singularize(association.as)),
-    single: association.as === singularize(association.as),
-  }))
+  const associatedModelnames = map(localModel.associations, association => {
+    return ({
+      ...localModel.attributes[association.foreignKey],
+      as: association.as,
+      model: association.target,
+      modelName: capitalize(singularize(association.target.name)),
+      single: association.isSingleAssociation,
+    })
+  })
 
   model.associations = mapValues(keyBy(associatedModelnames
     .filter(association => localModel.sequelize.models[association.modelName])
     .map(association => ({
       key: association.modelName,
       value: {
-        as: association.as,
-        single: association.single,
+        ...association,
         source: model,
-        target: convertToModel(localModel.sequelize.models[association.modelName]),
+        target: convertToModel(association.model),
       },
     }))
   , 'key'), 'value')

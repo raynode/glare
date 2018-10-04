@@ -1,7 +1,7 @@
 
 import { Dictionary, reduce } from 'lodash'
 import { BuildConfiguration, Model } from './types'
-
+import { create } from 'services/logger'
 import { Sequelize } from 'services/db'
 
 const Op = Sequelize.Op
@@ -28,9 +28,10 @@ const basicModifierMapper: ModifierMapper = (modifier, field, value) => {
   throw new Error('unkown modifier: ' + modifier)
 }
 
+const argsParserLog = create('where')
 export const generateModelArgsParser = (config: BuildConfiguration, model: Model) => {
   return (args: Dictionary<any>) => {
-    console.log(args)
+    argsParserLog('in:', args)
     const where = reduce(args, (where, value, key) => {
       const splitIndex = key.indexOf('_')
       const [field, modifier] = splitIndex === -1
@@ -39,7 +40,7 @@ export const generateModelArgsParser = (config: BuildConfiguration, model: Model
       where[field] = basicModifierMapper(modifier, field, value)
       return where
     }, {})
-    console.log('filter:', where)
+    argsParserLog('out:', where)
     return where
   }
 }

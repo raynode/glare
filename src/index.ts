@@ -25,10 +25,22 @@ const main = async () => {
   await initialized
   // const binding = bindingGenerator()
 
+  // const x: any = models.Post
+  // console.log(x.associations)
+  // const y = x.associations.author
+  // Object.keys(y).forEach(key => {
+  //   console.log(`--- === === === key(${key}) === === === ---`)
+  //   console.log('key:', key)
+  //   console.log(y[key])
+  // })
+
+  // // convertToModel(models.Post)
+  // log('DONE EXIT')
+  // process.exit()
   // const bindings = buildGraphQL(map(models, convertToModel))
   const bindings = buildGraphQL([
-    convertToModel(models.User),
     convertToModel(models.Post),
+    convertToModel(models.User),
   ])
 
   // console.log(bindings)
@@ -50,7 +62,7 @@ const main = async () => {
 
   try {
     console.log('--- === === === printSchema(schema) === === === ---')
-    console.log(printSchema(schema))
+    // console.log(printSchema(schema))
   } catch(e) {
     console.log(e)
     console.log(e.stack)
@@ -106,14 +118,13 @@ const p = (query: string, variables = {}, operationName: string = null) => new P
     }, (err, res, body) => err ? resolve(err) : resolve(body.data))
   })
 
-main()
-.catch(err => log.error('Main threw an error:', err))
-.then(async () => {
+const test = async () => {
   log('Trying:')
 
   const user = await p(`{
     User(where: {
       state: member
+      email: "test@raynode.de"
     }) {
       __typename
       id
@@ -121,8 +132,8 @@ main()
     }
   }`)
 
-  log(user)
-  const name = user && user.name
+  log(user.User)
+  const name = user && user.User && user.User.name
   const names = [
     'Alfred',
     'Berta',
@@ -131,23 +142,62 @@ main()
     'Emil',
     'Frank',
   ].filter(value => value !== name)
-  log(names)
   const newName = names[Math.floor(Math.random() * 5)]
-  log(newName)
-  try {
-    const mutation = await p(`mutation UpdateUser($id: ID!, $name: String!) {
-      updateUser(
-        where: { id: $id }
-        data: { name: $name }
-      ) {
-        id
-        name
-      }
-    }`, {
-      id: user.User.id,
-      name: newName,
-    }, 'UpdateUser')
-    log('result:', mutation)
-  } catch(e) { log(e) }
+  log(`Changing name from ${name} to ${newName}`)
+  const mutation = await p(`mutation UpdateUser($id: ID!, $name: String!) {
+    updateUser(
+      where: { id: $id }
+      data: { name: $name }
+    ) {
+      id
+      name
+    }
+  }`, {
+    id: user.User.id,
+    name: newName,
+  }, 'UpdateUser')
+  log('result:', mutation.updateUser)
 
-})
+  const create = await p(`mutation CreateUser($state: UserStateEnumType!, $name: String!, $email: String!) {
+    createUser(
+      data: {
+        name: $name
+        state: $state
+        email: $email
+      }
+    ) {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }`, {
+    state: 'member',
+    name: newName,
+    email: `${newName}-${Math.floor(Math.random() * 1000)}@email.com`,
+  })
+
+  log('output:', create.createUser)
+
+  const deleteResponse = await p(`mutation DeleteUser($id: ID!) {
+    deleteUsers(
+      where: {
+        id: $id
+      }
+    ) {
+      id
+      name
+      createdAt
+      updatedAt
+    }
+  }`, {
+    id: create.createUser.id,
+  }, 'DeleteUser')
+
+  log('delete?:', deleteResponse)
+
+}
+
+main()
+.catch(err => log.error('Main threw an error:', err))
+// .then(test)

@@ -28,6 +28,7 @@ export interface ListItem<Type> {
 export interface Attribute {
   allowUpdate: boolean
   allowNull: boolean
+  visible: boolean
   comment: string
   type: DBType
 }
@@ -44,7 +45,7 @@ export interface BaseField {
   description?: string
 }
 
-export interface Association {
+export interface Association extends Attribute {
   as: string
   single: boolean
   source: Model
@@ -64,8 +65,12 @@ export type UpdateFn<Result> = (
   order: Dictionary<OrderDirections>,
   data: any,
 ) => Promise<Result>
+export type CreateFn<Result> = (
+  data: any,
+) => Promise<Result>
 
 export interface Methods<Type> {
+  createOne: CreateFn<Type>
   findMany: FindFn<Type[]>
   findOne: FindFn<Type>
   deleteMany: FindFn<Type[]>

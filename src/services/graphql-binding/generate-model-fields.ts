@@ -153,6 +153,10 @@ export const removeDescriptionAttributeModifier: AttributeModifier = field => {
   return toFieldDictonary(field)
 }
 
+export const removeInvisibleAttributes: FieldsModifier = fields =>
+  filterFields(fields, ({ attribute }) =>
+    attribute.hasOwnProperty('visible') ? attribute.visible : true)
+
 export const removeDescriptionModifier: FieldsModifier = (fields, config) => {
   forEach(fields, field => removeDescriptionAttributeModifier(field, config))
   return fields
