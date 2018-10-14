@@ -60,6 +60,7 @@ module.exports = {
     await queryInterface.bulkInsert('Posts', [{
       stub: 'my-stub',
       title: 'My first Blogpost',
+      image: 'unkown image :-(',
       userId,
     }])
 
