@@ -19,15 +19,24 @@ export const config = {
   sequelize: {
     logLevel: false, // 'debug', // LogLevel
     development: {
-      use_env_variable: 'PGHOST_GLARE',
+      username: process.env.DEV_DB_USERNAME,
+      password: process.env.DEV_DB_PASSWORD,
+      database: process.env.DEV_DB_NAME,
+      host: '127.0.0.1',
       dialect: 'postgres',
     },
     test: {
-      use_env_variable: 'PGHOST_GLARE_TEST',
+      username: process.env.CI_DB_USERNAME,
+      password: process.env.CI_DB_PASSWORD,
+      database: process.env.CI_DB_NAME,
+      host: '127.0.0.1',
       dialect: 'postgres',
     },
     production: {
-      use_env_variable: 'PGHOST_GLARE',
+      username: process.env.PROD_DB_USERNAME,
+      password: process.env.PROD_DB_PASSWORD,
+      database: process.env.PROD_DB_NAME,
+      host: '127.0.0.1',
       dialect: 'postgres',
     },
   },

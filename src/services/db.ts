@@ -12,19 +12,32 @@ const env = process.env.NODE_ENV || 'development'
 import { config as Config } from 'config'
 const config = Config.sequelize[env]
 
+interface ExtendedOptions extends Sequelize.Options {
+  username: string
+  password: string
+  database: string
+}
+
 const createSequelize = (config: any) => {
   const logging = Config.sequelize.logLevel
     ? (sql: string) => log[Config.sequelize.logLevel as any](sql)
     : false
-  const sequelizeConfig: Sequelize.Options = {
+  const sequelizeConfig: ExtendedOptions = {
+    username: 'unkown',
+    password: 'unkown',
+    database: 'glare',
     logging,
   }
   if (config.use_env_variable) {
     log(`creating from env: ${process.env[config.use_env_variable]}`)
     return new Sequelize(process.env[config.use_env_variable], sequelizeConfig)
   } else {
-    log(`creating from config`)
-    return new Sequelize(config.database, config.username, config.password, sequelizeConfig)
+    const { database, username, password, ...options } = ({
+      ...sequelizeConfig,
+      ...config,
+    } as any)
+    log(`creating from config: ${username}@${database}`)
+    return new Sequelize(database, username, password, options)
   }
 }
 
@@ -68,7 +81,6 @@ export const getModelAttributes = <Attr, Inst extends Instance<Attr>>(
 export const getModelAssociations = <Attr, Inst extends Instance<Attr>>(
   model: Model<Inst & Attr, Attr>,
 ) => (model as any).associations as ModelAttributes<Attr, Inst>
-
 
 export { Sequelize }
 export const sequelize = createSequelize(config)
