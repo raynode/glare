@@ -37,7 +37,7 @@ const attributes: SequelizeAttributes<PostAttributes> = {
   },
   stub: { type: Sequelize.STRING, allowNull: false },
   title: { type: Sequelize.STRING, allowNull: false },
-  image: { type: Sequelize.STRING },
+  image: { type: Sequelize.STRING, allowNull: false },
   published: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false },
   userId: { type: Sequelize.UUID, allowNull: false, visible: false },
 }

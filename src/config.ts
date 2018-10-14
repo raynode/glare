@@ -10,9 +10,6 @@ export const config = {
     environment: process.env.NODE_ENV,
     dsn: process.env.SENTRY_GLARE_DNS,
   },
-  mongo: {
-    uri: process.env.MONGO_URI,
-  },
   google: {
     clientId: process.env.GLARE_GOOGLE_CLIENT_ID,
     secret: process.env.GLARE_GOOGLE_SECRET,
