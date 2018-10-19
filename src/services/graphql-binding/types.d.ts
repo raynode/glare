@@ -2,9 +2,10 @@
 import {
   GraphQLEnumType,
   GraphQLFieldResolver,
+  GraphQLInputFieldConfigMap,
   GraphQLInputObjectType,
   GraphQLInputType,
-  GraphQLInputFieldConfigMap,
+  GraphQLObjectType,
   GraphQLOutputType,
   GraphQLType,
 } from 'graphql'
@@ -46,6 +47,7 @@ export interface BaseField {
 
 export interface Association extends Attribute {
   as: string
+  field: string
   single: boolean
   source: Model
   target: Model
@@ -93,6 +95,9 @@ export interface Model<Type = any> {
   fieldNames?: Record<InputTypesNames | OutputTypesNames | EnumTypesNames, string>
 
   methods: Methods<Type>
+
+  // these functions convert the associations into data for the database
+  assocResolvers: any[]
 
   associations: Associations
   attributes: Attributes

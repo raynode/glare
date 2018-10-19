@@ -44,9 +44,14 @@ import {
   isOutputType,
 } from 'graphql'
 
+import { create } from 'services/logger'
+
 import { collectionGenerator, enums as enumTypes } from './collections'
+
 const inputTypes = collectionGenerator<GraphQLInputObjectType>({})
 const outputTypes = collectionGenerator<GraphQLObjectType>({})
+
+const baseLog = create('graphql-binding')
 
 const defaultBuildConfiguration: Partial<BuildConfiguration> = {
   attributeGraphQLMapper: convertAttributeToField,
@@ -159,11 +164,7 @@ export const generateInitialModelData = (configuration: BuildConfiguration) => (
   }
   model.createType = new GraphQLInputObjectType({
     name: model.names.createData,
-    fields: () => {
-      console.log('CREATE:', model.createFields)
-      console.log('NORMAL:', model.fields)
-      return model.createFields as GraphQLInputFieldConfigMap
-    },
+    fields: () => model.createFields as GraphQLInputFieldConfigMap,
   })
   model.listType = toGraphQLList(model.type, true)
   return model
@@ -171,8 +172,9 @@ export const generateInitialModelData = (configuration: BuildConfiguration) => (
 
 // hier werden die Associazionen zu den fields etc hinzugefügt!
 export const addModelToFields = (model: Model, initialModelData: (model: Model) => Model) =>
-  ({ as, single, target, allowNull = true }: Association) => {
-    console.log('============>', model.name, target, 'as', as)
+  ({ as, single, target, field, allowNull = true }: Association) => {
+    // tslint:disable-next-line
+    console.log(`============> Adding ${model.name}.${as} = ${single ? target.name : `[${target.name}!]`}${allowNull ? '' : '!'}`)
     const targetModel = initialModelData(target)
     const type = single ? targetModel.type : targetModel.listType
     const findModel = new GraphQLInputObjectType({
@@ -182,6 +184,28 @@ export const addModelToFields = (model: Model, initialModelData: (model: Model) 
     model.createFields[as] = {
       type: allowNull ? findModel : nonNullGraphQL(findModel),
     }
+    model.updateFields[as] = {
+      type: allowNull ? findModel : nonNullGraphQL(findModel),
+    }
+    const selectionResolver = async filter => {
+      if(!filter || !Object.keys(filter).length) return single
+        ? null
+        : []
+      const result = single
+        ? await targetModel.methods.findOne(filter, null, null, null)
+        : await targetModel.methods.findMany(filter, null, null, null)
+      if(!result) return single
+        ? null
+        : []
+      // always return the relevant id / ids
+      return single
+       ? result.id
+       : result.map(res => res.id)
+    }
+    model.assocResolvers.push(async data => ({
+      ...data,
+      [field]: await selectionResolver(data[as]),
+    }))
     model.fields[as] = {
       type,
       // args: { where: targetModel.where },
@@ -201,6 +225,7 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
   models.forEach(model => map(model.associations, addModelToFields(model, initialModelData)))
 
   const bindings = models.reduce((memo: Binding, model) => {
+    const baseModelLog = baseLog.create(model.name)
     const argsParser = generateModelArgsParser(config, model)
 
     const whereFilter = new GraphQLInputObjectType({
@@ -240,15 +265,16 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
       resolve: findOneResolver,
     }
 
+    const findManyLog = baseModelLog.create('find-many')
     memo.queryFields[model.names.findMany] = {
       type: model.outputTypes.list,
       args: { where, order, page },
       resolve: async (_, args) => {
-        console.log(`find all: ${model.name}s`, args)
+        findManyLog(`find all: ${model.name}s`, args)
         const where = argsParser(args.where)
-        console.log(where)
+        findManyLog(where)
         const data = await model.methods.findMany(where, null, 0, 100)
-        console.log(data.length)
+        findManyLog(data.length)
         return data
       },
     }
@@ -263,6 +289,7 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
       },
     }
 
+    const updateOneLog = baseModelLog.create('update-one')
     memo.mutationFields[model.names.updateOne] = {
       type: model.outputTypes.model,
       args: {
@@ -271,7 +298,10 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
       },
       resolve: async (_, args) => {
         const instance = await findOneResolver(_, args)
-        await instance.update(args.data)
+        const data = await model.assocResolvers.reduce(async (data, resolver) => resolver(await data), args.data)
+        updateOneLog(args.data)
+        updateOneLog(data)
+        await instance.update(data)
         return instance
       },
     }

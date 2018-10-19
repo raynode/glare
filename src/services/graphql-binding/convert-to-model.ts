@@ -23,6 +23,7 @@ export const convertToModel = <Attr, Inst extends Instance<Attr> & Attr>(rawMode
     name,
     attributes: localModel.attributes,
     associations: {},
+    assocResolvers: [],
     fieldNames: {
       create: `${name}CreateInput`,
       list: `${name}ListType`,

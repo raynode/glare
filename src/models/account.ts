@@ -6,6 +6,7 @@ import { TagInstance } from 'models/tag'
 import { User, UserInstance } from 'models/user'
 
 export interface AccountAttributes extends Partial<Node> {
+  id: string
   amount: number
   expenses?: ExpenseInstance[]
   getExpenses?: () => ExpenseInstance[]
@@ -18,6 +19,15 @@ export interface AccountAttributes extends Partial<Node> {
 export type AccountInstance = Sequelize.Instance<AccountAttributes> & AccountAttributes
 
 const attributes: SequelizeAttributes<AccountAttributes> = {
+  id: {
+    type: Sequelize.UUID,
+    allowNull: false,
+    allowUpdates: false,
+    primaryKey: true,
+    unique: true,
+    comment: 'Id of the user',
+    defaultValue: Sequelize.fn('gen_random_uuid'),
+  },
   amount: { type: Sequelize.DECIMAL, allowNull: false },
 }
 
