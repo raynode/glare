@@ -4,7 +4,6 @@ import {
   GraphQLFieldResolver,
   GraphQLInputObjectType,
   GraphQLInputType,
-  GraphQLObjectType,
   GraphQLInputFieldConfigMap,
   GraphQLOutputType,
   GraphQLType,

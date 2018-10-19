@@ -5,7 +5,7 @@ import {
 import {
   isIntValueNode,
   isStringValueNode,
-} from 'services/sequelize-graphql-binding/graphql-node-guards'
+} from 'services/graphql-binding/graphql-node-guards'
 
 /**
  * A special custom Scalar type for Dates that converts to a ISO formatted string
