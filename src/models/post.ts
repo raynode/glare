@@ -17,7 +17,7 @@ export interface PostAttributes extends Partial<Node> {
   title: string
   userId: string
   image?: string
-  published?: boolean
+  published: boolean
   author?: UserInstance
   getAuthor?: () => UserInstance
   tags?: TagInstance[]

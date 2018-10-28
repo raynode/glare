@@ -102,7 +102,9 @@ export const toListFieldGroup = (field: FieldGroup): FieldGroup =>
 export const requiredAttributeModifier: AttributeModifier = ({ attribute, field, name }) => toFieldDictonary({
   name,
   attribute,
-  field: attribute.allowNull ? field : { ...field, type: nonNullGraphQL(field.type) },
+  field: attribute.allowNull || (attribute.defaultValue !== undefined)
+    ? field
+    : { ...field, type: nonNullGraphQL(field.type) },
 })
 
 export const listAttributeTypeModifier: AttributeModifier = ({ attribute, field, name }, config) => toFieldDictonary({

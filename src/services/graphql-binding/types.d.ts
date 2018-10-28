@@ -28,6 +28,7 @@ export interface ListItem<Type> {
 export interface Attribute {
   allowUpdate: boolean
   allowNull: boolean
+  defaultValue: any
   visible: boolean
   comment: string
   type: DBType

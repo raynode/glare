@@ -283,9 +283,10 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
       type: model.outputTypes.model,
       args: { data: { type: nonNullGraphQL(model.createType) } },
       resolve: async (_, args) => {
-        console.log('CREATING:', args)
-        // Need to find all Assoz-Fields and resolve them first!
-        return model.methods.createOne(args.data)
+        console.log(args)
+        const data = await model.assocResolvers.reduce(async (data, resolver) => resolver(await data), args.data)
+        console.log(data)
+        return model.methods.createOne(data)
       },
     }
 
@@ -299,8 +300,6 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
       resolve: async (_, args) => {
         const instance = await findOneResolver(_, args)
         const data = await model.assocResolvers.reduce(async (data, resolver) => resolver(await data), args.data)
-        updateOneLog(args.data)
-        updateOneLog(data)
         await instance.update(data)
         return instance
       },
