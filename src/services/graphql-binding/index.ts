@@ -250,6 +250,8 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
     */
 
     const findOneResolver = async (_, args): Promise<Instance<Attr>> => {
+      if(!args.where || !Object.keys(args.where).length)
+        throw new Error('findOne needs a where selector!')
       const where = argsParser(args.where)
       return model.methods.findOne(where, null, 0, 100)
     }
@@ -283,9 +285,7 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
       type: model.outputTypes.model,
       args: { data: { type: nonNullGraphQL(model.createType) } },
       resolve: async (_, args) => {
-        console.log(args)
         const data = await model.assocResolvers.reduce(async (data, resolver) => resolver(await data), args.data)
-        console.log(data)
         return model.methods.createOne(data)
       },
     }

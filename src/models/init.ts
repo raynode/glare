@@ -5,6 +5,7 @@ import { create } from 'services/logger'
 const log = create('models')
 
 import { Account } from 'models/account'
+import { Asset } from 'models/asset'
 import { Expense } from 'models/expense'
 import { Post } from 'models/post'
 import { Tag } from 'models/tag'
@@ -12,6 +13,7 @@ import { User } from 'models/user'
 
 export const models = {
   Account,
+  Asset,
   Expense,
   Post,
   Tag,

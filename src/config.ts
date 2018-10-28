@@ -5,8 +5,11 @@ import { config as dotEnv } from 'dotenv'
 dotEnv()
 
 export const config = {
+  host: process.env.HOSTNAME,
   port: process.env.GLARE_PORT || 3421,
+  path: '/',
   sentry: {
+    active: process.env.SENTRY || false,
     environment: process.env.NODE_ENV,
     dsn: process.env.SENTRY_GLARE_DNS,
   },

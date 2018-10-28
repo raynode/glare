@@ -11,11 +11,14 @@ import {
   GraphQLType,
 } from 'graphql'
 
+import { RenameTypes } from 'apollo-server'
+
 import { capitalize } from 'inflection'
 import * as _ from 'lodash'
 import { DataTypes, DataTypeScalar, RangeSubTypes } from 'services/db'
 import { DateType } from './types/date-type'
 import { JSONType } from './types/json-type'
+import { UploadType } from './types/upload-type'
 
 import { objects } from './collections'
 import * as guards from './sequelize-type-guards'
@@ -73,6 +76,8 @@ export const rangeSubTypeToGraphQL = (subtype: RangeSubTypes) => {
       return DateType
     case 'datenotz':
       return DateType
+    case 'blob':
+      return UploadType
     default:
       throw new Error(`Unkown subtype: ${subtype}`)
   }
@@ -107,6 +112,9 @@ export const toGraphQL = (sequelizeType: DataTypes): GraphQLType => {
 
   if(guards.isJson(sequelizeType))
     return JSONType
+
+  if(guards.isBlob(sequelizeType))
+    return UploadType
 
   if(guards.isRange(sequelizeType)) {
     const SubType = rangeSubTypeToGraphQL(sequelizeType._subtype)
