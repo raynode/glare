@@ -23,7 +23,15 @@
     }
   },
   "lint-staged": {
-    "{migrations,seeders,config}/*.js": [
+    "config/*.js": [
+      "prettier",
+      "git add"
+    ],
+    "migrations/*.js": [
+      "prettier",
+      "git add"
+    ],
+    "seeders/*.js": [
       "prettier",
       "git add"
     ],
