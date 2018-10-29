@@ -29,7 +29,7 @@
       "git add"
     ],
     "src/**/*.{ts,tsx}": [
-      "import-sort",
+      "import-sort --write",
       "prettier",
       "git add"
     ]
