@@ -1,4 +1,3 @@
-
 import { convertAttributeToField } from './convert-attribute-to-field'
 import { generateModelArgsParser } from './generate-model-args-parser'
 import { generateModelAssociationFields } from './generate-model-association-fields'
@@ -15,16 +14,7 @@ import { toGraphQL } from './type-mapper'
 import { Association, BuildConfiguration, Field, ListItem, Model, ThunkField } from './types'
 import { listReducer, nonNullGraphQL, toGraphQLList } from './utilities'
 
-import {
-  Dictionary,
-  each,
-  filter,
-  flatten,
-  keyBy,
-  map,
-  mapValues,
-  some,
-} from 'lodash'
+import { Dictionary, each, filter, flatten, keyBy, map, mapValues, some } from 'lodash'
 
 import {
   GraphQLEnumType,
@@ -55,19 +45,11 @@ const baseLog = create('graphql-binding')
 
 const defaultBuildConfiguration: Partial<BuildConfiguration> = {
   attributeGraphQLMapper: convertAttributeToField,
-  isAttributeVisible: type =>
-      !guards.isRange(type),
-  isArithmeticAttribute: type =>
-       guards.isDate(type)
-    || guards.isNumericType(type)
-    || guards.isUUID(type),
-  isStringAttribute: type =>
-    guards.isStringType(type),
+  isAttributeVisible: type => !guards.isRange(type),
+  isArithmeticAttribute: type => guards.isDate(type) || guards.isNumericType(type) || guards.isUUID(type),
+  isStringAttribute: type => guards.isStringType(type),
   isListAttribute: type =>
-       guards.isEnum(type)
-    || guards.isDate(type)
-    || guards.isNumericType(type)
-    || guards.isUUID(type),
+    guards.isEnum(type) || guards.isDate(type) || guards.isNumericType(type) || guards.isUUID(type),
   isManyAssociation: () => false,
   isSingleAssociation: () => false,
   typeModelMapper: toGraphQL,
@@ -82,8 +64,7 @@ interface Binding {
 }
 
 export const generateInitialModelData = (configuration: BuildConfiguration) => (model: Model) => {
-  if(model.initialized)
-    return model
+  if (model.initialized) return model
   console.log('===> ', model.name)
   model.initialized = true
   // model.fields = generateModelFields(model, configuration)
@@ -105,39 +86,56 @@ export const generateInitialModelData = (configuration: BuildConfiguration) => (
   */
 
   model.inputTypes = {
-    create: inputTypes.ifn(model.fieldNames.create,
-      () => new GraphQLInputObjectType({ name: model.fieldNames.create, fields: () => null })),
-    page: inputTypes.ifn(model.fieldNames.page,
-      () => new GraphQLInputObjectType({ name: model.fieldNames.page, fields: {
-        limit: { type: GraphQLInt },
-        offset: { type: GraphQLInt },
-      } })),
-    update: inputTypes.ifn(model.fieldNames.update,
-      () => new GraphQLInputObjectType({
-        name: model.fieldNames.update,
-        fields: () => model.updateFields,
-      })),
+    create: inputTypes.ifn(
+      model.fieldNames.create,
+      () => new GraphQLInputObjectType({ name: model.fieldNames.create, fields: () => null }),
+    ),
+    page: inputTypes.ifn(
+      model.fieldNames.page,
+      () =>
+        new GraphQLInputObjectType({
+          name: model.fieldNames.page,
+          fields: {
+            limit: { type: GraphQLInt },
+            offset: { type: GraphQLInt },
+          },
+        }),
+    ),
+    update: inputTypes.ifn(
+      model.fieldNames.update,
+      () =>
+        new GraphQLInputObjectType({
+          name: model.fieldNames.update,
+          fields: () => model.updateFields,
+        }),
+    ),
   }
 
-  model.fields = fieldsGenerator([
-    AttributeModifiers.requiredAttributeModifier,
-  ], [ removeInvisibleAttributes, removeDescriptionModifier ])
-  model.createFields = fieldsGenerator([
-    AttributeModifiers.requiredAttributeModifier,
-  ], [
-    removeInvisibleAttributes,
-    removeDescriptionModifier,
-    AttributeModifiers.removeNotUpdateableModifier,
-    createFilterModifier(({ name }) => !/id|createdAt|updatedAt/.test(name)),
-  ])
-  model.updateFields = mapToGraphQLInputFieldConfigMap(fieldsGenerator([
-  ], [ removeInvisibleAttributes, removeDescriptionModifier ]))
-  model.filterFields = fieldsGenerator([
-    AttributeModifiers.listAttributeTypeModifier,
-    AttributeModifiers.stringAttributeModifier,
-    AttributeModifiers.listAttributeModifier,
-    AttributeModifiers.arithmeticAttributeModifier,
-  ], [ removeInvisibleAttributes, removeDescriptionModifier ])
+  model.fields = fieldsGenerator(
+    [AttributeModifiers.requiredAttributeModifier],
+    [removeInvisibleAttributes, removeDescriptionModifier],
+  )
+  model.createFields = fieldsGenerator(
+    [AttributeModifiers.requiredAttributeModifier],
+    [
+      removeInvisibleAttributes,
+      removeDescriptionModifier,
+      AttributeModifiers.removeNotUpdateableModifier,
+      createFilterModifier(({ name }) => !/id|createdAt|updatedAt/.test(name)),
+    ],
+  )
+  model.updateFields = mapToGraphQLInputFieldConfigMap(
+    fieldsGenerator([], [removeInvisibleAttributes, removeDescriptionModifier]),
+  )
+  model.filterFields = fieldsGenerator(
+    [
+      AttributeModifiers.listAttributeTypeModifier,
+      AttributeModifiers.stringAttributeModifier,
+      AttributeModifiers.listAttributeModifier,
+      AttributeModifiers.arithmeticAttributeModifier,
+    ],
+    [removeInvisibleAttributes, removeDescriptionModifier],
+  )
 
   model.type = new GraphQLObjectType({
     name: model.name,
@@ -171,52 +169,52 @@ export const generateInitialModelData = (configuration: BuildConfiguration) => (
 }
 
 // hier werden die Associazionen zu den fields etc hinzugefügt!
-export const addModelToFields = (model: Model, initialModelData: (model: Model) => Model) =>
-  ({ as, single, target, field, allowNull = true }: Association) => {
-    // tslint:disable-next-line
-    console.log(`============> Adding ${model.name}.${as} = ${single ? target.name : `[${target.name}!]`}${allowNull ? '' : '!'}`)
-    const targetModel = initialModelData(target)
-    const type = single ? targetModel.type : targetModel.listType
-    const findModel = new GraphQLInputObjectType({
-      name: `${model.name}${targetModel.names.filters}`,
-      fields: () => targetModel.filterFields as GraphQLInputFieldConfigMap,
-    })
-    model.createFields[as] = {
-      type: allowNull ? findModel : nonNullGraphQL(findModel),
-    }
-    model.updateFields[as] = {
-      type: allowNull ? findModel : nonNullGraphQL(findModel),
-    }
-    const selectionResolver = async filter => {
-      if(!filter || !Object.keys(filter).length) return single
-        ? null
-        : []
-      const result = single
-        ? await targetModel.methods.findOne(filter, null, null, null)
-        : await targetModel.methods.findMany(filter, null, null, null)
-      if(!result) return single
-        ? null
-        : []
-      // always return the relevant id / ids
-      return single
-       ? result.id
-       : result.map(res => res.id)
-    }
-    model.assocResolvers.push(async data => ({
-      ...data,
-      [field]: await selectionResolver(data[as]),
-    }))
-    model.fields[as] = {
-      type,
-      // args: { where: targetModel.where },
-      resolve: async (instance, args) => {
-        const fn = `get${capitalize(as)}`
-        if(!instance[fn])
-          throw new Error(`Problems with ${model.name}:${targetModel.name}`)
-        return instance[fn]()
-      },
-    }
+export const addModelToFields = (model: Model, initialModelData: (model: Model) => Model) => ({
+  as,
+  single,
+  target,
+  field,
+  allowNull = true,
+}: Association) => {
+  // tslint:disable-next-line
+  console.log(
+    `============> Adding ${model.name}.${as} = ${single ? target.name : `[${target.name}!]`}${allowNull ? '' : '!'}`,
+  )
+  const targetModel = initialModelData(target)
+  const type = single ? targetModel.type : targetModel.listType
+  const findModel = new GraphQLInputObjectType({
+    name: `${model.name}${targetModel.names.filters}`,
+    fields: () => targetModel.filterFields as GraphQLInputFieldConfigMap,
+  })
+  model.createFields[as] = {
+    type: allowNull ? findModel : nonNullGraphQL(findModel),
   }
+  model.updateFields[as] = {
+    type: allowNull ? findModel : nonNullGraphQL(findModel),
+  }
+  const selectionResolver = async filter => {
+    if (!filter || !Object.keys(filter).length) return single ? null : []
+    const result = single
+      ? await targetModel.methods.findOne(filter, null, null, null)
+      : await targetModel.methods.findMany(filter, null, null, null)
+    if (!result) return single ? null : []
+    // always return the relevant id / ids
+    return single ? result.id : result.map(res => res.id)
+  }
+  model.assocResolvers.push(async data => ({
+    ...data,
+    [field]: await selectionResolver(data[as]),
+  }))
+  model.fields[as] = {
+    type,
+    // args: { where: targetModel.where },
+    resolve: async (instance, args) => {
+      const fn = `get${capitalize(as)}`
+      if (!instance[fn]) throw new Error(`Problems with ${model.name}:${targetModel.name}`)
+      return instance[fn]()
+    },
+  }
+}
 
 export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
   const configuration = { ...defaultBuildConfiguration, ...config }
@@ -224,19 +222,20 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
   models.forEach(initialModelData)
   models.forEach(model => map(model.associations, addModelToFields(model, initialModelData)))
 
-  const bindings = models.reduce((memo: Binding, model) => {
-    const baseModelLog = baseLog.create(model.name)
-    const argsParser = generateModelArgsParser(config, model)
+  const bindings = models.reduce(
+    (memo: Binding, model) => {
+      const baseModelLog = baseLog.create(model.name)
+      const argsParser = generateModelArgsParser(config, model)
 
-    const whereFilter = new GraphQLInputObjectType({
-      name: model.names.filters,
-      fields: () => model.filterFields as GraphQLInputFieldConfigMap,
-    })
-    const where: any = { type: whereFilter }
-    const order: any = { type: model.enumTypes.order }
-    const page: any = { type: model.inputTypes.page }
+      const whereFilter = new GraphQLInputObjectType({
+        name: model.names.filters,
+        fields: () => model.filterFields as GraphQLInputFieldConfigMap,
+      })
+      const where: any = { type: whereFilter }
+      const order: any = { type: model.enumTypes.order }
+      const page: any = { type: model.inputTypes.page }
 
-    /* model fields:
+      /* model fields:
       .- output-type: attributes(required), associations()
       .- input-find: attributes(stringFilter, listFilter, arithmeticFilter)
       .- enum-order: attributes(orderFilter)
@@ -249,78 +248,79 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
           .- update-input: attributes(), associations(asFilter)
     */
 
-    const findOneResolver = async (_, args): Promise<Instance<Attr>> => {
-      if(!args.where || !Object.keys(args.where).length)
-        throw new Error('findOne needs a where selector!')
-      const where = argsParser(args.where)
-      return model.methods.findOne(where, null, 0, 100)
-    }
-
-    const findManyResolver = async (_, args): Promise<Array<Instance<Attr>>> => {
-      const where = argsParser(args.where)
-      return model.methods.findMany(where, null, 0, 100)
-    }
-
-    memo.queryFields[model.names.findOne] = {
-      type: model.outputTypes.model,
-      args: { where: { type: nonNullGraphQL(whereFilter) }, order },
-      resolve: findOneResolver,
-    }
-
-    const findManyLog = baseModelLog.create('find-many')
-    memo.queryFields[model.names.findMany] = {
-      type: model.outputTypes.list,
-      args: { where, order, page },
-      resolve: async (_, args) => {
-        findManyLog(`find all: ${model.name}s`, args)
+      const findOneResolver = async (_, args): Promise<Instance<Attr>> => {
+        if (!args.where || !Object.keys(args.where).length) throw new Error('findOne needs a where selector!')
         const where = argsParser(args.where)
-        findManyLog(where)
-        const data = await model.methods.findMany(where, null, 0, 100)
-        findManyLog(data.length)
-        return data
-      },
-    }
+        return model.methods.findOne(where, null, 0, 100)
+      }
 
-    memo.mutationFields[model.names.createOne] = {
-      type: model.outputTypes.model,
-      args: { data: { type: nonNullGraphQL(model.createType) } },
-      resolve: async (_, args) => {
-        const data = await model.assocResolvers.reduce(async (data, resolver) => resolver(await data), args.data)
-        return model.methods.createOne(data)
-      },
-    }
+      const findManyResolver = async (_, args): Promise<Array<Instance<Attr>>> => {
+        const where = argsParser(args.where)
+        return model.methods.findMany(where, null, 0, 100)
+      }
 
-    const updateOneLog = baseModelLog.create('update-one')
-    memo.mutationFields[model.names.updateOne] = {
-      type: model.outputTypes.model,
-      args: {
-        where: { type: nonNullGraphQL(whereFilter)},
-        data: { type: nonNullGraphQL(model.inputTypes.update) },
-      },
-      resolve: async (_, args) => {
-        const instance = await findOneResolver(_, args)
-        const data = await model.assocResolvers.reduce(async (data, resolver) => resolver(await data), args.data)
-        await instance.update(data)
-        return instance
-      },
-    }
-    memo.mutationFields[model.names.deleteMany] = {
-      type: model.outputTypes.list,
-      args: {
-        where: { type: nonNullGraphQL(whereFilter)},
-      },
-      resolve: async (_, args) => {
-        const instances = await findManyResolver(_, args)
-        await Promise.all(instances.map(instance => instance.destroy()))
-        return instances
-      },
-    }
+      memo.queryFields[model.names.findOne] = {
+        type: model.outputTypes.model,
+        args: { where: { type: nonNullGraphQL(whereFilter) }, order },
+        resolve: findOneResolver,
+      }
 
-    return memo
-  }, {
-    queryFields: {},
-    mutationFields: {},
-  })
+      const findManyLog = baseModelLog.create('find-many')
+      memo.queryFields[model.names.findMany] = {
+        type: model.outputTypes.list,
+        args: { where, order, page },
+        resolve: async (_, args) => {
+          findManyLog(`find all: ${model.name}s`, args)
+          const where = argsParser(args.where)
+          findManyLog(where)
+          const data = await model.methods.findMany(where, null, 0, 100)
+          findManyLog(data.length)
+          return data
+        },
+      }
+
+      memo.mutationFields[model.names.createOne] = {
+        type: model.outputTypes.model,
+        args: { data: { type: nonNullGraphQL(model.createType) } },
+        resolve: async (_, args) => {
+          const data = await model.assocResolvers.reduce(async (data, resolver) => resolver(await data), args.data)
+          return model.methods.createOne(data)
+        },
+      }
+
+      const updateOneLog = baseModelLog.create('update-one')
+      memo.mutationFields[model.names.updateOne] = {
+        type: model.outputTypes.model,
+        args: {
+          where: { type: nonNullGraphQL(whereFilter) },
+          data: { type: nonNullGraphQL(model.inputTypes.update) },
+        },
+        resolve: async (_, args) => {
+          const instance = await findOneResolver(_, args)
+          const data = await model.assocResolvers.reduce(async (data, resolver) => resolver(await data), args.data)
+          await instance.update(data)
+          return instance
+        },
+      }
+      memo.mutationFields[model.names.deleteMany] = {
+        type: model.outputTypes.list,
+        args: {
+          where: { type: nonNullGraphQL(whereFilter) },
+        },
+        resolve: async (_, args) => {
+          const instances = await findManyResolver(_, args)
+          await Promise.all(instances.map(instance => instance.destroy()))
+          return instances
+        },
+      }
+
+      return memo
+    },
+    {
+      queryFields: {},
+      mutationFields: {},
+    },
+  )
 
   return bindings
 }

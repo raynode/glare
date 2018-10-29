@@ -1,11 +1,6 @@
-import {
-  GraphQLScalarType,
-} from 'graphql'
+import { GraphQLScalarType } from 'graphql'
 
-import {
-  isIntValueNode,
-  isStringValueNode,
-} from 'services/graphql-binding/graphql-node-guards'
+import { isIntValueNode, isStringValueNode } from 'services/graphql-binding/graphql-node-guards'
 
 /**
  * A special custom Scalar type for Dates that converts to a ISO formatted string
@@ -20,17 +15,14 @@ export const DateType = new GraphQLScalarType({
   description: 'A special custom Scalar type for Dates that converts to a ISO formatted string ',
 
   serialize(date: Date) {
-    if(!date)
-      return null
+    if (!date) return null
 
-    if (date instanceof Date)
-      return date.toISOString()
+    if (date instanceof Date) return date.toISOString()
     return date
   },
 
   parseValue(value: string | number) {
-    if (!value)
-      return null
+    if (!value) return null
 
     try {
       return new Date(value)
@@ -40,8 +32,7 @@ export const DateType = new GraphQLScalarType({
   },
 
   parseLiteral(ast) {
-    if(isIntValueNode(ast) || isStringValueNode(ast))
-      return new Date(ast.value)
+    if (isIntValueNode(ast) || isStringValueNode(ast)) return new Date(ast.value)
     return null
   },
 })

@@ -1,12 +1,4 @@
-
-import {
-  DataTypes,
-  Instance,
-  Node,
-  sequelize,
-  Sequelize,
-  SequelizeAttributes,
-} from 'services/db'
+import { DataTypes, Instance, Node, sequelize, Sequelize, SequelizeAttributes } from 'services/db'
 
 import { TagInstance } from 'models/tag'
 import { UserInstance } from 'models/user'

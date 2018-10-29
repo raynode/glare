@@ -1,7 +1,6 @@
-
 import { User, UserInstance } from 'models/user'
 
-import { create } from 'services/logger'
+import { create } from 'services/logger'
 const log = create('services', 'context')
 
 export interface Context {
@@ -10,14 +9,15 @@ export interface Context {
 }
 
 export const createContext = async (context: any): Promise<Context> => {
-  if(context.connection) { // subscription context?
+  if (context.connection) {
+    // subscription context?
     console.log('QUERY:', context.connection.query)
     console.log('AUTH:', context.connection.context.Authentication)
     console.log('auth:', context.connection.context.authentication)
-  } else { // nor request based
+  } else {
+    // nor request based
     const { req } = context
-    if(req.body.operationName === 'IntrospectionQuery')
-      return context
+    if (req.body.operationName === 'IntrospectionQuery') return context
     console.log('QUERY:', req.body)
     console.log('AUTH:', req.headers.Authentication)
     console.log('auth:', req.headers.authentication)

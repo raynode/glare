@@ -1,4 +1,3 @@
-
 import { account } from 'types/account'
 import { expense } from 'types/expense'
 import { post } from 'types/post'
@@ -8,7 +7,7 @@ import { user } from 'types/user'
 // import { widget } from 'types/widget'
 // import { widgetGroup } from 'types/widget-group'
 
-import { create } from 'services/logger'
+import { create } from 'services/logger'
 import { BaseBlock, Block, TypeDef } from 'types/def'
 const log = create('types')
 
@@ -35,25 +34,26 @@ const extendBaseBlock = (base: BaseBlock<any>) => (name: string) => (block: Bloc
   return base
 }
 
-export const resolvers = all.reduce((memo: BaseBlock<any>, block) => {
-  const extender = extendBaseBlock(memo)
-  memo.typeDefs.push(block.typeDefs)
-  if(block.joins)
-    block.joins.forEach(extender(block.name))
-  return extender('root')(block)
-}, {
-  name: 'root',
-  Query: {},
-  Resolver: {},
-  Mutation: {},
-  Subscription: {},
-  typeDefs: [],
-})
+export const resolvers = all.reduce(
+  (memo: BaseBlock<any>, block) => {
+    const extender = extendBaseBlock(memo)
+    memo.typeDefs.push(block.typeDefs)
+    if (block.joins) block.joins.forEach(extender(block.name))
+    return extender('root')(block)
+  },
+  {
+    name: 'root',
+    Query: {},
+    Resolver: {},
+    Mutation: {},
+    Subscription: {},
+    typeDefs: [],
+  },
+)
 
 const { name, typeDefs, ...resolverData } = resolvers
 log.create('query')(resolverData.Query)
 log.create('resolver')(resolverData.Resolver)
 log.create('mutation')(resolverData.Mutation)
 log.create('subscription')(resolverData.Subscription)
-if(!1)
-  log(typeDefs.join('\n'))
+if (!1) log(typeDefs.join('\n'))

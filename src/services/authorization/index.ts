@@ -1,7 +1,6 @@
-
-import config from 'config'
-import { decode, verify } from 'jsonwebtoken'
-import * as jwk from 'jwks-rsa'
+import config from 'config'
+import { decode, verify } from 'jsonwebtoken'
+import * as jwk from 'jwks-rsa'
 import fetch from 'node-fetch'
 
 import { create } from 'services/logger'
@@ -33,15 +32,12 @@ export const verifyToken = async token => {
     header: {
       typ: string
       alg: string
-      kid: string,
+      kid: string
     }
-    [key: string]: any,
+    [key: string]: any
   }
 
-  if(!decoded
-  || !decoded.header
-  || !decoded.header.kid
-  )
+  if (!decoded || !decoded.header || !decoded.header.kid)
     throw new Error('Unable to retrieve key identifier from token')
 
   if (decoded.header.alg !== 'RS256')
@@ -56,8 +52,7 @@ export const verifyToken = async token => {
     // Retrieve the JKWS's signing key using the decode token's key identifier (kid)
     jkwsClient.getSigningKey(decoded.header.kid, (err, key) => {
       console.log(err)
-      if (err)
-        return reject(err)
+      if (err) return reject(err)
 
       const signingKey = key.publicKey || key.rsaPublicKey
 
@@ -103,7 +98,7 @@ export const fetchApiAccess = async (user: AuthResponse) => {
 
   const headers = {
     'content-type': 'application/json',
-    'authorization': `Bearer ${json.access_token}`,
+    authorization: `Bearer ${json.access_token}`,
   }
 
   log('JSON:')

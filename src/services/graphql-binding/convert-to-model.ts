@@ -1,4 +1,3 @@
-
 import { capitalize, pluralize, singularize } from 'inflection'
 import { Dictionary, keyBy, map, mapValues } from 'lodash'
 import { Instance, Model as SeqModel } from 'services/db'
@@ -17,8 +16,7 @@ export const convertToModel = <Attr, Inst extends Instance<Attr> & Attr>(rawMode
 
   const name = capitalize(singularize(localModel.name))
   // check model cache
-  if(models[name])
-    return models[name]
+  if (models[name]) return models[name]
   const model: Model = {
     name,
     attributes: localModel.attributes,
@@ -58,26 +56,31 @@ export const convertToModel = <Attr, Inst extends Instance<Attr> & Attr>(rawMode
   models[name] = model
 
   const associatedModelnames = map(localModel.associations, association => {
-    return ({
+    return {
       ...localModel.attributes[association.foreignKey],
       as: association.as,
       model: association.target,
       modelName: capitalize(singularize(association.target.name)),
       single: association.isSingleAssociation,
-    })
+    }
   })
 
-  model.associations = mapValues(keyBy(associatedModelnames
-    .filter(association => localModel.sequelize.models[association.modelName])
-    .map(association => ({
-      key: association.modelName,
-      value: {
-        ...association,
-        source: model,
-        target: convertToModel(association.model),
-      },
-    }))
-  , 'key'), 'value')
+  model.associations = mapValues(
+    keyBy(
+      associatedModelnames
+        .filter(association => localModel.sequelize.models[association.modelName])
+        .map(association => ({
+          key: association.modelName,
+          value: {
+            ...association,
+            source: model,
+            target: convertToModel(association.model),
+          },
+        })),
+      'key',
+    ),
+    'value',
+  )
 
   return model
 }

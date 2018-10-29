@@ -1,4 +1,3 @@
-
 import {
   BooleanValueNode,
   EnumValueNode,
@@ -48,7 +47,7 @@ export const JSONType = new GraphQLScalarType({
   name: 'SequelizeJSON',
   description: 'The `JSON` scalar type represents raw JSON as values.',
   serialize: value => value,
-  parseValue: value => typeof value === 'string' ? JSON.parse(value) : value,
+  parseValue: value => (typeof value === 'string' ? JSON.parse(value) : value),
   parseLiteral: ast => {
     const parser = astToJson[ast.kind]
     return parser ? parser(ast) : null

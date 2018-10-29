@@ -1,4 +1,3 @@
-
 import * as Sequelize from 'sequelize'
 
 export type Model<TInstance, TAttribute> = Sequelize.Model<TInstance, TAttribute>
@@ -19,9 +18,7 @@ interface ExtendedOptions extends Sequelize.Options {
 }
 
 const createSequelize = (config: any) => {
-  const logging = Config.sequelize.logLevel
-    ? (sql: string) => log[Config.sequelize.logLevel as any](sql)
-    : false
+  const logging = Config.sequelize.logLevel ? (sql: string) => log[Config.sequelize.logLevel as any](sql) : false
   const sequelizeConfig: ExtendedOptions = {
     username: 'unkown',
     password: 'unkown',
@@ -32,10 +29,10 @@ const createSequelize = (config: any) => {
     log(`creating from env: ${process.env[config.use_env_variable]}`)
     return new Sequelize(process.env[config.use_env_variable], sequelizeConfig)
   } else {
-    const { database, username, password, ...options } = ({
+    const { database, username, password, ...options } = {
       ...sequelizeConfig,
       ...config,
-    } as any)
+    } as any
     log(`creating from config: ${username}@${database}`)
     return new Sequelize(database, username, password, options)
   }
@@ -74,13 +71,11 @@ export interface SequelizeAttributeType<Attr, Inst extends Instance<Attr>> exten
 
 export type ModelAttributes<Attr, Inst extends Instance<Attr>> = Record<string, SequelizeAttributeType<Attr, Inst>>
 
-export const getModelAttributes = <Attr, Inst extends Instance<Attr>>(
-  model: Model<Inst & Attr, Attr>,
-) => (model as any).attributes as ModelAttributes<Attr, Inst>
+export const getModelAttributes = <Attr, Inst extends Instance<Attr>>(model: Model<Inst & Attr, Attr>) =>
+  (model as any).attributes as ModelAttributes<Attr, Inst>
 
-export const getModelAssociations = <Attr, Inst extends Instance<Attr>>(
-  model: Model<Inst & Attr, Attr>,
-) => (model as any).associations as ModelAttributes<Attr, Inst>
+export const getModelAssociations = <Attr, Inst extends Instance<Attr>>(model: Model<Inst & Attr, Attr>) =>
+  (model as any).associations as ModelAttributes<Attr, Inst>
 
 export { Sequelize }
 export const sequelize = createSequelize(config)
@@ -118,10 +113,7 @@ export type DataTypes =
   | DataTypeUUIDv4
   | DataTypeVirtual
 
-export type DataTypeAnyFloat =
-  | DataTypeFloat
-  | DataTypeDouble
-  | DataTypeReal
+export type DataTypeAnyFloat = DataTypeFloat | DataTypeDouble | DataTypeReal
 
 export type DataTypeAnyInteger =
   | DataTypeNumber
@@ -130,9 +122,7 @@ export type DataTypeAnyInteger =
   | DataTypeMediumInt
   | DataTypeInteger
 
-export type DataTypeAnyNumber =
-  | DataTypeAnyFloat
-  | DataTypeAnyInteger
+export type DataTypeAnyNumber = DataTypeAnyFloat | DataTypeAnyInteger
 
 export type DataTypeAnyString =
   | DataTypeChar
@@ -141,17 +131,9 @@ export type DataTypeAnyString =
   | DataTypeBigInt // need to be stored as string
   | DataTypeDecimal // need to be stored as string
 
-export type DataTypeAnyDate =
-  | DataTypeDate
-  | DataTypeDateOnly
-  | DataTypeTime
+export type DataTypeAnyDate = DataTypeDate | DataTypeDateOnly | DataTypeTime
 
-export type DataTypeScalar =
-  | DataTypeAnyNumber
-  | DataTypeAnyString
-  | DataTypeAnyDate
-  | DataTypeUUID
-  | DataTypeBoolean
+export type DataTypeScalar = DataTypeAnyNumber | DataTypeAnyString | DataTypeAnyDate | DataTypeUUID | DataTypeBoolean
 
 export interface DataTypeAbstract {
   dialectTypes: string
@@ -160,7 +142,7 @@ export interface DataTypeAbstract {
   key: string
 }
 export interface DataTypeAbstractString extends DataTypeAbstract {
-  options: { binary: boolean, length: number }
+  options: { binary: boolean; length: number }
   _binary: boolean
   _length: number
 }

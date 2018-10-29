@@ -1,6 +1,4 @@
-import {
-  GraphQLScalarType,
-} from 'graphql'
+import { GraphQLScalarType } from 'graphql'
 
 export const UploadType = new GraphQLScalarType({
   name: 'Upload',

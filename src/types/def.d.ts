@@ -1,4 +1,3 @@
-
 import { GraphQLFieldResolver } from 'graphql'
 import { Context } from 'services/context'
 

@@ -1,4 +1,3 @@
-
 import {
   GraphQLEnumType,
   GraphQLFieldResolver,
@@ -62,14 +61,8 @@ export type FindFn<Result> = (
   offset: number,
   limit: number,
 ) => Promise<Result>
-export type UpdateFn<Result> = (
-  where: any,
-  order: Dictionary<OrderDirections>,
-  data: any,
-) => Promise<Result>
-export type CreateFn<Result> = (
-  data: any,
-) => Promise<Result>
+export type UpdateFn<Result> = (where: any, order: Dictionary<OrderDirections>, data: any) => Promise<Result>
+export type CreateFn<Result> = (data: any) => Promise<Result>
 
 export interface Methods<Type> {
   createOne: CreateFn<Type>
@@ -124,8 +117,12 @@ export type Mapper<Type, Result> = (type: Type) => Result
 export type Check<Type> = Mapper<Type, boolean>
 
 // convert an attribute to a GraphQLType
-export type AttributeGraphQLMapper = (key: string, type: Attribute, model: Model, config: BuildConfiguration) =>
-  BaseField
+export type AttributeGraphQLMapper = (
+  key: string,
+  type: Attribute,
+  model: Model,
+  config: BuildConfiguration,
+) => BaseField
 // convert some type into an Model
 export type TypeModelMapper<Type> = Mapper<Type, GraphQLType>
 

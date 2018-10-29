@@ -30,10 +30,13 @@ const getMutationResolvers = (entityName, data) => ({
 })
 
 export const resolver = (entities: string[]) => ({
-  Query: entities.reduce((resolvers, key) => ({
-    ...resolvers,
-    ...getQueryResolvers(getTypeFromKey(key), data[key]),
-  }), {}),
+  Query: entities.reduce(
+    (resolvers, key) => ({
+      ...resolvers,
+      ...getQueryResolvers(getTypeFromKey(key), data[key]),
+    }),
+    {},
+  ),
   //     {},
   //     resolvers,
   //     getQueryResolvers(getTypeFromKey(key), data[key])

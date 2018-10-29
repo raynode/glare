@@ -1,14 +1,6 @@
-
 import { config } from 'config'
 
-import {
-  DataTypes,
-  Instance,
-  Node,
-  sequelize,
-  Sequelize,
-  SequelizeAttributes,
-} from 'services/db'
+import { DataTypes, Instance, Node, sequelize, Sequelize, SequelizeAttributes } from 'services/db'
 
 export interface AssetAttributes extends Partial<Node> {
   id: string
@@ -47,7 +39,9 @@ const attributes: SequelizeAttributes<AssetAttributes> = {
   },
   url: {
     type: Sequelize.VIRTUAL,
-    get(...args) { return `${config.host}/asset/${this.get('id')}` },
+    get(...args) {
+      return `${config.host}/asset/${this.get('id')}`
+    },
   },
   createdAt: {
     allowNull: false,

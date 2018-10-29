@@ -40,8 +40,7 @@ export const getTypeFromKey = (key: string) => camelize(singularize(key))
  * @param {String} fieldName 'user_id'
  * @return {String} 'users'
  */
-export const getRelatedKey = (fieldName: string) =>
-    pluralize(fieldName.substr(0, fieldName.length - 3))
+export const getRelatedKey = (fieldName: string) => pluralize(fieldName.substr(0, fieldName.length - 3))
 
 /**
  *
@@ -55,5 +54,4 @@ export const getReverseRelatedField = (key: string) => `${singularize(key)}_id`
  * @param {String} fieldName 'user_id'
  * @return {String} 'User'
  */
-export const getRelatedType = (fieldName: string) =>
-    getTypeFromKey(fieldName.substr(0, fieldName.length - 3))
+export const getRelatedType = (fieldName: string) => getTypeFromKey(fieldName.substr(0, fieldName.length - 3))

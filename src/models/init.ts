@@ -1,4 +1,3 @@
-
 import { config } from 'config'
 import { sequelize } from 'services/db'
 import { create } from 'services/logger'
@@ -21,8 +20,7 @@ export const models = {
 }
 
 const associate = (modelName: string) => {
-  if (models[modelName].associate)
-    models[modelName].associate(models)
+  if (models[modelName].associate) models[modelName].associate(models)
 }
 
 Object.keys(models).forEach(associate)

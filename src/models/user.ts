@@ -1,4 +1,3 @@
-
 import { DataTypes, Node, sequelize, Sequelize, SequelizeAttributes } from 'services/db'
 
 import { AccountInstance } from 'models/account'
@@ -78,7 +77,9 @@ export const User = sequelize.define<UserInstance, UserAttributes>('User', attri
 export const Actions = {
   findAll: () => User.findAll(),
   findById: (id: string) => User.findById(id),
-  findByEmail: (email: string) => User.findOne({ where: { email }}),
+  findByEmail: (email: string) => User.findOne({ where: { email } }),
 }
 
-User.associate = models => { /**/ }
+User.associate = models => {
+  /**/
+}

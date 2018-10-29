@@ -1,15 +1,14 @@
-
 import { Document, Types } from 'mongoose'
 
 // import { collectionNameToType, getMongoConnection } from 'db'
 
 import { Context } from 'services/context'
-import { loadTypeDefs } from 'services/typeDefs'
+import { loadTypeDefs } from 'services/typeDefs'
 import { TypeDef } from 'types/def'
 
 import { createSubscritionResolver, pubsub, Subscriptions } from 'services/pubsub'
 
-import { create } from 'services/logger'
+import { create } from 'services/logger'
 const log = create('types', 'root')
 
 const resolveNode = async <T>(_, { id }): Promise<T> => {

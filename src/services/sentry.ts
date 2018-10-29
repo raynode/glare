@@ -1,13 +1,9 @@
-
 export interface ConnectSentryProps {
   dsn: string
   environment: string
 }
-export const connectSentry = async ({
-  dsn,
-  environment,
-}: ConnectSentryProps) => {
-  if(!dsn)
+export const connectSentry = async ({ dsn, environment }: ConnectSentryProps) => {
+  if (!dsn)
     return {
       installed: false,
       captureEvent: (event: any): void => null,

@@ -1,4 +1,3 @@
-
 import { PubSub, withFilter } from 'apollo-server'
 
 export enum Subscriptions {

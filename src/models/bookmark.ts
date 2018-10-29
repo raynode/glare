@@ -1,4 +1,3 @@
-
 import { DataTypes, Node, sequelize, Sequelize, SequelizeAttributes } from 'services/db'
 
 import { TagInstance } from 'models/tag'

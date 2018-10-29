@@ -23,47 +23,37 @@ import { UploadType } from './types/upload-type'
 import { objects } from './collections'
 import * as guards from './sequelize-type-guards'
 // Map of special characters
-const specialCharsMap = new Map([
-  ['¼', 'frac14'],
-  ['½', 'frac12'],
-  ['¾', 'frac34'],
-])
+const specialCharsMap = new Map([['¼', 'frac14'], ['½', 'frac12'], ['¾', 'frac34']])
 
 const sanitizeEnumValue = (value: string) => {
   return value
     .trim()
     .replace(/([^_a-zA-Z0-9])/g, (_, p) => specialCharsMap.get(p) || ' ')
     .split(' ')
-    .map((v, i) => i ? _.upperFirst(v) : v)
+    .map((v, i) => (i ? _.upperFirst(v) : v))
     .join('')
     .replace(/(^\d)/, '_$1')
 }
 
 export const toGraphQLScalar = (sequelizeType: DataTypeScalar): GraphQLScalarType => {
-  if(guards.isBoolean(sequelizeType))
-    return GraphQLBoolean
+  if (guards.isBoolean(sequelizeType)) return GraphQLBoolean
 
-  if(guards.isFloatType(sequelizeType))
-    return GraphQLFloat
+  if (guards.isFloatType(sequelizeType)) return GraphQLFloat
 
-  if(guards.isDateType(sequelizeType))
-    return DateType
+  if (guards.isDateType(sequelizeType)) return DateType
 
-  if(guards.isStringType(sequelizeType))
-    return GraphQLString
+  if (guards.isStringType(sequelizeType)) return GraphQLString
 
-  if(guards.isUUID(sequelizeType))
-    return GraphQLID
+  if (guards.isUUID(sequelizeType)) return GraphQLID
 
-  if(guards.isIntegerType(sequelizeType))
-    return GraphQLInt
+  if (guards.isIntegerType(sequelizeType)) return GraphQLInt
 
   console.log(sequelizeType)
   throw new Error('Unkown Scalar Type found')
 }
 
 export const rangeSubTypeToGraphQL = (subtype: RangeSubTypes) => {
-  switch(subtype.toLowerCase()) {
+  switch (subtype.toLowerCase()) {
     case 'integer':
       return GraphQLInt
     case 'bigint':
@@ -84,19 +74,16 @@ export const rangeSubTypeToGraphQL = (subtype: RangeSubTypes) => {
 }
 
 export const toGraphQL = (sequelizeType: DataTypes): GraphQLType => {
-
-  if(!guards.isAbstract(sequelizeType)) {
+  if (!guards.isAbstract(sequelizeType)) {
     console.log(sequelizeType)
     throw new Error('Input is not of type abstract-sequelize-type')
   }
 
-  if(guards.isScalarType(sequelizeType))
-    return toGraphQLScalar(sequelizeType)
+  if (guards.isScalarType(sequelizeType)) return toGraphQLScalar(sequelizeType)
 
-  if(guards.isArray(sequelizeType))
-    return new GraphQLList(toGraphQL(sequelizeType.type))
+  if (guards.isArray(sequelizeType)) return new GraphQLList(toGraphQL(sequelizeType.type))
 
-  if(guards.isEnum(sequelizeType))
+  if (guards.isEnum(sequelizeType))
     return new GraphQLEnumType({
       name: 'tempEnumName',
       values: _(sequelizeType.values)
@@ -105,29 +92,28 @@ export const toGraphQL = (sequelizeType: DataTypes): GraphQLType => {
         .value(),
     })
 
-  if(guards.isVirtual(sequelizeType))
-    return sequelizeType.returnType
-    ? toGraphQL(sequelizeType.returnType)
-    : GraphQLString
+  if (guards.isVirtual(sequelizeType))
+    return sequelizeType.returnType ? toGraphQL(sequelizeType.returnType) : GraphQLString
 
-  if(guards.isJson(sequelizeType))
-    return JSONType
+  if (guards.isJson(sequelizeType)) return JSONType
 
-  if(guards.isBlob(sequelizeType))
-    return UploadType
+  if (guards.isBlob(sequelizeType)) return UploadType
 
-  if(guards.isRange(sequelizeType)) {
+  if (guards.isRange(sequelizeType)) {
     const SubType = rangeSubTypeToGraphQL(sequelizeType._subtype)
     const name = `${capitalize(sequelizeType._subtype)}RangeType`
-    return objects.handle(name, new GraphQLObjectType({
+    return objects.handle(
       name,
-      fields: {
-        includeLowerBound: { type: GraphQLBoolean },
-        includeUpperBound: { type: GraphQLBoolean },
-        lowerBound: { type: SubType },
-        upperBound: { type: SubType },
-      },
-    }))
+      new GraphQLObjectType({
+        name,
+        fields: {
+          includeLowerBound: { type: GraphQLBoolean },
+          includeUpperBound: { type: GraphQLBoolean },
+          lowerBound: { type: SubType },
+          upperBound: { type: SubType },
+        },
+      }),
+    )
   }
 
   console.log(sequelizeType)

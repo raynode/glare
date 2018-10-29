@@ -1,4 +1,3 @@
-
 import { Instance, Model } from 'services/db'
 import { createSubscritionResolver, pubsub } from 'services/pubsub'
 
@@ -31,10 +30,12 @@ export const createBaseType = <Attr, Inst extends Instance<Attr> & Attr>(
   }
   const removeAllOfType = async (_, { input }) => {
     const instances = await findAllOfType(_, { input })
-    await Promise.all(instances.map(async instance => {
-      await instance.destroy()
-      pubsub.publish(events.deleted, instance)
-    }))
+    await Promise.all(
+      instances.map(async instance => {
+        await instance.destroy()
+        pubsub.publish(events.deleted, instance)
+      }),
+    )
     return instances
   }
   return {

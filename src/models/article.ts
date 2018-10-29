@@ -1,4 +1,3 @@
-
 import { DataTypes, Node, sequelize, Sequelize, SequelizeAttributes } from 'services/db'
 
 export interface ArticleAttributes extends Partial<Node> {
@@ -13,8 +12,7 @@ export interface ArticleAttributes extends Partial<Node> {
 
 export type ArticleInstance = Sequelize.Instance<ArticleAttributes> & ArticleAttributes
 
-const attributes: SequelizeAttributes<ArticleAttributes> = {
-}
+const attributes: SequelizeAttributes<ArticleAttributes> = {}
 
 export const Article = sequelize.define<ArticleInstance, ArticleAttributes>('Article', attributes)
 

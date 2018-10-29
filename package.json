@@ -17,6 +17,21 @@
     "type": "git",
     "url": "git+https://github.com/raynode/glare.git"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "{migrations,seeders,config}/*.js": [
+      "prettier",
+      "git add"
+    ],
+    "src/**/*.{ts,tsx}": [
+      "prettier",
+      "git add"
+    ]
+  },
   "keywords": [],
   "author": "",
   "license": "MIT",
@@ -81,9 +96,12 @@
     "@types/mock-fs": "^3.6.30",
     "faker": "^4.1.0",
     "gql2ts": "^1.8.2",
+    "husky": "^1.1.2",
     "jest": "^23.5.0",
+    "lint-staged": "^7.3.0",
     "mock-fs": "^4.6.0",
     "nodemon": "^1.18.3",
+    "prettier": "^1.14.3",
     "tslint": "^5.11.0"
   }
 }

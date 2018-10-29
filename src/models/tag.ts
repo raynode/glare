@@ -1,4 +1,3 @@
-
 import { DataTypes, Node, sequelize, Sequelize, SequelizeAttributes } from 'services/db'
 import { create } from 'services/logger'
 
@@ -93,8 +92,7 @@ Tag.associate = models => {
   })
 
   Object.keys(models).forEach(model => {
-    if(model === 'Tag' || model === 'Tag_Link')
-      return
+    if (model === 'Tag' || model === 'Tag_Link') return
 
     log(`Adding tags to ${model}`)
     const Model = models[model]

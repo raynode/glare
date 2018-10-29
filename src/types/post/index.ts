@@ -1,8 +1,7 @@
-
 import { Document, Types } from 'mongoose'
 
 import { Context } from 'services/context'
-import { loadTypeDefs } from 'services/typeDefs'
+import { loadTypeDefs } from 'services/typeDefs'
 import { TypeDef } from 'types/def'
 
 import { Post, PostAttributes, PostInstance } from 'models/post'
@@ -10,11 +9,11 @@ import { User } from 'models/user'
 
 import { user } from 'types/user'
 
-import { create } from 'services/logger'
+import { create } from 'services/logger'
 const log = create('types', 'post')
 
 import { createBaseType } from 'services/baseType'
-  // ...createBaseType('Post', Post),
+// ...createBaseType('Post', Post),
 
 export const post: TypeDef<PostInstance> = {
   name: 'Post',
@@ -49,10 +48,12 @@ export const post: TypeDef<PostInstance> = {
     },
   },
   Subscription: {},
-  joins: [{
-    name: 'User',
-    Resolver: {
-      posts: user => Post.findAll({ where: { userId: user.id }}),
+  joins: [
+    {
+      name: 'User',
+      Resolver: {
+        posts: user => Post.findAll({ where: { userId: user.id } }),
+      },
     },
-  }],
+  ],
 }

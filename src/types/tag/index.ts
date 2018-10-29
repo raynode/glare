@@ -1,13 +1,12 @@
-
 import { Document, Types } from 'mongoose'
 
 import { Context } from 'services/context'
-import { loadTypeDefs } from 'services/typeDefs'
+import { loadTypeDefs } from 'services/typeDefs'
 import { TypeDef } from 'types/def'
 
 import { Tag, TagInstance } from 'models/tag'
 
-import { create } from 'services/logger'
+import { create } from 'services/logger'
 const log = create('types', 'tag')
 
 export const tag: TypeDef<TagInstance> = {
@@ -26,10 +25,12 @@ export const tag: TypeDef<TagInstance> = {
     posts: tag => tag.getPosts(),
     users: tag => tag.getUsers(),
   },
-  joins: [{
-    name: 'User',
-    Resolver: {
-      tags: user => user.getTags(),
+  joins: [
+    {
+      name: 'User',
+      Resolver: {
+        tags: user => user.getTags(),
+      },
     },
-  }],
+  ],
 }
