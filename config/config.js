@@ -1,4 +1,3 @@
-
 module.exports = {
   development: {
     username: process.env.DEV_DB_USERNAME,

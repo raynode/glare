@@ -1,6 +1,6 @@
-'use strict';
+'use strict'
 
-const uuid = require('uuid/v4');
+const uuid = require('uuid/v4')
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
@@ -18,5 +18,5 @@ CREATE OR REPLACE FUNCTION updateUpdatedAt()
   down: async (queryInterface, Sequelize) => {
     await queryInterface.sequelize.query('DROP EXTENSION pgcrypto;')
     await queryInterface.sequelize.query('DROP FUNCTION IF EXISTS updateUpdatedAt;')
-  }
-};
+  },
+}

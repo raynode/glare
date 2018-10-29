@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 const fs = require('fs')
 const { join } = require('path')
@@ -11,14 +11,19 @@ module.exports = {
     const mimetype = MimeType.lookup(name)
     const type = mimetype.split('/')[0]
 
-    await queryInterface.bulkInsert('Assets', [{
-      name,
-      type,
-      mimetype,
-      data,
-    }], {})
+    await queryInterface.bulkInsert(
+      'Assets',
+      [
+        {
+          name,
+          type,
+          mimetype,
+          data,
+        },
+      ],
+      {},
+    )
   },
 
-  down: async (queryInterface, Sequelize) => {
-  }
-};
+  down: async (queryInterface, Sequelize) => {},
+}

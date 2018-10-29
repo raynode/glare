@@ -43,7 +43,6 @@ module.exports = {
       },
     })
 
-
     await queryInterface.sequelize.query(`
       ALTER TABLE "public"."Tags"
         ADD CONSTRAINT tags_normalized_name_need_to_be_lowercase
