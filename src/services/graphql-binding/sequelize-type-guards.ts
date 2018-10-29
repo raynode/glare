@@ -1,5 +1,4 @@
 import * as Sequelize from 'sequelize'
-const DataTypeConstructors = (Sequelize as any).DataTypes
 import {
   DataTypeAbstract,
   DataTypeAnyDate,
@@ -39,6 +38,8 @@ import {
   DataTypeUUIDv4,
   DataTypeVirtual,
 } from 'services/db'
+
+const DataTypeConstructors = (Sequelize as any).DataTypes
 
 export const isAbstract = (type: any): type is DataTypeAbstract => type instanceof DataTypeConstructors.ABSTRACT
 export const isString = (type: any): type is DataTypeString => type instanceof DataTypeConstructors.STRING

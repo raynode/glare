@@ -1,6 +1,7 @@
 import { capitalize, pluralize, singularize } from 'inflection'
 import { Dictionary, keyBy, map, mapValues } from 'lodash'
 import { Instance, Model as SeqModel } from 'services/db'
+
 import { Model } from './types'
 
 export interface RawModel<Attr, Inst extends Instance<Attr>> extends SeqModel<Inst & Attr, Attr> {

@@ -1,7 +1,8 @@
 import { Dictionary, reduce } from 'lodash'
-import { BuildConfiguration, Model } from './types'
-import { create } from 'services/logger'
 import { Sequelize } from 'services/db'
+import { create } from 'services/logger'
+
+import { BuildConfiguration, Model } from './types'
 
 const Op = Sequelize.Op
 

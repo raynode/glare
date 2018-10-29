@@ -1,9 +1,10 @@
 import config from 'config'
+
 import { decode, verify } from 'jsonwebtoken'
 import * as jwk from 'jwks-rsa'
 import fetch from 'node-fetch'
-
 import { create } from 'services/logger'
+
 const log = create('services', 'auth')
 
 export interface AuthResponse {

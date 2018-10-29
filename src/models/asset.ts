@@ -1,6 +1,6 @@
 import { config } from 'config'
 
-import { DataTypes, Instance, Node, sequelize, Sequelize, SequelizeAttributes } from 'services/db'
+import { DataTypes, Instance, Node, Sequelize, SequelizeAttributes, sequelize } from 'services/db'
 
 export interface AssetAttributes extends Partial<Node> {
   id: string

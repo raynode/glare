@@ -1,10 +1,8 @@
 import { GraphQLInputFieldConfig, GraphQLInputFieldConfigMap, GraphQLInputType, isInputType } from 'graphql'
+import { Dictionary, filter, forEach, mapValues, pickBy, reduce } from 'lodash'
 
 import { Attribute, BaseField, BuildConfiguration, Field, Model } from './types'
-
 import { nonNullGraphQL, toGraphQLList } from './utilities'
-
-import { Dictionary, filter, forEach, mapValues, pickBy, reduce } from 'lodash'
 
 interface FieldGroup {
   name: string

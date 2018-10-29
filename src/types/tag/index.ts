@@ -1,12 +1,10 @@
+import { Tag, TagInstance } from 'models/tag'
 import { Document, Types } from 'mongoose'
-
 import { Context } from 'services/context'
+import { create } from 'services/logger'
 import { loadTypeDefs } from 'services/typeDefs'
 import { TypeDef } from 'types/def'
 
-import { Tag, TagInstance } from 'models/tag'
-
-import { create } from 'services/logger'
 const log = create('types', 'tag')
 
 export const tag: TypeDef<TagInstance> = {

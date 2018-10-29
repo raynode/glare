@@ -1,6 +1,5 @@
-import { pluralize } from 'inflection'
 import GraphQLJSON from 'graphql-type-json'
-
+import { pluralize } from 'inflection'
 import { Instance, Model } from 'sequelize'
 
 // import all from './Query/all'
@@ -11,6 +10,7 @@ import { Instance, Model } from 'sequelize'
 // import remove from './Mutation/remove'
 // import entityResolver from './Entity'
 import { getTypeFromKey } from './name-converter'
+
 // import DateType from '../introspection/DateType'
 // import hasType from '../introspection/hasType'
 

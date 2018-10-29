@@ -1,9 +1,10 @@
-import { convertAttributeToField } from './convert-attribute-to-field'
-import { BuildConfiguration, Field, FieldFactory, ListItem, Model } from './types'
-import { arrayConcat, listMapFn, toGraphQLList } from './utilities'
-import { generateModelFields } from './generate-model-fields'
 import { GraphQLType } from 'graphql'
 import { each, filter, map } from 'lodash'
+
+import { convertAttributeToField } from './convert-attribute-to-field'
+import { generateModelFields } from './generate-model-fields'
+import { BuildConfiguration, Field, FieldFactory, ListItem, Model } from './types'
+import { arrayConcat, listMapFn, toGraphQLList } from './utilities'
 
 export const toListItem = <Type>(value: Type, name: string) => ({ name, value })
 

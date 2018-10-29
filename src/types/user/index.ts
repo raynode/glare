@@ -1,12 +1,10 @@
+import { Actions, User, UserInstance } from 'models/user'
 import { Document, Types } from 'mongoose'
-
 import { Context } from 'services/context'
+import { create } from 'services/logger'
 import { loadTypeDefs } from 'services/typeDefs'
 import { TypeDef } from 'types/def'
 
-import { Actions, User, UserInstance } from 'models/user'
-
-import { create } from 'services/logger'
 const log = create('types', 'user')
 
 export const user: TypeDef<UserInstance> = {

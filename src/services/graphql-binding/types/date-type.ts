@@ -1,5 +1,4 @@
 import { GraphQLScalarType } from 'graphql'
-
 import { isIntValueNode, isStringValueNode } from 'services/graphql-binding/graphql-node-guards'
 
 /**

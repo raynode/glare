@@ -1,6 +1,8 @@
+import { join } from 'path'
+
 import * as faker from 'faker'
 import * as mock from 'mock-fs'
-import { join } from 'path'
+
 import { loadTypeDefs } from './typeDefs'
 
 describe('utils/typeDefs:loadTypeDefs', () => {

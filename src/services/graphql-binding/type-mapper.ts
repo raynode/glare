@@ -1,3 +1,4 @@
+import { RenameTypes } from 'apollo-server'
 import {
   GraphQLBoolean,
   GraphQLEnumType,
@@ -10,18 +11,16 @@ import {
   GraphQLString,
   GraphQLType,
 } from 'graphql'
-
-import { RenameTypes } from 'apollo-server'
-
 import { capitalize } from 'inflection'
 import * as _ from 'lodash'
-import { DataTypes, DataTypeScalar, RangeSubTypes } from 'services/db'
+import { DataTypeScalar, DataTypes, RangeSubTypes } from 'services/db'
+
+import { objects } from './collections'
+import * as guards from './sequelize-type-guards'
 import { DateType } from './types/date-type'
 import { JSONType } from './types/json-type'
 import { UploadType } from './types/upload-type'
 
-import { objects } from './collections'
-import * as guards from './sequelize-type-guards'
 // Map of special characters
 const specialCharsMap = new Map([['¼', 'frac14'], ['½', 'frac12'], ['¾', 'frac34']])
 

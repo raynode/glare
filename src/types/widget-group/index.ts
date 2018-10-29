@@ -1,15 +1,12 @@
+import { Accounts } from 'db/accounts'
+import { Account, User } from 'db/models'
+import { Users } from 'db/users'
 import { Document, Types } from 'mongoose'
-
 import { Context } from 'services/context'
+import { create } from 'services/logger'
 import { loadTypeDefs } from 'services/typeDefs'
 import { TypeDef } from 'types/def'
 
-import { Account, User } from 'db/models'
-
-import { Accounts } from 'db/accounts'
-import { Users } from 'db/users'
-
-import { create } from 'services/logger'
 const log = create('types', 'widget-group')
 
 // query function to find all accounts

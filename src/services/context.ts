@@ -1,6 +1,6 @@
 import { User, UserInstance } from 'models/user'
-
 import { create } from 'services/logger'
+
 const log = create('services', 'context')
 
 export interface Context {

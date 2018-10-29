@@ -13,9 +13,8 @@ import {
   StringValueNode,
   VariableNode,
 } from 'graphql'
-import { property } from 'lodash'
-
 import { Kind } from 'graphql/language'
+import { property } from 'lodash'
 
 const astToJson = {
   [Kind.INT]: (ast: IntValueNode) => GraphQLInt.parseLiteral(ast),

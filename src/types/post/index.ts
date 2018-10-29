@@ -1,18 +1,15 @@
-import { Document, Types } from 'mongoose'
-
-import { Context } from 'services/context'
-import { loadTypeDefs } from 'services/typeDefs'
-import { TypeDef } from 'types/def'
-
 import { Post, PostAttributes, PostInstance } from 'models/post'
 import { User } from 'models/user'
-
+import { Document, Types } from 'mongoose'
+import { createBaseType } from 'services/baseType'
+import { Context } from 'services/context'
+import { create } from 'services/logger'
+import { loadTypeDefs } from 'services/typeDefs'
+import { TypeDef } from 'types/def'
 import { user } from 'types/user'
 
-import { create } from 'services/logger'
 const log = create('types', 'post')
 
-import { createBaseType } from 'services/baseType'
 // ...createBaseType('Post', Post),
 
 export const post: TypeDef<PostInstance> = {

@@ -1,4 +1,4 @@
-import { DataTypes, Node, sequelize, Sequelize, SequelizeAttributes } from 'services/db'
+import { DataTypes, Node, Sequelize, SequelizeAttributes, sequelize } from 'services/db'
 
 export interface ArticleAttributes extends Partial<Node> {
   stub: string

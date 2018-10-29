@@ -1,9 +1,10 @@
-import { fetchApiAccess, verifyToken } from 'authorization'
 import config from 'config'
+
+import { fetchApiAccess, verifyToken } from 'authorization'
 import { OAuth2Client } from 'google-auth-library'
 import { google } from 'googleapis'
-import { create } from 'services/logger'
 import fetch from 'node-fetch'
+import { create } from 'services/logger'
 
 const log = create('auth', 'google')
 

@@ -1,14 +1,15 @@
+import { config as Config } from 'config'
+
 import * as Sequelize from 'sequelize'
+import { create } from 'services/logger'
 
 export type Model<TInstance, TAttribute> = Sequelize.Model<TInstance, TAttribute>
 export type Models = Sequelize.Models
 export type Instance<TAttribute> = Sequelize.Instance<TAttribute>
 
-import { create } from 'services/logger'
 const log = create('db')
 
 const env = process.env.NODE_ENV || 'development'
-import { config as Config } from 'config'
 const config = Config.sequelize[env]
 
 interface ExtendedOptions extends Sequelize.Options {

@@ -1,7 +1,6 @@
-import { DataTypes, Instance, Node, sequelize, Sequelize, SequelizeAttributes } from 'services/db'
-
 import { TagInstance } from 'models/tag'
 import { UserInstance } from 'models/user'
+import { DataTypes, Instance, Node, Sequelize, SequelizeAttributes, sequelize } from 'services/db'
 
 export interface PostAttributes extends Partial<Node> {
   id: string

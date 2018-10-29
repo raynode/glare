@@ -1,21 +1,3 @@
-import { convertAttributeToField } from './convert-attribute-to-field'
-import { generateModelArgsParser } from './generate-model-args-parser'
-import { generateModelAssociationFields } from './generate-model-association-fields'
-import {
-  AttributeModifiers,
-  createFieldsGenerator,
-  createFilterModifier,
-  mapToGraphQLInputFieldConfigMap,
-  removeDescriptionModifier,
-  removeInvisibleAttributes,
-} from './generate-model-fields'
-import * as guards from './sequelize-type-guards'
-import { toGraphQL } from './type-mapper'
-import { Association, BuildConfiguration, Field, ListItem, Model, ThunkField } from './types'
-import { listReducer, nonNullGraphQL, toGraphQLList } from './utilities'
-
-import { Dictionary, each, filter, flatten, keyBy, map, mapValues, some } from 'lodash'
-
 import {
   GraphQLEnumType,
   GraphQLFieldConfig,
@@ -33,10 +15,27 @@ import {
   isInputType,
   isOutputType,
 } from 'graphql'
-
+import { capitalize, pluralize, singularize } from 'inflection'
+import { Dictionary, each, filter, flatten, keyBy, map, mapValues, some } from 'lodash'
+import { Instance, Model as SeqModel } from 'services/db'
 import { create } from 'services/logger'
 
 import { collectionGenerator, enums as enumTypes } from './collections'
+import { convertAttributeToField } from './convert-attribute-to-field'
+import { generateModelArgsParser } from './generate-model-args-parser'
+import { generateModelAssociationFields } from './generate-model-association-fields'
+import {
+  AttributeModifiers,
+  createFieldsGenerator,
+  createFilterModifier,
+  mapToGraphQLInputFieldConfigMap,
+  removeDescriptionModifier,
+  removeInvisibleAttributes,
+} from './generate-model-fields'
+import * as guards from './sequelize-type-guards'
+import { toGraphQL } from './type-mapper'
+import { Association, BuildConfiguration, Field, ListItem, Model, ThunkField } from './types'
+import { listReducer, nonNullGraphQL, toGraphQLList } from './utilities'
 
 const inputTypes = collectionGenerator<GraphQLInputObjectType>({})
 const outputTypes = collectionGenerator<GraphQLObjectType>({})
@@ -55,8 +54,6 @@ const defaultBuildConfiguration: Partial<BuildConfiguration> = {
   typeModelMapper: toGraphQL,
 }
 
-import { capitalize, pluralize, singularize } from 'inflection'
-import { Instance, Model as SeqModel } from 'services/db'
 
 interface Binding {
   queryFields: Record<string, GraphQLFieldConfig<any, any>>
