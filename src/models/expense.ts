@@ -1,7 +1,7 @@
 import { AccountInstance } from 'models/account'
 import { TagInstance } from 'models/tag'
 import { UserInstance } from 'models/user'
-import { DataTypes, Node, Sequelize, SequelizeAttributes, sequelize } from 'services/db'
+import { DataTypes, Node, Sequelize, sequelize, SequelizeAttributes } from 'services/db'
 
 export interface ExpenseAttributes extends Partial<Node> {
   id: string
@@ -29,8 +29,8 @@ const attributes: SequelizeAttributes<ExpenseAttributes> = {
     defaultValue: Sequelize.fn('gen_random_uuid'),
   },
   amount: { type: Sequelize.DECIMAL, allowNull: false },
-  accountId: { type: Sequelize.UUID, allowNull: false },
-  userId: { type: Sequelize.UUID, allowNull: false },
+  accountId: { type: Sequelize.UUID, allowNull: false, visible: false },
+  userId: { type: Sequelize.UUID, allowNull: false, visible: false },
 }
 
 export const Expense = sequelize.define<ExpenseInstance, ExpenseAttributes>('Expense', attributes)
@@ -43,8 +43,8 @@ export const Actions = {
 Expense.associate = models => {
   // associations can be defined here
   Expense.belongsTo(models.User, {
-    foreignKey: 'id',
     as: 'user',
+    foreignKey: 'userId',
   })
 
   models.User.hasMany(Expense, {
@@ -54,8 +54,8 @@ Expense.associate = models => {
   })
 
   Expense.belongsTo(models.Account, {
-    foreignKey: 'id',
     as: 'account',
+    foreignKey: 'accountId',
   })
 
   models.Account.hasMany(Expense, {

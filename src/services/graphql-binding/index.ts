@@ -54,7 +54,6 @@ const defaultBuildConfiguration: Partial<BuildConfiguration> = {
   typeModelMapper: toGraphQL,
 }
 
-
 interface Binding {
   queryFields: Record<string, GraphQLFieldConfig<any, any>>
   mutationFields: Record<string, GraphQLFieldConfig<any, any>>
@@ -62,7 +61,7 @@ interface Binding {
 
 export const generateInitialModelData = (configuration: BuildConfiguration) => (model: Model) => {
   if (model.initialized) return model
-  console.log('===> ', model.name)
+  baseLog('===> ', model.name)
   model.initialized = true
   // model.fields = generateModelFields(model, configuration)
   // model.createFields = generateModelFields(model, configuration)
@@ -174,7 +173,7 @@ export const addModelToFields = (model: Model, initialModelData: (model: Model) 
   allowNull = true,
 }: Association) => {
   // tslint:disable-next-line
-  console.log(
+  baseLog(
     `============> Adding ${model.name}.${as} = ${single ? target.name : `[${target.name}!]`}${allowNull ? '' : '!'}`,
   )
   const targetModel = initialModelData(target)
@@ -190,6 +189,7 @@ export const addModelToFields = (model: Model, initialModelData: (model: Model) 
     type: allowNull ? findModel : nonNullGraphQL(findModel),
   }
   const selectionResolver = async filter => {
+    baseLog('selection-resolver:', filter)
     if (!filter || !Object.keys(filter).length) return single ? null : []
     const result = single
       ? await targetModel.methods.findOne(filter, null, null, null)
@@ -207,6 +207,7 @@ export const addModelToFields = (model: Model, initialModelData: (model: Model) 
     // args: { where: targetModel.where },
     resolve: async (instance, args) => {
       const fn = `get${capitalize(as)}`
+      baseLog(fn, args)
       if (!instance[fn]) throw new Error(`Problems with ${model.name}:${targetModel.name}`)
       return instance[fn]()
     },

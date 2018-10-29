@@ -13,7 +13,7 @@ import {
 } from 'graphql'
 import { capitalize } from 'inflection'
 import * as _ from 'lodash'
-import { DataTypeScalar, DataTypes, RangeSubTypes } from 'services/db'
+import { DataTypes, DataTypeScalar, RangeSubTypes } from 'services/db'
 
 import { objects } from './collections'
 import * as guards from './sequelize-type-guards'

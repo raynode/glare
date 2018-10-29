@@ -1,6 +1,6 @@
 import { config } from 'config'
 
-import { DEBUG, LogLevel, WARN, configure, create, join, split } from '@raynode/nx-logger'
+import { configure, create, DEBUG, join, LogLevel, split, WARN } from '@raynode/nx-logger'
 import { transport } from '@raynode/nx-logger-debug'
 import { parseError } from '@sentry/node/dist/parsers'
 import { SentryEvent, Severity } from '@sentry/types'

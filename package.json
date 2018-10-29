@@ -24,13 +24,13 @@
   },
   "lint-staged": {
     "{migrations,seeders,config}/*.js": [
-      "import-sort",
-      "prettier",
+      "import-sort --write",
+      "prettier --write",
       "git add"
     ],
     "src/**/*.{ts,tsx}": [
-      "import-sort --write",
-      "prettier",
+      "tslint --fix",
+      "prettier --write",
       "git add"
     ]
   },

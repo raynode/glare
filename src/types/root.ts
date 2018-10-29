@@ -1,13 +1,11 @@
 import { Document, Types } from 'mongoose'
 import { Context } from 'services/context'
 import { create } from 'services/logger'
-import { Subscriptions, createSubscritionResolver, pubsub } from 'services/pubsub'
+import { createSubscritionResolver, pubsub, Subscriptions } from 'services/pubsub'
 import { loadTypeDefs } from 'services/typeDefs'
 import { TypeDef } from 'types/def'
 
 // import { collectionNameToType, getMongoConnection } from 'db'
-
-
 
 const log = create('types', 'root')
 

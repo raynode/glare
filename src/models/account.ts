@@ -1,7 +1,7 @@
 import { ExpenseInstance } from 'models/expense'
 import { TagInstance } from 'models/tag'
 import { User, UserInstance } from 'models/user'
-import { DataTypes, Node, Sequelize, SequelizeAttributes, sequelize } from 'services/db'
+import { DataTypes, Node, Sequelize, sequelize, SequelizeAttributes } from 'services/db'
 
 export interface AccountAttributes extends Partial<Node> {
   id: string

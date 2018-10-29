@@ -2,7 +2,7 @@ import { AccountInstance } from 'models/account'
 import { ExpenseInstance } from 'models/expense'
 import { PostInstance } from 'models/post'
 import { UserInstance } from 'models/user'
-import { DataTypes, Node, Sequelize, SequelizeAttributes, sequelize } from 'services/db'
+import { DataTypes, Node, Sequelize, sequelize, SequelizeAttributes } from 'services/db'
 import { create } from 'services/logger'
 
 const log = create('models/tag')

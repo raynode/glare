@@ -22,6 +22,7 @@ export const models = {
 }
 
 // associate all models
-each(models, model => model.associate ? model.associate(models) : null)
+log('Running associations')
+each(models, model => (model.associate ? model.associate(models) : null))
 
 export const initialized = sequelize.sync({})
