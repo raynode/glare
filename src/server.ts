@@ -2,9 +2,9 @@
 import { config } from 'config'
 import { Log } from 'services/logger'
 
+import * as koaCors from '@koa/cors'
 import * as Koa from 'koa'
 import * as koaBody from 'koa-body'
-import * as koaCors from '@koa/cors'
 import * as Router from 'koa-router'
 
 import { ApolloServer } from 'apollo-server-koa'
@@ -13,6 +13,8 @@ import { buildGraphQL } from 'services/graphql-binding'
 import { convertToModel } from 'services/graphql-binding/convert-to-model'
 
 import { initialized, models } from 'models/init'
+
+import { map } from 'lodash'
 
 import { File } from 'formidable'
 import * as fs from 'fs'
@@ -24,11 +26,8 @@ import {
 
 export const server = async (log: Log) => {
   const apolloLogger = log.create('apollo-server')
-  const bindings = buildGraphQL([
-    convertToModel(models.Asset),
-    convertToModel(models.Post),
-    convertToModel(models.User),
-  ])
+
+  const bindings = buildGraphQL(map(models, convertToModel))
 
   const { queryFields, mutationFields } = bindings
 
