@@ -2,9 +2,9 @@
 import { config } from 'config'
 import { Log } from 'services/logger'
 
+import * as koaCors from '@koa/cors'
 import * as Koa from 'koa'
 import * as koaBody from 'koa-body'
-import * as koaCors from '@koa/cors'
 import * as Router from 'koa-router'
 
 import { ApolloServer } from 'apollo-server-koa'

@@ -8,8 +8,8 @@ import { Tag } from 'models/tag'
 import { User } from 'models/user'
 import { sequelize } from 'services/db'
 import { create } from 'services/logger'
+import { each } from 'lodash'
 const log = create('models')
-
 
 export const models = {
   Account,
@@ -20,10 +20,7 @@ export const models = {
   User,
 }
 
-const associate = (modelName: string) => {
-  if (models[modelName].associate) models[modelName].associate(models)
-}
-
-Object.keys(models).forEach(associate)
+// associate all models
+each(models, model => model.associate ? model.associate(models) : null)
 
 export const initialized = sequelize.sync({})
