@@ -64,7 +64,7 @@ export type FindFn<Result> = (
 export type UpdateFn<Result> = (where: any, order: Dictionary<OrderDirections>, data: any) => Promise<Result>
 export type CreateFn<Result> = (data: any) => Promise<Result>
 
-export interface Methods<Type> {
+export interface Methods<Type = any> {
   createOne: CreateFn<Type>
   findMany: FindFn<Type[]>
   findOne: FindFn<Type>
@@ -83,14 +83,14 @@ type OutputTypesNames = 'model' | 'list'
 type EnumTypesNames = 'order'
 
 export interface BaseModel<Type = any> {
+  associations: Associations
+  assocResolvers?: any[]
+  attributes: Attributes
+  fieldNames: Record<InputTypesNames | OutputTypesNames | EnumTypesNames, string>
+  inspect: () => string
   methods: Methods<Type>
   name: string
-  attributes: Attributes
-  associations: Associations
-  assocResolvers: any[]
-  fieldNames: Record<InputTypesNames | OutputTypesNames | EnumTypesNames, string>
   names: Record<ModelNames, string>
-  inspect: () => string
 }
 
 export interface Model<Type = any> extends BaseModel<Type> {
@@ -106,8 +106,6 @@ export interface Model<Type = any> extends BaseModel<Type> {
   initialized?: boolean
   inspect?: () => string
   listType?: GraphQLObjectType
-  name: string
-  names: Record<ModelNames, string>
   type?: GraphQLObjectType
   updateType?: GraphQLInputObjectType
   where?: { type: GraphQLInputObjectType }

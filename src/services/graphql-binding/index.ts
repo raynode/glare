@@ -42,7 +42,7 @@ const outputTypes = collectionGenerator<GraphQLObjectType>({})
 
 const baseLog = create('graphql-binding')
 
-const defaultBuildConfiguration: Partial<BuildConfiguration> = {
+const defaultBuildConfiguration: BuildConfiguration = {
   attributeGraphQLMapper: convertAttributeToField,
   isAttributeVisible: type => !guards.isRange(type),
   isArithmeticAttribute: type => guards.isDate(type) || guards.isNumericType(type) || guards.isUUID(type),
@@ -221,8 +221,8 @@ export const addModelToFields = (model: Model, initialModelData: (model: Model) 
   }
 }
 
-export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
-  const configuration = { ...defaultBuildConfiguration, ...config }
+export const buildGraphQL = (models: Model[], config?: Partial<BuildConfiguration>) => {
+  const configuration: BuildConfiguration = { ...defaultBuildConfiguration, ...config }
   const initialModelData = generateInitialModelData(configuration)
   models.forEach(initialModelData)
   models.forEach(model => map(model.associations, addModelToFields(model, initialModelData)))
@@ -230,7 +230,7 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
   const bindings = models.reduce(
     (memo: Binding, model) => {
       const baseModelLog = baseLog.create(model.name)
-      model.filterParser = generateModelArgsParser(config, model)
+      model.filterParser = generateModelArgsParser(configuration, model)
 
       const whereFilter = new GraphQLInputObjectType({
         name: model.names.filters,

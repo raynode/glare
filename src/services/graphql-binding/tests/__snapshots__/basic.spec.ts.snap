@@ -1,0 +1,41 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`basic graphql generation should create a basic graphql setup from a model 1`] = `
+"type BasicTest {
+  stringField: String
+}
+
+input BasicTestFilter {
+  stringField: String
+}
+
+enum BasicTestOrderEnum {
+  stringField_ASC
+  stringField_DESC
+}
+
+input BasicTestUpdateInput {
+  stringField: String
+}
+
+input InitialBasicTest {
+  stringField: String
+}
+
+type Mutation {
+  createBasicTest(data: InitialBasicTest!): BasicTest
+  updateBasicTest(where: BasicTestFilter!, data: BasicTestUpdateInput!): BasicTest
+  deleteBasicTests(where: BasicTestFilter!): [BasicTest!]!
+}
+
+input Page {
+  limit: Int
+  offset: Int
+}
+
+type Query {
+  BasicTest(where: BasicTestFilter!, order: BasicTestOrderEnum): BasicTest
+  BasicTests(where: BasicTestFilter, order: BasicTestOrderEnum, page: Page): [BasicTest!]!
+}
+"
+`;
