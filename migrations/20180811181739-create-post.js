@@ -24,9 +24,8 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING,
       },
-      image: {
-        allowNull: false,
-        type: Sequelize.STRING,
+      imageId: {
+        type: Sequelize.UUID,
       },
       createdAt: {
         allowNull: false,

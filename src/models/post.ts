@@ -7,6 +7,7 @@ export interface PostAttributes extends Partial<Node> {
   stub: string
   title: string
   userId: string
+  imageId: string
   image?: string
   published: boolean
   author?: UserInstance
@@ -28,7 +29,7 @@ const attributes: SequelizeAttributes<PostAttributes> = {
   },
   stub: { type: Sequelize.STRING, allowNull: false },
   title: { type: Sequelize.STRING, allowNull: false },
-  image: { type: Sequelize.STRING, allowNull: false },
+  imageId: { type: Sequelize.UUID, visible: false },
   published: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false },
   userId: { type: Sequelize.UUID, allowNull: false, visible: false },
 }
@@ -37,8 +38,13 @@ export const Post = sequelize.define<PostInstance, PostAttributes>('Post', attri
 Post.associate = models => {
   // associations can be defined here
   Post.belongsTo(models.User, {
-    foreignKey: 'userId',
     as: 'author',
+    foreignKey: 'userId',
+  })
+
+  Post.belongsTo(models.Asset, {
+    as: 'image',
+    foreignKey: 'imageId',
   })
 
   models.User.hasMany(Post, {

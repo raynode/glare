@@ -6,9 +6,10 @@ const MimeType = require('mimetype')
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    const data = fs.readFileSync(join(__dirname, 'logo.svg'))
-    const name = 'GodBlessTheChild-Logo.svg'
-    const mimetype = MimeType.lookup(name)
+    const filename = 'logo.svg'
+    const data = fs.readFileSync(join(__dirname, filename))
+    const name = 'GodBlessTheChild'
+    const mimetype = MimeType.lookup(filename)
     const type = mimetype.split('/')[0]
 
     await queryInterface.bulkInsert(
@@ -23,6 +24,13 @@ module.exports = {
       ],
       {},
     )
+
+    const imageId = await queryInterface.rawSelect('Assets', { where: { name } }, ['id'])
+
+    const id = await queryInterface.rawSelect('Posts', { where: { stub: 'my-stub' } }, ['id'])
+
+    const query = `UPDATE "public"."Posts" SET "imageId" = '${imageId}' WHERE "id" = '${id}';`
+    const res = await queryInterface.sequelize.query(query)
   },
 
   down: async (queryInterface, Sequelize) => {},

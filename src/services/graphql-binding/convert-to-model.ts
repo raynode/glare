@@ -12,13 +12,24 @@ export interface RawModel<Attr, Inst extends Instance<Attr>> extends SeqModel<In
 }
 
 export const models = {}
-export const convertToModel = <Attr, Inst extends Instance<Attr> & Attr>(rawModel: SeqModel<Inst, Attr>): Model => {
+export const convertToModel = <Attr, Inst extends Instance<Attr> & Attr>(
+  rawModel: SeqModel<Inst, Attr>,
+): Model<Inst> => {
   const localModel: RawModel<Attr, Inst> = rawModel as any
 
-  const name = capitalize(singularize(localModel.name))
   // check model cache
+  const name = capitalize(singularize(localModel.name))
   if (models[name]) return models[name]
-  const model: Model = {
+
+  const associatedModelnames = map(localModel.associations, association => ({
+    ...localModel.attributes[association.foreignKey],
+    as: association.as,
+    model: association.target,
+    modelName: capitalize(singularize(association.target.name)),
+    single: association.isSingleAssociation,
+  }))
+
+  const model: any = {
     name,
     attributes: localModel.attributes,
     associations: {},
@@ -55,16 +66,6 @@ export const convertToModel = <Attr, Inst extends Instance<Attr> & Attr>(rawMode
   }
   // add incomplete-model to cache to prevent loops
   models[name] = model
-
-  const associatedModelnames = map(localModel.associations, association => {
-    return {
-      ...localModel.attributes[association.foreignKey],
-      as: association.as,
-      model: association.target,
-      modelName: capitalize(singularize(association.target.name)),
-      single: association.isSingleAssociation,
-    }
-  })
 
   model.associations = mapValues(
     keyBy(

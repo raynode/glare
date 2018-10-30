@@ -82,7 +82,6 @@ module.exports = {
       {
         stub: 'my-stub',
         title: 'My first Blogpost',
-        image: 'unkown image :-(',
         userId,
       },
     ])

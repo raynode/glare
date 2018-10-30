@@ -82,19 +82,22 @@ type InputTypesNames = 'page' | 'create' | 'update'
 type OutputTypesNames = 'model' | 'list'
 type EnumTypesNames = 'order'
 
-export interface Model<Type = any> {
+export interface BaseModel<Type = any> {
+  methods: Methods<Type>
+  name: string
+  attributes: Attributes
+  associations: Associations
+  assocResolvers: any[]
+  fieldNames: Record<InputTypesNames | OutputTypesNames | EnumTypesNames, string>
+  names: Record<ModelNames, string>
+  inspect: () => string
+}
+
+export interface Model<Type = any> extends BaseModel<Type> {
   inputTypes?: Record<InputTypesNames, GraphQLInputObjectType>
   outputTypes?: Record<OutputTypesNames, GraphQLObjectType>
   enumTypes?: Record<EnumTypesNames, GraphQLEnumType>
-  fieldNames?: Record<InputTypesNames | OutputTypesNames | EnumTypesNames, string>
 
-  methods: Methods<Type>
-
-  // these functions convert the associations into data for the database
-  assocResolvers: any[]
-
-  associations: Associations
-  attributes: Attributes
   createFields?: Dictionary<BaseField>
   createType?: GraphQLInputObjectType
   fields?: Dictionary<BaseField>
@@ -108,6 +111,8 @@ export interface Model<Type = any> {
   type?: GraphQLObjectType
   updateType?: GraphQLInputObjectType
   where?: { type: GraphQLInputObjectType }
+
+  filterParser?: any
 }
 export type Models = Record<string, Model>
 

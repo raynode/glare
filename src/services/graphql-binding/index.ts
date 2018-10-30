@@ -169,7 +169,7 @@ export const addModelToFields = (model: Model, initialModelData: (model: Model) 
   as,
   single,
   target,
-  field,
+  field = as,
   allowNull = true,
 }: Association) => {
   // tslint:disable-next-line
@@ -189,25 +189,32 @@ export const addModelToFields = (model: Model, initialModelData: (model: Model) 
     type: allowNull ? findModel : nonNullGraphQL(findModel),
   }
   const selectionResolver = async filter => {
-    baseLog('selection-resolver:', filter)
+    baseLog('selection-resolver:', model.name, as, targetModel.name, single, filter)
     if (!filter || !Object.keys(filter).length) return single ? null : []
+    const where = targetModel.filterParser(filter)
+    console.log(where)
     const result = single
-      ? await targetModel.methods.findOne(filter, null, null, null)
-      : await targetModel.methods.findMany(filter, null, null, null)
+      ? await targetModel.methods.findOne(where, null, null, null)
+      : await targetModel.methods.findMany(where, null, null, null)
+    console.log(result)
     if (!result) return single ? null : []
+    console.log('id:', single ? result.id : result.map(res => res.id))
     // always return the relevant id / ids
     return single ? result.id : result.map(res => res.id)
   }
-  model.assocResolvers.push(async data => ({
-    ...data,
-    [field]: await selectionResolver(data[as]),
-  }))
+  model.assocResolvers.push(async data => {
+    baseLog('resolveAssoc', model.name, targetModel.name, as, field)
+    return {
+      ...data,
+      [field]: await selectionResolver(data[as]),
+    }
+  })
   model.fields[as] = {
     type,
     // args: { where: targetModel.where },
     resolve: async (instance, args) => {
       const fn = `get${capitalize(as)}`
-      baseLog(fn, args)
+      baseLog(fn, args, single)
       if (!instance[fn]) throw new Error(`Problems with ${model.name}:${targetModel.name}`)
       return instance[fn]()
     },
@@ -223,7 +230,7 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
   const bindings = models.reduce(
     (memo: Binding, model) => {
       const baseModelLog = baseLog.create(model.name)
-      const argsParser = generateModelArgsParser(config, model)
+      model.filterParser = generateModelArgsParser(config, model)
 
       const whereFilter = new GraphQLInputObjectType({
         name: model.names.filters,
@@ -248,12 +255,12 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
 
       const findOneResolver = async (_, args): Promise<Instance<Attr>> => {
         if (!args.where || !Object.keys(args.where).length) throw new Error('findOne needs a where selector!')
-        const where = argsParser(args.where)
+        const where = model.filterParser(args.where)
         return model.methods.findOne(where, null, 0, 100)
       }
 
       const findManyResolver = async (_, args): Promise<Array<Instance<Attr>>> => {
-        const where = argsParser(args.where)
+        const where = model.filterParser(args.where)
         return model.methods.findMany(where, null, 0, 100)
       }
 
@@ -263,18 +270,10 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
         resolve: findOneResolver,
       }
 
-      const findManyLog = baseModelLog.create('find-many')
       memo.queryFields[model.names.findMany] = {
         type: model.outputTypes.list,
         args: { where, order, page },
-        resolve: async (_, args) => {
-          findManyLog(`find all: ${model.name}s`, args)
-          const where = argsParser(args.where)
-          findManyLog(where)
-          const data = await model.methods.findMany(where, null, 0, 100)
-          findManyLog(data.length)
-          return data
-        },
+        resolve: findManyResolver,
       }
 
       memo.mutationFields[model.names.createOne] = {
@@ -286,7 +285,6 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
         },
       }
 
-      const updateOneLog = baseModelLog.create('update-one')
       memo.mutationFields[model.names.updateOne] = {
         type: model.outputTypes.model,
         args: {
@@ -294,8 +292,12 @@ export const buildGraphQL = (models: Model[], config?: BuildConfiguration) => {
           data: { type: nonNullGraphQL(model.inputTypes.update) },
         },
         resolve: async (_, args) => {
+          console.log(args)
           const instance = await findOneResolver(_, args)
+          console.log('assocResolvers', model.assocResolvers)
+          console.log('associations', model.associations)
           const data = await model.assocResolvers.reduce(async (data, resolver) => resolver(await data), args.data)
+
           await instance.update(data)
           return instance
         },
