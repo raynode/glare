@@ -10,6 +10,7 @@ import {
   printSchema,
 } from 'graphql'
 
+import { basicFilterMapper } from '../generate-model-args-parser'
 import { buildGraphQL } from '../index'
 import { Model } from '../types'
 import { DateType } from '../types/date-type'
@@ -40,11 +41,12 @@ export const createSchema = ({ queryFields, mutationFields }) => {
   })
 }
 
-export const modelsToSDL = (models: Model[]) =>
-  printSchema(
-    createSchema(
-      buildGraphQL(models, {
-        typeModelMapper: typeMapper,
-      }),
-    ),
+export const modelsToSchema = (models: Model[]) =>
+  createSchema(
+    buildGraphQL(models, {
+      typeModelMapper: typeMapper,
+      filterMapper: (modifier, field, value) => value, // only support equals!
+    }),
   )
+
+export const modelsToSDL = (models: Model[]) => printSchema(modelsToSchema(models))

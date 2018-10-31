@@ -2,13 +2,10 @@ import { Dictionary, reduce } from 'lodash'
 import { Sequelize } from 'services/db'
 import { create } from 'services/logger'
 
-import { BuildConfiguration, Model } from './types'
+import { BuildConfiguration, FilterMapper, Model } from './types'
 
 const Op = Sequelize.Op
-
-type ModifierMapper = (modifier: string, field: string, value: any) => Dictionary<any>
-
-const basicModifierMapper: ModifierMapper = (modifier, field, value) => {
+export const sequelizeFilterMapper: FilterMapper = (modifier, field, value) => {
   switch (modifier) {
     case 'eq':
       return { [Op.eq]: value }
@@ -39,6 +36,10 @@ const basicModifierMapper: ModifierMapper = (modifier, field, value) => {
   throw new Error('unkown modifier: ' + modifier)
 }
 
+export const basicFilterMapper: FilterMapper = (modifier, field, value) => ({
+  [modifier]: value,
+})
+
 const argsParserLog = create('where')
 export const generateModelArgsParser = (config: BuildConfiguration, model: Model) => {
   return (args: Dictionary<any>) => {
@@ -49,7 +50,7 @@ export const generateModelArgsParser = (config: BuildConfiguration, model: Model
         const splitIndex = key.indexOf('_')
         const [field, modifier] =
           splitIndex === -1 ? [key, 'eq'] : [key.substr(0, splitIndex), key.substr(splitIndex + 1)]
-        where[field] = basicModifierMapper(modifier, field, value)
+        where[field] = config.filterMapper(modifier, field, value)
         return where
       },
       {},

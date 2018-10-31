@@ -22,7 +22,7 @@ import { create } from 'services/logger'
 
 import { collectionGenerator, enums as enumTypes } from './collections'
 import { convertAttributeToField } from './convert-attribute-to-field'
-import { generateModelArgsParser } from './generate-model-args-parser'
+import { generateModelArgsParser, sequelizeFilterMapper } from './generate-model-args-parser'
 import { generateModelAssociationFields } from './generate-model-association-fields'
 import {
   AttributeModifiers,
@@ -52,6 +52,7 @@ const defaultBuildConfiguration: BuildConfiguration = {
   isManyAssociation: () => false,
   isSingleAssociation: () => false,
   typeModelMapper: toGraphQL,
+  filterMapper: sequelizeFilterMapper,
 }
 
 interface Binding {
@@ -157,7 +158,7 @@ export const generateInitialModelData = (configuration: BuildConfiguration) => (
     order: enumTypes.ifn(model.fieldNames.order, () => buildOrderEnum(model)),
   }
   model.createType = new GraphQLInputObjectType({
-    name: model.names.createData,
+    name: model.fieldNames.create,
     fields: () => model.createFields as GraphQLInputFieldConfigMap,
   })
   model.listType = toGraphQLList(model.type, true)
@@ -292,14 +293,15 @@ export const buildGraphQL = (models: Model[], config?: Partial<BuildConfiguratio
           data: { type: nonNullGraphQL(model.inputTypes.update) },
         },
         resolve: async (_, args) => {
-          console.log(args)
-          const instance = await findOneResolver(_, args)
-          console.log('assocResolvers', model.assocResolvers)
-          console.log('associations', model.associations)
-          const data = await model.assocResolvers.reduce(async (data, resolver) => resolver(await data), args.data)
+          // console.log(args)
+          // const instance = await findOneResolver(_, args)
+          // console.log('assocResolvers', model.assocResolvers)
+          // console.log('associations', model.associations)
+          // const data = await model.assocResolvers.reduce(async (data, resolver) => resolver(await data), args.data)
 
-          await instance.update(data)
-          return instance
+          // await instance.update(data)
+          // return instance
+          return model.methods.update(model.filterParser(args.where), args.order, args.offset, args.data)
         },
       }
       memo.mutationFields[model.names.deleteMany] = {
@@ -308,9 +310,10 @@ export const buildGraphQL = (models: Model[], config?: Partial<BuildConfiguratio
           where: { type: nonNullGraphQL(whereFilter) },
         },
         resolve: async (_, args) => {
-          const instances = await findManyResolver(_, args)
-          await Promise.all(instances.map(instance => instance.destroy()))
-          return instances
+          return model.methods.deleteMany(model.filterParser(args.where), args.order, args.offset, args.limit)
+          // const instances = await findManyResolver(_, args)
+          // await Promise.all(instances.map(instance => instance.destroy()))
+          // return instances
         },
       }
 

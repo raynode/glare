@@ -27,9 +27,9 @@ export interface ListItem<Type> {
 export interface Attribute {
   allowUpdate: boolean
   allowNull: boolean
-  defaultValue: any
+  defaultValue?: any // not allowed if allowNull === true
   visible: boolean
-  comment: string
+  comment?: string
   type: DBType
 }
 export type Attributes = Record<string, Attribute>
@@ -61,7 +61,12 @@ export type FindFn<Result> = (
   offset: number,
   limit: number,
 ) => Promise<Result>
-export type UpdateFn<Result> = (where: any, order: Dictionary<OrderDirections>, data: any) => Promise<Result>
+export type UpdateFn<Result> = (
+  where: any,
+  order: Dictionary<OrderDirections>,
+  offset: number,
+  data: Partial<Type>,
+) => Promise<Result>
 export type CreateFn<Result> = (data: any) => Promise<Result>
 
 export interface Methods<Type = any> {
@@ -142,7 +147,23 @@ export type isManyAssociation = Check<Association>
 // check to define if an association has single models
 export type isSingleAssociation = Check<Association>
 
+// used in mapping the filtervalues to the values used in the resolvers
+export type Filter =
+  | 'eq'
+  | 'in'
+  | 'not_in'
+  | 'not'
+  | 'lt'
+  | 'lte'
+  | 'gt'
+  | 'gte'
+  | 'contains'
+  | 'starts_with'
+  | 'ends_with'
+export type FilterMapper = (modifier: Filter, field: string, value: any) => Dictionary<any>
+
 export interface BuildConfiguration<Type = any> {
+  filterMapper: any
   attributeGraphQLMapper: AttributeGraphQLMapper
   typeModelMapper: TypeModelMapper<Type>
   isAttributeVisible: isAttributeVisible
