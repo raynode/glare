@@ -67,7 +67,7 @@ export type UpdateFn<Result> = (
   offset: number,
   data: Partial<Type>,
 ) => Promise<Result>
-export type CreateFn<Result> = (data: any) => Promise<Result>
+export type CreateFn<Result> = (data: Partial<Result>) => Promise<Result>
 
 export interface Methods<Type = any> {
   createOne: CreateFn<Type>
@@ -76,6 +76,20 @@ export interface Methods<Type = any> {
   deleteMany: FindFn<Type[]>
   update: UpdateFn<Type>
 }
+
+export type QueryGenerator = <Types, Type extends Types>(model: Model<Type>) => Methods<Type>
+
+// type A = string
+// type B = number
+
+// const x: QueryGenerator<A | B>
+// const a: Model<A>
+// const b: Model<B>
+
+// const y = x(a)
+// const z = x(b)
+
+// const r = y.findMany(null, null, null, null)
 
 type ModelQueryName = 'findOne' | 'findMany'
 type ModelMutationNames = 'createOne' | 'updateOne' | 'deleteMany'
@@ -93,7 +107,6 @@ export interface BaseModel<Type = any> {
   attributes: Attributes
   fieldNames: Record<InputTypesNames | OutputTypesNames | EnumTypesNames, string>
   inspect: () => string
-  methods: Methods<Type>
   name: string
   names: Record<ModelNames, string>
 }
@@ -102,6 +115,7 @@ export interface Model<Type = any> extends BaseModel<Type> {
   inputTypes?: Record<InputTypesNames, GraphQLInputObjectType>
   outputTypes?: Record<OutputTypesNames, GraphQLObjectType>
   enumTypes?: Record<EnumTypesNames, GraphQLEnumType>
+  methods: Methods<Type>
 
   createFields?: Dictionary<BaseField>
   createType?: GraphQLInputObjectType
@@ -162,10 +176,12 @@ export type Filter =
   | 'ends_with'
 export type FilterMapper = (modifier: Filter, field: string, value: any) => Dictionary<any>
 
-export interface BuildConfiguration<Type = any> {
-  filterMapper: any
+export interface BuildConfiguration<Types = any> {
+  filterMapper: FilterMapper
+  methodMapper: QueryGenerator<Types>
+
   attributeGraphQLMapper: AttributeGraphQLMapper
-  typeModelMapper: TypeModelMapper<Type>
+  typeModelMapper: TypeModelMapper<Types>
   isAttributeVisible: isAttributeVisible
   isStringAttribute: isStringAttribute
   isArithmeticAttribute: isArithmeticAttribute

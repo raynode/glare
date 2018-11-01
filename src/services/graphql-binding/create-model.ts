@@ -1,8 +1,8 @@
 import { capitalize, pluralize, singularize } from 'inflection'
 
-import { Attributes, Methods, Model } from './types'
+import { Attributes, BaseModel, Methods } from './types'
 
-export const createModel = <Type = any>(name: string, attributes: Attributes, methods: Methods<Type>): Model<Type> => {
+export const createModel = <Type = any>(name: string, attributes: Attributes): BaseModel<Type> => {
   return {
     associations: {},
     assocResolvers: [],
@@ -16,7 +16,6 @@ export const createModel = <Type = any>(name: string, attributes: Attributes, me
       update: `${name}UpdateInput`,
     },
     inspect: () => `${name}Model`,
-    methods,
     name,
     names: {
       create: `onCreate${name}`,

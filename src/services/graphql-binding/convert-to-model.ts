@@ -1,14 +1,29 @@
 import { capitalize, pluralize, singularize } from 'inflection'
 import { Dictionary, keyBy, map, mapValues } from 'lodash'
-import { Instance, Model as SeqModel } from 'services/db'
+import { Instance, Model as SeqModel, sequelize } from 'services/db'
 
-import { Model } from './types'
+import { Model, QueryGenerator } from './types'
 
 export interface RawModel<Attr, Inst extends Instance<Attr>> extends SeqModel<Inst & Attr, Attr> {
   rawAttributes: any
   associations: Dictionary<any>
   attributes: any
   sequelize: any
+}
+
+export const sequelizeMethodMapper: QueryGenerator = <Type>(model: Model<Type>) => {
+  const rawModel = sequelize.models[model.name]
+  return {
+    createOne: async data => rawModel.create(data),
+    findOne: async (where, order, offset, limit) => rawModel.findOne({ where }),
+    findMany: async (where, order, offset, limit) => rawModel.findAll({ where }),
+    deleteMany: async (where, order, offset, limit) => rawModel.findAll({ where }),
+    update: async (where, order, offset, data) => {
+      const [affectedCount, affectedRows] = await rawModel.update(data, { where, returning: true })
+      if (affectedCount === 0) return null
+      return affectedRows[0]
+    },
+  }
 }
 
 export const models = {}
@@ -54,13 +69,6 @@ export const convertToModel = <Attr, Inst extends Instance<Attr> & Attr>(
       createData: `Initial${name}`,
       update: `onUpdate${name}`,
       updateOne: `update${name}`,
-    },
-    methods: {
-      createOne: async data => rawModel.create(data),
-      findOne: async (where, order, offset, limit) => rawModel.findOne({ where }),
-      findMany: async (where, order, offset, limit) => rawModel.findAll({ where }),
-      deleteMany: async (where, order, offset, limit) => rawModel.findAll({ where }),
-      update: async (where, order, data) => rawModel.update(data, { where }),
     },
     inspect: () => `${name}Model`,
   }

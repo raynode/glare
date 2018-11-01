@@ -12,7 +12,7 @@ import {
 
 import { basicFilterMapper } from '../generate-model-args-parser'
 import { buildGraphQL } from '../index'
-import { Model } from '../types'
+import { BuildConfiguration, Model } from '../types'
 import { DateType } from '../types/date-type'
 
 export { printSchema }
@@ -41,11 +41,12 @@ export const createSchema = ({ queryFields, mutationFields }) => {
   })
 }
 
-export const modelsToSchema = (models: Model[]) =>
+export const modelsToSchema = (models: Model[], config?: Partial<BuildConfiguration>) =>
   createSchema(
     buildGraphQL(models, {
       typeModelMapper: typeMapper,
       filterMapper: (modifier, field, value) => value, // only support equals!
+      ...config,
     }),
   )
 

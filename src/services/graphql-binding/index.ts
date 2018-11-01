@@ -22,6 +22,7 @@ import { create } from 'services/logger'
 
 import { collectionGenerator, enums as enumTypes } from './collections'
 import { convertAttributeToField } from './convert-attribute-to-field'
+import { sequelizeMethodMapper } from './convert-to-model'
 import { generateModelArgsParser, sequelizeFilterMapper } from './generate-model-args-parser'
 import { generateModelAssociationFields } from './generate-model-association-fields'
 import {
@@ -36,7 +37,6 @@ import * as guards from './sequelize-type-guards'
 import { toGraphQL } from './type-mapper'
 import { Association, BuildConfiguration, Field, ListItem, Model, ThunkField } from './types'
 import { listReducer, nonNullGraphQL, toGraphQLList } from './utilities'
-
 const inputTypes = collectionGenerator<GraphQLInputObjectType>({})
 const outputTypes = collectionGenerator<GraphQLObjectType>({})
 
@@ -53,6 +53,7 @@ const defaultBuildConfiguration: BuildConfiguration = {
   isSingleAssociation: () => false,
   typeModelMapper: toGraphQL,
   filterMapper: sequelizeFilterMapper,
+  methodMapper: sequelizeMethodMapper,
 }
 
 interface Binding {
@@ -60,10 +61,11 @@ interface Binding {
   mutationFields: Record<string, GraphQLFieldConfig<any, any>>
 }
 
-export const generateInitialModelData = (configuration: BuildConfiguration) => (model: Model) => {
+export const generateInitialModelData = <Type>(configuration: BuildConfiguration) => (model: Model<Type>) => {
   if (model.initialized) return model
   baseLog('===> ', model.name)
   model.initialized = true
+  if (!model.methods) model.methods = configuration.methodMapper(model)
   // model.fields = generateModelFields(model, configuration)
   // model.createFields = generateModelFields(model, configuration)
 
