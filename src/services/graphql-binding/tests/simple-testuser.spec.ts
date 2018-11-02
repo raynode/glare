@@ -14,11 +14,11 @@ interface TestUser {
   nickname?: string
 }
 let testusers = []
-const queryGenerator: QueryGenerator<TestUser> = <T>(model: T) => {
+const queryGenerator: QueryGenerator = <T>(model: T) => {
   const methods: Methods<TestUser> = {
     createOne: async user => {
       testusers.push(user)
-      return user
+      return user as TestUser
     },
     findOne: async ({ nickname, email }, order, offset) => {
       if (nickname && email) return testusers.find(user => user.nickname === nickname && user.email === email)

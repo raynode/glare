@@ -122,7 +122,7 @@ export interface Model<Type = any> extends BaseModel<Type> {
   fields?: Dictionary<BaseField>
   filterFields?: Dictionary<BaseField>
   updateFields?: GraphQLInputFieldConfigMap
-  initialized?: boolean
+  initialized: true
   inspect?: () => string
   listType?: GraphQLObjectType
   type?: GraphQLObjectType

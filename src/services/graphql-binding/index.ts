@@ -35,7 +35,7 @@ import {
 } from './generate-model-fields'
 import * as guards from './sequelize-type-guards'
 import { toGraphQL } from './type-mapper'
-import { Association, BuildConfiguration, Field, ListItem, Model, ThunkField } from './types'
+import { Association, BaseModel, BuildConfiguration, Field, ListItem, Model, ThunkField } from './types'
 import { listReducer, nonNullGraphQL, toGraphQLList } from './utilities'
 const inputTypes = collectionGenerator<GraphQLInputObjectType>({})
 const outputTypes = collectionGenerator<GraphQLObjectType>({})
@@ -61,8 +61,14 @@ interface Binding {
   mutationFields: Record<string, GraphQLFieldConfig<any, any>>
 }
 
-export const generateInitialModelData = <Type>(configuration: BuildConfiguration) => (model: Model<Type>) => {
-  if (model.initialized) return model
+export const isModel = <T>(model: BaseModel<T> | Model<T>): model is Model<T> => model.hasOwnProperty('initialized')
+
+export const generateInitialModelData = <Type>(configuration: BuildConfiguration) => (
+  baseModel: BaseModel<Type> | Model<Type>,
+): Model<Type> => {
+  if (isModel(baseModel)) return baseModel
+  // evil... DO NOT DO THIS!
+  const model: any = baseModel
   baseLog('===> ', model.name)
   model.initialized = true
   if (!model.methods) model.methods = configuration.methodMapper(model)
@@ -72,17 +78,17 @@ export const generateInitialModelData = <Type>(configuration: BuildConfiguration
   const fieldsGenerator = createFieldsGenerator(model, configuration)
 
   /* model fields:
-    .- output-type: attributes(required), associations()
-    .- input-find: attributes(stringFilter, listFilter, arithmeticFilter)
-    .- enum-order: attributes(orderFilter)
-    .- mtn-create(where: find, order, page):
-        .- create-input: attributes(required), associations(asFilter, required)
-    .- mtn-delete(where: find, order, page):
-    .- mtn-find(where: find, order, page):
-    .- input-page: limit=number offset=number
-    .- mtn-update(where: find, order, page):
-        .- update-input: attributes(), associations(asFilter)
-  */
+      .- output-type: attributes(required), associations()
+      .- input-find: attributes(stringFilter, listFilter, arithmeticFilter)
+      .- enum-order: attributes(orderFilter)
+      .- mtn-create(where: find, order, page):
+          .- create-input: attributes(required), associations(asFilter, required)
+      .- mtn-delete(where: find, order, page):
+      .- mtn-find(where: find, order, page):
+      .- input-page: limit=number offset=number
+      .- mtn-update(where: find, order, page):
+          .- update-input: attributes(), associations(asFilter)
+    */
 
   model.inputTypes = {
     create: inputTypes.ifn(
@@ -224,10 +230,10 @@ export const addModelToFields = (model: Model, initialModelData: (model: Model) 
   }
 }
 
-export const buildGraphQL = (models: Model[], config?: Partial<BuildConfiguration>) => {
+export const buildGraphQL = (baseModels: BaseModel[], config?: Partial<BuildConfiguration>) => {
   const configuration: BuildConfiguration = { ...defaultBuildConfiguration, ...config }
   const initialModelData = generateInitialModelData(configuration)
-  models.forEach(initialModelData)
+  const models = baseModels.map(initialModelData)
   models.forEach(model => map(model.associations, addModelToFields(model, initialModelData)))
 
   const bindings = models.reduce(
@@ -256,13 +262,13 @@ export const buildGraphQL = (models: Model[], config?: Partial<BuildConfiguratio
           .- update-input: attributes(), associations(asFilter)
     */
 
-      const findOneResolver = async (_, args): Promise<Instance<Attr>> => {
+      const findOneResolver = async (_, args) => {
         if (!args.where || !Object.keys(args.where).length) throw new Error('findOne needs a where selector!')
         const where = model.filterParser(args.where)
         return model.methods.findOne(where, null, 0, 100)
       }
 
-      const findManyResolver = async (_, args): Promise<Array<Instance<Attr>>> => {
+      const findManyResolver = async (_, args) => {
         const where = model.filterParser(args.where)
         return model.methods.findMany(where, null, 0, 100)
       }
