@@ -31,7 +31,7 @@ const groupsToFields = (groups: Dictionary<FieldGroup>): Dictionary<BaseField> =
 const createGroupGenerator = (model: Model, config: BuildConfiguration) => (attribute: Attribute, name: string) => ({
   name,
   attribute,
-  field: config.attributeGraphQLMapper(name, attribute, model, config),
+  field: config.convertAttributeToField(name, attribute, model, config),
 })
 
 export const attributeModifiersToFieldsModifier = (attributeModifiers: AttributeModifier[]): FieldsModifier => (

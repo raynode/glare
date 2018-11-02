@@ -1,40 +1,7 @@
 import { Dictionary, reduce } from 'lodash'
-import { Sequelize } from 'services/db'
 import { create } from 'services/logger'
 
 import { BuildConfiguration, FilterMapper, Model } from './types'
-
-const Op = Sequelize.Op
-export const sequelizeFilterMapper: FilterMapper = (modifier, field, value) => {
-  switch (modifier) {
-    case 'eq':
-      return { [Op.eq]: value }
-    case 'in':
-      return { [Op.in]: value }
-    case 'not_in':
-      return { [Op.notIn]: value }
-    case 'not':
-      return { [Op.ne]: value }
-    case 'lt':
-      return { [Op.lt]: value }
-    case 'lte':
-      return { [Op.lte]: value }
-    case 'gt':
-      return { [Op.gt]: value }
-    case 'gte':
-      return { [Op.gte]: value }
-    case 'contains':
-      return { [Op.like]: `%${value}%` }
-    // case 'not_contains': return { [Op.not]: { [Op.like]: `%${value}%` } }
-    case 'starts_with':
-      return { [Op.like]: `${value}%` }
-    // case 'not_starts_with': return { [Op.not]: { [Op.like]: `${value}%` } }
-    case 'ends_with':
-      return { [Op.like]: `%${value}` }
-    // case 'not_ends_with': return { [Op.not]: { [Op.like]: `%${value}` } }
-  }
-  throw new Error('unkown modifier: ' + modifier)
-}
 
 export const basicFilterMapper: FilterMapper = (modifier, field, value) => ({
   [modifier]: value,

@@ -24,15 +24,26 @@ export interface ListItem<Type> {
   value: Type
 }
 
-export interface Attribute {
+export type RecordOf<Keys, Type> = { [key in keyof Keys]: Type }
+export interface SimpleAttribute {
+  allowUpdate?: boolean
+  allowNull?: boolean
+  defaultValue?: any
+  visible?: boolean
+  comment?: string
+  type?: AnyType
+  dataType: DBType
+}
+export interface Attribute extends SimpleAttribute {
   allowUpdate: boolean
   allowNull: boolean
-  defaultValue?: any // not allowed if allowNull === true
+  defaultValue: any
   visible: boolean
-  comment?: string
-  type: DBType
+  comment: string
+  type: AnyType
 }
-export type Attributes = Record<string, Attribute>
+export type Attributes<Type = any> = RecordOf<Type, Attribute>
+export type SimpleAttributes<Type = any> = RecordOf<Type, SimpleAttribute>
 
 export type Thunk<Type> = () => Type
 
@@ -45,14 +56,16 @@ export interface BaseField {
   description?: string
 }
 
-export interface Association extends Attribute {
+export interface ModelConnection extends SimpleAttribute {
   as: string
   field: string
   single: boolean
   source: Model
   target: Model
 }
-export type Associations = Record<string, Association>
+export type ModelConnectionFn = <Key extends keyof Types>(key: Key, model: Model) => ModelConnection
+export type Association<Types> = ModelConnection | ModelConnectionFn
+export type Associations<Types> = RecordOf<Partial<Types>, Association<Types>>
 
 export type OrderDirections = 'ASC' | 'DESC'
 export type FindFn<Result> = (
@@ -129,6 +142,7 @@ export interface Model<Type = any> extends BaseModel<Type> {
   updateType?: GraphQLInputObjectType
   where?: { type: GraphQLInputObjectType }
 
+  type: GraphQLType
   filterParser?: any
 }
 export type Models = Record<string, Model>
@@ -145,8 +159,19 @@ export type AttributeGraphQLMapper = (
   model: Model,
   config: BuildConfiguration,
 ) => BaseField
+
+export type ScalarType = 'scalar'
+export type ListType = 'list'
+export type LinkType = 'linkSingle' | 'linkMany'
+export type AnyType = ListType | ScalarType | LinkType
 // convert some type into an Model
-export type TypeModelMapper<Type> = Mapper<Type, GraphQLType>
+export type ScalarTypeMapper<Types> = (type: ScalarType, dataType: Types) => GraphQLType
+export type ListTypeMapper<Types> = (type: ListType, dataType: GraphQLType | Types) => GraphQLType
+export type LinkTypeMapper = (type: LinkType, model: Model) => GraphQLType
+export type TypeModelMapper<Types> = (
+  type: AnyType,
+  model: Type extends ScalarType ? Types : Type extends ListType ? GraphQLType | Types : Model,
+) => GraphQLType
 
 // check to define if an attribute is a String-Type
 export type isStringAttribute = Check<Attribute>
@@ -180,7 +205,7 @@ export interface BuildConfiguration<Types = any> {
   filterMapper: FilterMapper
   methodMapper: QueryGenerator<Types>
 
-  attributeGraphQLMapper: AttributeGraphQLMapper
+  convertAttributeToField: AttributeGraphQLMapper
   typeModelMapper: TypeModelMapper<Types>
   isAttributeVisible: isAttributeVisible
   isStringAttribute: isStringAttribute

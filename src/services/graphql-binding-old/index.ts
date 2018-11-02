@@ -22,8 +22,7 @@ import { create } from 'services/logger'
 
 import { collectionGenerator, enums as enumTypes } from './collections'
 import { convertAttributeToField } from './convert-attribute-to-field'
-import { sequelizeMethodMapper } from './convert-to-model'
-import { generateModelArgsParser, sequelizeFilterMapper } from './generate-model-args-parser'
+import { generateModelArgsParser } from './generate-model-args-parser'
 import { generateModelAssociationFields } from './generate-model-association-fields'
 import {
   AttributeModifiers,
@@ -33,6 +32,8 @@ import {
   removeDescriptionModifier,
   removeInvisibleAttributes,
 } from './generate-model-fields'
+// import { sequelizeMethodMapper } from './convert-to-model'
+import { sequelizeFilterMapper, sequelizeMethodMapper } from './sequelize'
 import * as guards from './sequelize-type-guards'
 import { toGraphQL } from './type-mapper'
 import { Association, BaseModel, BuildConfiguration, Field, ListItem, Model, ThunkField } from './types'

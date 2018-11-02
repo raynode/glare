@@ -12,7 +12,7 @@ export const convertAttributeToField = (
   config: BuildConfiguration,
 ) => {
   const result: BaseField = {
-    type: config.typeModelMapper(attribute.type),
+    type: config.typeModelMapper(attribute.type, attribute.dataType),
   }
   if (result.type instanceof GraphQLEnumType) {
     const name = model.name
