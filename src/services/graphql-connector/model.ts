@@ -1,9 +1,7 @@
-import { mapValues } from 'lodash'
 import { create } from 'services/logger'
+import { applyToRecordOf, RecordOf } from './utils'
 
 const logger = create('graphql-connector')
-
-export type RecordOf<Keys, Type> = { [key in keyof Keys]: Type }
 
 export interface BaseAttribute {
   nonNull?: boolean
@@ -23,8 +21,8 @@ export interface Model<Attrs, Assocs, Types, Models> {
   name: Models
   attributes: Attributes<Attrs, Types>
   associations: Associations<Assocs, Models>
-  fields: Fields<Attrs, Assocs, Types, Models>
 }
+export type AnyModel<Types, Models> = Model<any, any, Types, Models>
 
 export type Attributes<Attrs, Types> = RecordOf<Attrs, Attribute<Types>>
 export type Associations<Assocs, Models> = RecordOf<Assocs, Association<Models>>
@@ -47,27 +45,22 @@ export const completeAssociation = <Models>(association: Association<Models>): A
   ...completeBaseAttribute(association),
 })
 
-export const applyToRecordOf = <Keys, Types>(record: RecordOf<Keys, Types>, method: (type: Types) => Types) =>
-  mapValues(record, method) as RecordOf<Keys, Types>
+export type ModelCreator<Types, Models extends string> = <Attrs, Assocs, Name extends Models>(
+  name: Name,
+  attributes?: Attributes<Attrs, Types>,
+  associations?: Associations<Assocs, Models>,
+) => Model<Attrs, Assocs, Types, Models>
 
-export const modelCreator = <Types, Models extends string>() => {
+export const modelCreator = <Types, Models extends string>(): ModelCreator<Types, Models> => {
   const models: ModelCache<any> = {} as any
 
-  return <Attrs, Assocs, Name extends Models>(
-    name: Name,
-    attributes: Attributes<Attrs, Types> = {} as any,
-    associations: Associations<Assocs, Models> = {} as any,
-  ) => {
+  return (name, attributes = {} as any, associations = {} as any) => {
     logger(`creating Model ${name}`)
     const log = logger(name)
-    const model: Model<Attrs, Assocs, Types, Models> = {
+    const model = {
       name,
       attributes: applyToRecordOf(attributes, completeAttribute),
       associations: applyToRecordOf(associations, completeAssociation),
-      fields: {
-        ...(attributes as any),
-        ...(associations as any),
-      },
     }
     models[name] = model
     return model
