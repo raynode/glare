@@ -95,10 +95,12 @@ export const createModelRecord = <Types, Models>(models: ModelList<Types, Models
 
       const type = new GraphQLObjectType({
         name: names.findOne,
+        interfaces: [NodeType],
         fields: () => dummyFields,
       })
       const list = new GraphQLObjectType({
         name: names.findMany,
+        interfaces: [ListType],
         fields: () => ({
           nodes: { type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(type))) },
           page: { type: new GraphQLNonNull(PageType) },

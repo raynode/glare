@@ -3,9 +3,18 @@ import { applyToRecordOf, RecordOf } from './utils'
 
 const logger = create('graphql-connector')
 
+export type FieldType = 'Attribute' | 'Association'
+
 export interface BaseAttribute {
   nonNull?: boolean
   list?: boolean
+}
+
+export interface BaseField extends BaseAttribute {
+  fieldType: FieldType
+  list: boolean
+  name: string
+  nonNull: boolean
 }
 
 export interface Attribute<Types> extends BaseAttribute {
@@ -21,6 +30,7 @@ export interface Model<Attrs, Assocs, Types, Models> {
   name: Models
   attributes: Attributes<Attrs, Types>
   associations: Associations<Assocs, Models>
+  fields: BaseField[]
 }
 export type AnyModel<Types, Models> = Model<any, any, Types, Models>
 
@@ -54,14 +64,29 @@ export type ModelCreator<Types, Models extends string> = <Attrs, Assocs, Name ex
 export const modelCreator = <Types, Models extends string>(): ModelCreator<Types, Models> => {
   const models: ModelCache<any> = {} as any
 
-  return (name, attributes = {} as any, associations = {} as any) => {
+  return (name, partialAttributes = {} as any, partialAssociations = {} as any) => {
     logger(`creating Model ${name}`)
     const log = logger(name)
-    const model = {
-      name,
-      attributes: applyToRecordOf(attributes, completeAttribute),
-      associations: applyToRecordOf(associations, completeAssociation),
-    }
+    const attributes = applyToRecordOf(partialAttributes, completeAttribute)
+    const associations = applyToRecordOf(partialAssociations, completeAssociation)
+    const fields = Object.keys(attributes)
+      .map(
+        (field: string): BaseField => ({
+          fieldType: 'Attribute',
+          name: field,
+          ...attributes[field],
+        }),
+      )
+      .concat(
+        Object.keys(associations).map(
+          (field: string): BaseField => ({
+            fieldType: 'Association',
+            name: field,
+            ...associations[field],
+          }),
+        ),
+      )
+    const model = { attributes, associations, name, fields }
     models[name] = model
     return model
   }
