@@ -24,13 +24,13 @@ export type Queries = 'findOne' | 'findMany'
 export type Names = Mutations | Queries
 export type Fields = keyof ModelFields
 
-export interface GeneratorConfiguration<Types> extends PartialGeneratorConfiguration<Types> {
+export interface GeneratorConfiguration<Types, Models> extends PartialGeneratorConfiguration<Types, Models> {
   namingStrategy: NamingStrategy
-  typeConverter: TypeConverter<Types>
+  typeConverter: TypeConverter<Types, Models>
 }
-export interface PartialGeneratorConfiguration<Types> {
+export interface PartialGeneratorConfiguration<Types, Models> {
   namingStrategy?: NamingStrategy
-  typeConverter: TypeConverter<Types>
+  typeConverter: TypeConverter<Types, Models>
 }
 
 export interface ModelFields {
@@ -53,16 +53,16 @@ export interface BaseSchema {
   subscriptionFields?: any
 }
 
-export type BaseSchemaGenerator<Types> = <Models>(models: ModelList<Types, Models>) => BaseSchema
+export type BaseSchemaGenerator<Types, Models> = (models: ModelList<Types, Models>) => BaseSchema
 
-export const createModelRecord = <Types>(
-  partialConfiguration: PartialGeneratorConfiguration<Types>,
-): BaseSchemaGenerator<Types> => {
-  const configuration: GeneratorConfiguration<Types> = {
+export const createModelRecord = <Types, Models extends string>(
+  partialConfiguration: PartialGeneratorConfiguration<Types, Models>,
+): BaseSchemaGenerator<Types, Models> => {
+  const configuration: GeneratorConfiguration<Types, Models> = {
     namingStrategy: defaultNamingStrategy,
     ...partialConfiguration,
   }
-  return <Models>(models: ModelList<Types, Models>) => {
+  return models => {
     // 1. initialize all models
     const record: Record<string, ExtendedModel<Types, Models>> = models.reduce(
       (record, model: ExtendedModel<Types, Models>) => {
@@ -115,6 +115,10 @@ export const createModelRecord = <Types>(
       const model = record[name]
 
       const dataFields = model.fields.map(field => {
+        configuration.typeConverter(field, modelName => {
+          const y = record[modelName as string]
+          return y
+        })
         return field.name
       })
       console.log(dataFields)

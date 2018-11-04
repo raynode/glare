@@ -10,7 +10,7 @@ export interface BaseAttribute {
   list?: boolean
 }
 
-export interface BaseField extends BaseAttribute {
+export interface BaseField<Types, Models> extends BaseAttribute {
   fieldType: FieldType
   list: boolean
   name: string
@@ -20,6 +20,7 @@ export interface BaseField extends BaseAttribute {
 export interface Attribute<Types> extends BaseAttribute {
   type: Types
 }
+
 export interface Association<Models> extends BaseAttribute {
   model: Models
 }
@@ -30,7 +31,7 @@ export interface Model<Attrs, Assocs, Types, Models> {
   name: Models
   attributes: Attributes<Attrs, Types>
   associations: Associations<Assocs, Models>
-  fields: BaseField[]
+  fields: Array<BaseField<Types, Models>>
 }
 export type AnyModel<Types, Models> = Model<any, any, Types, Models>
 
@@ -71,7 +72,7 @@ export const modelCreator = <Types, Models extends string>(): ModelCreator<Types
     const associations = applyToRecordOf(partialAssociations, completeAssociation)
     const fields = Object.keys(attributes)
       .map(
-        (field: string): BaseField => ({
+        (field: string): BaseField<Types, Models> => ({
           fieldType: 'Attribute',
           name: field,
           ...attributes[field],
@@ -79,7 +80,7 @@ export const modelCreator = <Types, Models extends string>(): ModelCreator<Types
       )
       .concat(
         Object.keys(associations).map(
-          (field: string): BaseField => ({
+          (field: string): BaseField<Types, Models> => ({
             fieldType: 'Association',
             name: field,
             ...associations[field],
