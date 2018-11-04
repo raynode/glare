@@ -1,8 +1,8 @@
+import { BaseSchemaGenerator, createModelRecord } from './base-schema-generator'
 import { modelCreator, ModelCreator } from './model'
-import { BaseSchemaGenerator, createModelRecord } from './model-initializer'
 import { createSDL, Models, Types } from './tests/utils'
 
-describe('model-initializer', () => {
+describe('base-schema-generator', () => {
   let creator: ModelCreator<Types, Models>
   let generator: BaseSchemaGenerator<Types>
   beforeEach(() => {
@@ -12,12 +12,13 @@ describe('model-initializer', () => {
     })
   })
 
-  it('should be a function, even without any models', () => {
-    const modelRecord = generator([])
-    expect(typeof modelRecord).toBe('object')
-    expect(modelRecord).toHaveProperty('queryFields')
-    expect(modelRecord).toHaveProperty('mutationFields')
-    // expect(modelRecord).toHaveProperty('subscriptionFields')
+  it('should be a function, and generate a empty schema without any models', () => {
+    expect(typeof generator).toBe('function')
+    const baseSchema = generator([])
+    expect(typeof baseSchema).toBe('object')
+    expect(baseSchema).toHaveProperty('queryFields')
+    expect(baseSchema).toHaveProperty('mutationFields')
+    // expect(baseSchema).toHaveProperty('subscriptionFields')
   })
 
   it('should create the fields list in a model', () => {
@@ -35,7 +36,7 @@ describe('model-initializer', () => {
         more: { model: 'Other' },
       },
     )
-    const modelFields = generator([sampleModel, otherModel])
-    console.log(createSDL(modelFields))
+    const baseSchema = generator([sampleModel, otherModel])
+    console.log(createSDL(baseSchema))
   })
 })
