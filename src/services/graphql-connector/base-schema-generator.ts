@@ -1,4 +1,4 @@
-import { AnyModel, Model } from './model'
+import { AnyModel, ExtendedModel, Model } from './model'
 import { defaultNamingStrategy, NamingStrategy } from './naming-strategy'
 import { TypeConverter } from './type-converter'
 import { RecordOf } from './utils'
@@ -18,12 +18,6 @@ import {
 
 export type ModelList<Types, Models> = Array<AnyModel<Types, Models>>
 
-export type Mutations = 'create' | 'update' | 'delete'
-export type Queries = 'findOne' | 'findMany'
-
-export type Names = Mutations | Queries
-export type Fields = keyof ModelFields
-
 export interface GeneratorConfiguration<Types, Models> extends PartialGeneratorConfiguration<Types, Models> {
   namingStrategy: NamingStrategy
   typeConverter: TypeConverter<Types, Models>
@@ -31,20 +25,6 @@ export interface GeneratorConfiguration<Types, Models> extends PartialGeneratorC
 export interface PartialGeneratorConfiguration<Types, Models> {
   namingStrategy?: NamingStrategy
   typeConverter: TypeConverter<Types, Models>
-}
-
-export interface ModelFields {
-  type: GraphQLObjectType
-  list: GraphQLObjectType
-  create: GraphQLInputObjectType
-  update: GraphQLInputObjectType
-}
-
-export interface ExtendedModel<Types, Models> extends AnyModel<Types, Models> {
-  mutationTypes: Record<Mutations, GraphQLInputObjectType>
-  queryTypes: Record<Queries, GraphQLObjectType>
-  types: ModelFields
-  target?: any
 }
 
 export interface BaseSchema {
@@ -80,7 +60,7 @@ export const createModelRecord = <Types, Models extends string>(
         const type = new GraphQLObjectType({
           name: names.fields.findOne,
           interfaces: [NodeType],
-          fields: () => dummyFields,
+          fields: () => model.dataTypes.type,
         })
         const list = new GraphQLObjectType({
           name: names.fields.findMany,
@@ -114,14 +94,13 @@ export const createModelRecord = <Types, Models extends string>(
     modelNames.forEach(name => {
       const model = record[name]
 
-      const dataFields = model.fields.map(field => {
-        configuration.typeConverter(field, modelName => {
-          const y = record[modelName as string]
-          return y
-        })
-        return field.name
-      })
-      console.log(dataFields)
+      model.dataTypes = {
+        type: model.fields.reduce((dataFields, field) => {
+          const type = configuration.typeConverter(field, modelName => record[modelName])
+          dataFields[field.name] = { type: field.nonNull ? new GraphQLNonNull(type) : type }
+          return dataFields
+        }, {}),
+      }
     })
     // 3. generator queries, mutations & subscriptions
     const queryFields = modelNames.reduce((queryFields, name) => {

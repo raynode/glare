@@ -1,14 +1,17 @@
 import { BaseSchemaGenerator, createModelRecord } from './base-schema-generator'
 import { modelCreator, ModelCreator } from './model'
-import { createSDL, Models, Types } from './tests/utils'
+import { basicTypeConverter, createSDL, Models, Types } from './tests/utils'
+
+const nonNull = true
+const list = true
 
 describe('base-schema-generator', () => {
   let creator: ModelCreator<Types, Models>
-  let generator: BaseSchemaGenerator<Types>
+  let generator: BaseSchemaGenerator<Types, Models>
   beforeEach(() => {
     creator = modelCreator<Types, Models>()
     generator = createModelRecord({
-      typeConverter: type => null,
+      typeConverter: basicTypeConverter,
     })
   })
 
@@ -23,17 +26,17 @@ describe('base-schema-generator', () => {
 
   it('should create the fields list in a model', () => {
     const sampleModel = creator('Sample', {
-      number: { type: 'int' },
-      name: { type: 'string' },
+      number: { type: 'int', nonNull },
+      name: { type: 'string', list },
     })
     const otherModel = creator(
       'Other',
       {
-        value: { type: 'string' },
+        value: { type: 'string', list, nonNull },
       },
       {
-        sample: { model: 'Sample' },
-        more: { model: 'Other' },
+        sample: { model: 'Sample', nonNull },
+        more: { model: 'Other', list },
       },
     )
     const baseSchema = generator([sampleModel, otherModel])
