@@ -5,32 +5,19 @@ import * as Koa from 'koa'
 
 import { ApolloServer } from 'apollo-server-koa'
 
-import { buildGraphQL } from 'services/graphql-binding'
-import { convertToModel } from 'services/graphql-binding/convert-to-model'
+import { createBaseSchemaGenerator, createSchema } from '@raynode/graphql-connector'
+import { configuration } from '@raynode/graphql-connector-sequelize'
 
 import { initialized, models } from 'models/init'
 
-import { map } from 'lodash'
-
-import { GraphQLObjectType, GraphQLSchema } from 'graphql'
+import { printSchema } from 'graphql'
 
 export const generateServer = async (app: Koa, log: Log) => {
   const apolloLogger = log.create('apollo-server')
 
-  const bindings = buildGraphQL(map(models, convertToModel))
+  const schema = createSchema(createBaseSchemaGenerator(configuration)(models))
 
-  const { queryFields, mutationFields } = bindings
-
-  const schema = new GraphQLSchema({
-    query: new GraphQLObjectType({
-      name: 'Query',
-      fields: queryFields,
-    }),
-    mutation: new GraphQLObjectType({
-      name: 'Mutation',
-      fields: mutationFields,
-    }),
-  })
+  console.log(printSchema(schema))
 
   const server = new ApolloServer({
     schema,
