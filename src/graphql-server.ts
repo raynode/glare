@@ -27,6 +27,7 @@ export const generateServer = async (app: Koa, log: Log) => {
       settings: {
         'editor.theme': 'dark',
         'editor.cursorShape': 'line',
+        'editor.fontSize': 20,
       },
     },
   })
