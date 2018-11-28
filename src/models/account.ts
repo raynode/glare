@@ -5,6 +5,7 @@ import { DataTypes, Node, Sequelize, sequelize, SequelizeAttributes } from 'serv
 
 export interface AccountAttributes extends Partial<Node> {
   id: string
+  name: string
   amount: number
   expenses?: ExpenseInstance[]
   getExpenses?: () => ExpenseInstance[]
@@ -25,6 +26,11 @@ const attributes: SequelizeAttributes<AccountAttributes> = {
     unique: true,
     comment: 'Id of the user',
     defaultValue: Sequelize.fn('gen_random_uuid'),
+  },
+  name: {
+    type: Sequelize.STRING,
+    allowNull: true,
+    comment: 'Name of the account, to better identify the account by a user',
   },
   amount: { type: Sequelize.DECIMAL, allowNull: false },
 }

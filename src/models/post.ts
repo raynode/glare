@@ -33,23 +33,29 @@ const attributes: SequelizeAttributes<PostAttributes> = {
   published: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false },
   userId: { type: Sequelize.UUID, allowNull: false, visible: false },
 }
-export const Post = sequelize.define<PostInstance, PostAttributes>('Post', attributes)
+export const Post = sequelize.define<PostInstance, PostAttributes>('Post', attributes, {
+  scopes: {
+    draft: { where: { published: false } },
+  },
+})
 
-Post.associate = models => {
+Post.associate = ({ User, Asset }) => {
   // associations can be defined here
-  Post.belongsTo(models.User, {
+  Post.belongsTo(User, {
     as: 'author',
     foreignKey: 'userId',
   })
 
-  Post.belongsTo(models.Asset, {
+  Post.belongsTo(Asset, {
     as: 'image',
     foreignKey: 'imageId',
   })
 
-  models.User.hasMany(Post, {
+  User.hasMany(Post, {
     as: 'posts',
     foreignKey: 'userId',
     sourceKey: 'id',
   })
+
+  User.hasMany(Post.scope('draft'), { as: 'drafts', foreignKey: 'userId' })
 }

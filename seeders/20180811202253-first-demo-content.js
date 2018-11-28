@@ -101,6 +101,11 @@ module.exports = {
     await queryInterface.bulkInsert('Accounts', [
       {
         amount: 100,
+        name: 'Shared account',
+      },
+      {
+        amount: 75,
+        name: 'Single Account',
       },
     ])
 
@@ -114,6 +119,16 @@ module.exports = {
       ['id'],
     )
 
+    const singleAccountId = await queryInterface.rawSelect(
+      'Accounts',
+      {
+        where: {
+          amount: 75,
+        },
+      },
+      ['id'],
+    )
+
     await queryInterface.bulkInsert('account_owners', [
       {
         accountId,
@@ -121,6 +136,10 @@ module.exports = {
       },
       {
         accountId,
+        userId: adminId,
+      },
+      {
+        accountId: singleAccountId,
         userId: adminId,
       },
     ])
