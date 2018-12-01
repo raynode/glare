@@ -53,12 +53,18 @@ const main = async () => {
     .use(router.routes())
     .use(router.allowedMethods())
 
-  const { initialized } = await generateServer(app, log)
+  const { initialized, server } = await generateServer(app, log)
 
   await initialized
-  await app.listen(config.port)
+  const httpServer = await app.listen(config.port)
 
-  log(`🚀 Server running on port ${config.port}`)
+  log(`🚀 Server ready at http://localhost:${config.port}${server.graphqlPath}`)
+  try {
+    server.installSubscriptionHandlers(httpServer)
+    log(`🚀 Subscriptions ready at ws://localhost:${config.port}${server.subscriptionsPath}`)
+  } catch (err) {
+    log('No subscriptions due to: ', err)
+  }
 }
 
 main().catch(err => log.error('Main threw an error:', err))
