@@ -25,7 +25,7 @@ export const createSchema = ({ queryFields, mutationFields, subscriptionFields =
     name: 'Mutation',
     fields: mutationFields,
   })
-  console.log(subscriptionFields)
+
   const subscription = new GraphQLObjectType({
     name: 'Subscription',
     fields: subscriptionFields,
@@ -100,6 +100,7 @@ export const generateServer = async (app: Koa, log: Log) => {
     subscriptions: {
       path: '/graphql',
     },
+    introspection: true,
     playground: {
       // Force setting, workaround: https://github.com/prisma/graphql-playground/issues/790
       settings: {
