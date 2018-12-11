@@ -5,16 +5,17 @@ import { TagInstance } from 'models/tag'
 import { DataTypes, Node, Sequelize, sequelize, SequelizeAttributes } from 'services/db'
 
 export interface UserAttributes extends Partial<Node> {
-  id: string
-  givenName: string
-  familyName: string
-  nickname: string
-  name?: string
-  picture: string
-  gender: string
-  state: 'admin' | 'member' | 'guest' // admin, verified, unverified
-  locale: string
+  id?: string
+  givenName?: string
+  familyName?: string
+  nickname?: string
+  name: string
+  picture?: string
+  gender?: string
+  state?: 'admin' | 'member' | 'guest' // admin, verified, unverified
+  locale?: string
   email: string
+  googleID?: string
   emailVerified: boolean
   accounts?: AccountInstance[]
   getAccounts?: () => AccountInstance[]
@@ -50,6 +51,7 @@ const attributes: SequelizeAttributes<UserAttributes> = {
   picture: { type: Sequelize.STRING, allowNull: true },
   gender: { type: Sequelize.STRING, allowNull: true },
   locale: { type: Sequelize.STRING, allowNull: true },
+  googleID: { type: Sequelize.STRING, visible: false },
   email: {
     type: Sequelize.STRING,
     allowNull: false,

@@ -10,7 +10,7 @@ module.exports = {
           name: 'Tobias',
           state: 'admin',
           picture: 'none...',
-          email: 'nox@raynode.de',
+          email: 'kopelke@gmail.com',
           emailVerified: true,
         },
         {
@@ -31,7 +31,7 @@ module.exports = {
       'Users',
       {
         where: {
-          email: 'nox@raynode.de',
+          email: 'kopelke@gmail.com',
         },
       },
       ['id'],

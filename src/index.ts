@@ -6,8 +6,12 @@ import * as Koa from 'koa'
 import * as koaBody from 'koa-body'
 import * as Router from 'koa-router'
 
+import * as Boom from 'boom'
+
 import { models } from 'models/init'
 import { saveToBuffer } from 'services/file'
+
+import { connect } from 'routes'
 
 const main = async () => {
   process.on('unhandledRejection', rejection => {
@@ -21,24 +25,10 @@ const main = async () => {
   const app = new Koa()
   const router = new Router()
 
-  router.post('/asset', async (ctx, next) => {
-    const file = ctx.request.files.asset
-    const buffer = await saveToBuffer(file)
-    ctx.type = file.type
-    const asset = await models.Asset.create({
-      name: file.name,
-      type: file.type,
-      mimetype: file.type,
-      data: buffer,
-    } as any)
-    ctx.body = { id: asset.id, name: asset.name }
-  })
-
-  router.get('/asset/:id', async (ctx, next) => {
-    const asset = await models.Asset.findById(ctx.params.id)
-    ctx.type = asset.mimetype
-    ctx.body = asset.data
-  })
+  connect(
+    router,
+    app,
+  )
 
   app
     .use(koaCors())
@@ -51,7 +41,13 @@ const main = async () => {
       }),
     )
     .use(router.routes())
-    .use(router.allowedMethods())
+    .use(
+      router.allowedMethods({
+        throw: true,
+        notImplemented: () => Boom.notImplemented(),
+        methodNotAllowed: () => Boom.methodNotAllowed(),
+      }),
+    )
 
   const { initialized, server } = await generateServer(app, log)
 

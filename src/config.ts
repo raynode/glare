@@ -1,13 +1,20 @@
-
 import { LogLevel } from '@raynode/nx-logger'
-import { config as dotEnv } from 'dotenv'
+import { config as dotEnv } from 'dotenv'
 
 dotEnv()
 
+const sessionKeys = Object.keys(process.env)
+  .filter(name => name.startsWith('GLARE_SESSION_KEY'))
+  .map(name => process.env[name])
+
 export const config = {
   host: process.env.HOSTNAME,
-  port: process.env.GLARE_PORT || 3421,
+  port: process.env.GLARE_PORT || 3421,
   path: '/',
+  session: {
+    key: 'glare',
+    keys: sessionKeys.length ? sessionKeys : ['9f373758-f965-11e8-8eb2-f2801f1b9fd1'],
+  },
   sentry: {
     active: process.env.SENTRY || false,
     environment: process.env.NODE_ENV,

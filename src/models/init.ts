@@ -1,11 +1,12 @@
-import { config } from 'config'
-
 import { each } from 'lodash'
+
+import { config } from 'config'
 import { Account } from 'models/account'
 import { Asset } from 'models/asset'
 import { Expense } from 'models/expense'
 import { Post } from 'models/post'
 import { Tag } from 'models/tag'
+import { Token } from 'models/token'
 import { User } from 'models/user'
 import { sequelize } from 'services/db'
 import { create } from 'services/logger'
@@ -18,6 +19,7 @@ export const models = {
   Expense,
   Post,
   Tag,
+  Token,
   User,
 }
 

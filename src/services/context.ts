@@ -1,3 +1,6 @@
+import { Context as KoaContext } from 'koa'
+import * as koaBody from 'koa-body'
+import * as session from 'koa-session'
 import { User, UserInstance } from 'models/user'
 import { create } from 'services/logger'
 
@@ -8,29 +11,18 @@ export interface Context {
   auth: any
 }
 
-export const createContext = async (context: any): Promise<Context> => {
-  if (context.connection) {
+export const createContext = async (context: { ctx: KoaContext }): Promise<Context> => {
+  if (!context) {
     // subscription context?
-    console.log('QUERY:', context.connection.query)
-    console.log('AUTH:', context.connection.context.Authentication)
-    console.log('auth:', context.connection.context.authentication)
+    // console.log('QUERY:', context.connection.query)
+    // console.log('AUTH:', context.connection.context.Authentication)
+    // console.log('auth:', context.connection.context.authentication)
   } else {
     // nor request based
-    const { req } = context
-    if (req.body.operationName === 'IntrospectionQuery') return context
-    console.log('QUERY:', req.body)
-    console.log('AUTH:', req.headers.Authentication)
-    console.log('auth:', req.headers.authentication)
+    const { ctx } = context
+    console.log(ctx.session)
   }
 
-  // log(req.url, req.body)
-  // log(arguments)
-
-  // log(req.url)
-  // log(req.query)
-  // log(req.body)
-  // const { authorization } = req.headers
-  // log(authorization)
   return {
     auth: false,
   }

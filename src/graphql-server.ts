@@ -1,4 +1,5 @@
 import { config } from 'config'
+import { createContext } from 'services/context'
 import { Log } from 'services/logger'
 
 import * as Koa from 'koa'
@@ -12,9 +13,8 @@ import { initialized, models } from 'models/init'
 
 import { GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLString, printSchema } from 'graphql'
 
-import { PubSub, withFilter } from 'graphql-subscriptions'
-
-export const pubsub = new PubSub()
+import { eventBaseSchema } from 'functions/event'
+import { gapiBaseSchema } from 'functions/gapi'
 
 export const createSchema = ({ queryFields, mutationFields, subscriptionFields = null }: BaseSchema) => {
   const query = new GraphQLObjectType({
@@ -25,7 +25,6 @@ export const createSchema = ({ queryFields, mutationFields, subscriptionFields =
     name: 'Mutation',
     fields: mutationFields,
   })
-
   const subscription = new GraphQLObjectType({
     name: 'Subscription',
     fields: subscriptionFields,
@@ -44,55 +43,15 @@ const joinBaseSchema = (...schema: BaseSchema[]): BaseSchema =>
     { queryFields: {}, mutationFields: {}, subscriptionFields: {} },
   )
 
-const eventBaseSchema = (): BaseSchema => {
-  const EVENT = 'EVENT'
-
-  const EventType = new GraphQLObjectType({
-    name: 'Event',
-    fields: {
-      name: { type: GraphQLNonNull(GraphQLString) },
-      data: { type: JSONType },
-      time: { type: GraphQLNonNull(DateType) },
-    },
-  })
-
-  return {
-    queryFields: {
-      event: { type: GraphQLString },
-    },
-    mutationFields: {
-      triggerEvent: {
-        args: {
-          name: { type: GraphQLNonNull(GraphQLString) },
-          data: { type: JSONType },
-        },
-        resolve: (_, args, context) => pubsub.publish(EVENT, args),
-        type: GraphQLString,
-      },
-    },
-    subscriptionFields: {
-      eventListener: {
-        args: { name: { type: GraphQLString } },
-        subscribe: withFilter(
-          () => pubsub.asyncIterator([EVENT]),
-          (event, variables) => variables.name === '*' || event.name === variables.name,
-        ),
-        resolve: ({ name, data }) => ({ name, data, time: new Date() }),
-        type: EventType,
-      },
-    },
-  }
-}
-
 export const generateServer = async (app: Koa, log: Log) => {
   const apolloLogger = log.create('apollo-server')
 
   const baseSchema = createBaseSchemaGenerator(configuration)(models)
   const eventSchema = eventBaseSchema()
 
-  const schema = createSchema(joinBaseSchema(baseSchema, eventSchema))
+  const schema = createSchema(joinBaseSchema(baseSchema, eventSchema, gapiBaseSchema()))
 
-  console.log(printSchema(schema))
+  // console.log(printSchema(schema))
 
   const server = new ApolloServer({
     schema,
@@ -100,6 +59,7 @@ export const generateServer = async (app: Koa, log: Log) => {
     subscriptions: {
       path: '/graphql',
     },
+    context: createContext,
     introspection: true,
     playground: {
       // Force setting, workaround: https://github.com/prisma/graphql-playground/issues/790
