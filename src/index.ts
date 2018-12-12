@@ -51,7 +51,9 @@ const main = async () => {
 
   const { initialized, server } = await generateServer(app, log)
 
+  log('Waiting for initialization of the database')
   await initialized
+  log('Starting http server now')
   const httpServer = await app.listen(config.port)
 
   log(`🚀 Server ready at http://localhost:${config.port}${server.graphqlPath}`)
