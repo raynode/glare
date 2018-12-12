@@ -8,6 +8,9 @@ const sessionKeys = Object.keys(process.env)
   .map(name => process.env[name])
 
 export const config = {
+  apollo: {
+    apiKey: process.env.ENGINE_API_KEY,
+  },
   host: process.env.HOSTNAME,
   port: process.env.GLARE_PORT || 3421,
   path: '/',

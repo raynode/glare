@@ -1,4 +1,5 @@
 import { BaseSchema } from '@raynode/graphql-connector'
+import { JSONType } from '@raynode/graphql-connector-sequelize'
 import { config } from 'config'
 
 import { GraphQLBoolean, GraphQLID, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql'
@@ -72,7 +73,7 @@ export const gapiBaseSchema = (): BaseSchema => {
       hidden: { type: GraphQLBoolean },
       id: { type: GraphQLString },
       kind: { type: GraphQLString },
-      // links: { type: GraphQLString },
+      links: { type: JSONType },
       notes: { type: GraphQLString },
       parent: { type: GraphQLString },
       position: { type: GraphQLString },
@@ -120,22 +121,6 @@ export const gapiBaseSchema = (): BaseSchema => {
         resolve: async (_, { userId }, context) => {
           context.tasks = Tasks(await getOAuth2ClientForUserID(userId))
           return (await context.tasks.tasklists.list()).data.items
-        },
-      },
-      tasks: {
-        type: GraphQLNonNull(GraphQLList(GraphQLNonNull(TypeTaskListItem))),
-        args: {
-          userId: { type: GraphQLNonNull(GraphQLID) },
-          tasklistId: { type: GraphQLNonNull(GraphQLID) },
-        },
-        resolve: async (_, { userId, tasklistId }, context) => {
-          const tasks = Tasks(await getOAuth2ClientForUserID(userId))
-          const list = await tasks.tasks.list({
-            tasklist: tasklistId,
-          })
-          console.log(list.data.items.map(i => i))
-          return null
-          // list && list.data && list.data.items ? list.data.items : []
         },
       },
     },

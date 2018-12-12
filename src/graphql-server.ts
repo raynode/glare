@@ -6,7 +6,7 @@ import * as Koa from 'koa'
 
 import { ApolloServer } from 'apollo-server-koa'
 
-import { BaseSchema, createBaseSchemaGenerator } from '@raynode/graphql-connector'
+import { BaseSchema, createBaseSchemaGenerator, createSchema } from '@raynode/graphql-connector'
 import { configuration, DateType, JSONType } from '@raynode/graphql-connector-sequelize'
 
 import { initialized, models } from 'models/init'
@@ -16,21 +16,21 @@ import { GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLString, printS
 import { eventBaseSchema } from 'functions/event'
 import { gapiBaseSchema } from 'functions/gapi'
 
-export const createSchema = ({ queryFields, mutationFields, subscriptionFields = null }: BaseSchema) => {
-  const query = new GraphQLObjectType({
-    name: 'Query',
-    fields: queryFields,
-  })
-  const mutation = new GraphQLObjectType({
-    name: 'Mutation',
-    fields: mutationFields,
-  })
-  const subscription = new GraphQLObjectType({
-    name: 'Subscription',
-    fields: subscriptionFields,
-  })
-  return new GraphQLSchema({ query, mutation, subscription })
-}
+// export const createSchema = ({ queryFields, mutationFields, subscriptionFields = null }: BaseSchema) => {
+//   const query = new GraphQLObjectType({
+//     name: 'Query',
+//     fields: queryFields,
+//   })
+//   const mutation = new GraphQLObjectType({
+//     name: 'Mutation',
+//     fields: mutationFields,
+//   })
+//   const subscription = new GraphQLObjectType({
+//     name: 'Subscription',
+//     fields: subscriptionFields,
+//   })
+//   return new GraphQLSchema({ query, mutation, subscription })
+// }
 
 const joinBaseSchema = (...schema: BaseSchema[]): BaseSchema =>
   schema.reduce(
@@ -53,7 +53,9 @@ export const generateServer = async (app: Koa, log: Log) => {
 
   // console.log(printSchema(schema))
 
+  const engine = config.apollo.apiKey ? { apiKey: config.apollo.apiKey } : false
   const server = new ApolloServer({
+    engine,
     schema,
     tracing: true,
     subscriptions: {
