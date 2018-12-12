@@ -4,7 +4,7 @@ import { BaseSchema } from '@raynode/graphql-connector'
 import { DateType, JSONType } from '@raynode/graphql-connector-sequelize'
 import { pubsub, withFilter } from 'services/pubsub'
 
-export const eventBaseSchema = (): BaseSchema => {
+export const eventBaseSchema = (): BaseSchema<any> => {
   const EVENT = 'EVENT'
 
   const EventType = new GraphQLObjectType({
@@ -17,6 +17,7 @@ export const eventBaseSchema = (): BaseSchema => {
   })
 
   return {
+    getModel: () => null,
     queryFields: {
       event: { type: GraphQLString },
     },

@@ -32,15 +32,22 @@ import { gapiBaseSchema } from 'functions/gapi'
 //   return new GraphQLSchema({ query, mutation, subscription })
 // }
 
-const joinBaseSchema = (...schema: BaseSchema[]): BaseSchema =>
+const joinBaseSchema = <Models>(...schema: Array<BaseSchema<Models>>): BaseSchema<Models> =>
   schema.reduce(
-    (result, schema) => {
-      result.queryFields = { ...result.queryFields, ...schema.queryFields }
-      result.mutationFields = { ...result.mutationFields, ...schema.mutationFields }
-      result.subscriptionFields = { ...result.subscriptionFields, ...schema.subscriptionFields }
-      return result
+    ({ queryFields, mutationFields, subscriptionFields, getModel }, schema) => ({
+      getModel: name => schema.getModel(name) || getModel(name),
+      mutationFields: { ...mutationFields, ...schema.mutationFields },
+      queryFields: { ...queryFields, ...schema.queryFields },
+      subscriptionFields: { ...subscriptionFields, ...schema.subscriptionFields },
+    }),
+    {
+      getModel: name => {
+        throw new Error(`model ${name} not found`)
+      },
+      mutationFields: {},
+      queryFields: {},
+      subscriptionFields: {},
     },
-    { queryFields: {}, mutationFields: {}, subscriptionFields: {} },
   )
 
 export const generateServer = async (app: Koa, log: Log) => {

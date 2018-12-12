@@ -9,7 +9,7 @@ import { User } from 'models/user'
 import { OAuth2Client } from 'google-auth-library'
 import * as GAPI from 'googleapis'
 
-export const gapiBaseSchema = (): BaseSchema => {
+export const gapiBaseSchema = (): BaseSchema<any> => {
   const EVENT = 'EVENT'
 
   const getOAuth2ClientForUserID = async (userId: string) => {
@@ -105,6 +105,7 @@ export const gapiBaseSchema = (): BaseSchema => {
   })
 
   return {
+    getModel: () => null,
     queryFields: {
       fit: {
         type: GraphQLString,

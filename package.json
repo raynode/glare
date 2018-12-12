@@ -111,6 +111,7 @@
     "subscriptions-transport-ws": "^0.9.15",
     "ts-node": "^7.0.1",
     "tsconfig-paths": "^3.7.0",
+    "typescript": "^3.2.2",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
@@ -135,7 +136,6 @@
     "prettier": "^1.15.3",
     "sequelize-cli": "^5.4.0",
     "ts-jest": "^23.10.5",
-    "tslint": "^5.11.0",
-    "typescript": "^3.2.2"
+    "tslint": "^5.11.0"
   }
 }
