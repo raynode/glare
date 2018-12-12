@@ -26,7 +26,6 @@ export const config = {
   google: {
     clientId: process.env.GLARE_GOOGLE_CLIENT_ID,
     secret: process.env.GLARE_GOOGLE_SECRET,
-    mapsAPI: process.env.GLARE_GOOGLE_MAPS_API,
     redirectUri: 'localhost:3003/settings',
   },
   sequelize: {
