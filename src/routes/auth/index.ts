@@ -35,7 +35,7 @@ export const connect = async (router: Router, app: Koa) => {
     accessType: 'offline',
     clientId: config.google.clientId,
     clientSecret: config.google.secret,
-    callbackURL: `http://localhost:${config.port}/auth/google/callback`,
+    callbackURL: config.google.redirectUri,
   }
 
   passport.serializeUser<UserInstance, any>((user, done) => {

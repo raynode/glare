@@ -26,7 +26,7 @@ export const config = {
   google: {
     clientId: process.env.GLARE_GOOGLE_CLIENT_ID,
     secret: process.env.GLARE_GOOGLE_SECRET,
-    redirectUri: 'localhost:3003/settings',
+    redirectUri: process.env.GLARE_GOOGLE_REDIRECT_URI,
   },
   sequelize: {
     logLevel: false, // 'debug', // LogLevel
