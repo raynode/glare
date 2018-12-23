@@ -76,6 +76,10 @@ module.exports = {
         tag: 'Testing',
         normalized: 'testing',
       },
+      {
+        tag: 'Heise',
+        normalized: 'heise',
+      },
     ])
 
     await queryInterface.bulkInsert('Posts', [

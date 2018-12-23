@@ -29,7 +29,7 @@ export const config = {
     redirectUri: process.env.GLARE_GOOGLE_REDIRECT_URI,
   },
   sequelize: {
-    logLevel: false, // 'debug', // LogLevel
+    logLevel: 'debug', // false, // 'debug', // LogLevel
     development: {
       username: process.env.DEV_DB_USERNAME,
       password: process.env.DEV_DB_PASSWORD,

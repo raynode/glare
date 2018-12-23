@@ -80,7 +80,7 @@ export const Actions = {
 
 Tag.associate = models => {
   // associations can be defined here
-  log('Adding tags to:', Object.keys(models))
+  log(`Adding tags to: ${Object.keys(models).join(', ')}`)
 
   TagLink.belongsTo(Tag, {
     foreignKey: 'id',

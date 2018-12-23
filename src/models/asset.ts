@@ -1,5 +1,5 @@
 import { config } from 'config'
-
+import { DefineModelAttributes } from 'sequelize'
 import { DataTypes, Instance, Node, Sequelize, sequelize, SequelizeAttributes } from 'services/db'
 
 export interface AssetAttributes extends Partial<Node> {
@@ -7,13 +7,14 @@ export interface AssetAttributes extends Partial<Node> {
   name: string
   type: string
   mimetype: string
+  source: string
   data?: any
   url?: string
 }
 
 export type AssetInstance = Instance<AssetAttributes> & AssetAttributes
 
-const attributes: SequelizeAttributes<AssetAttributes> = {
+const attributes: DefineModelAttributes<AssetAttributes> = {
   id: {
     allowNull: false,
     defaultValue: Sequelize.fn('gen_random_uuid'),
@@ -30,6 +31,10 @@ const attributes: SequelizeAttributes<AssetAttributes> = {
   },
   mimetype: {
     allowNull: false,
+    type: Sequelize.STRING,
+  },
+  source: {
+    allowNull: true,
     type: Sequelize.STRING,
   },
   data: {

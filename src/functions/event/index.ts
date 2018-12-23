@@ -4,6 +4,10 @@ import { BaseSchema } from '@raynode/graphql-connector'
 import { DateType, JSONType } from '@raynode/graphql-connector-sequelize'
 import { pubsub, withFilter } from 'services/pubsub'
 
+import { create } from 'services/logger'
+
+const log = create('functions:event')
+
 export const eventBaseSchema = (): BaseSchema<any> => {
   const EVENT = 'EVENT'
 
@@ -27,7 +31,10 @@ export const eventBaseSchema = (): BaseSchema<any> => {
           name: { type: GraphQLNonNull(GraphQLString) },
           data: { type: JSONType },
         },
-        resolve: (_, args, context) => pubsub.publish(EVENT, args),
+        resolve: (_, args, context) => {
+          log('create-event', args)
+          return pubsub.publish(EVENT, args)
+        },
         type: GraphQLString,
       },
     },

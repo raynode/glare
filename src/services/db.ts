@@ -1,5 +1,6 @@
 import { config as Config } from 'config'
 
+import '@raynode/graphql-connector-sequelize'
 import * as Sequelize from 'sequelize'
 import { create } from 'services/logger'
 

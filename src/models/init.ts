@@ -4,6 +4,7 @@ import { config } from 'config'
 import { Account } from 'models/account'
 import { Asset } from 'models/asset'
 import { Expense } from 'models/expense'
+import { Link } from 'models/links'
 import { Post } from 'models/post'
 import { Tag } from 'models/tag'
 import { Token } from 'models/token'
@@ -17,6 +18,7 @@ export const models = {
   Account,
   Asset,
   Expense,
+  Link,
   Post,
   Tag,
   Token,
