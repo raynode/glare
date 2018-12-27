@@ -16,22 +16,6 @@ import { GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLString, printS
 import { eventBaseSchema } from 'functions/event'
 import { gapiBaseSchema } from 'functions/gapi'
 
-// export const createSchema = ({ queryFields, mutationFields, subscriptionFields = null }: BaseSchema) => {
-//   const query = new GraphQLObjectType({
-//     name: 'Query',
-//     fields: queryFields,
-//   })
-//   const mutation = new GraphQLObjectType({
-//     name: 'Mutation',
-//     fields: mutationFields,
-//   })
-//   const subscription = new GraphQLObjectType({
-//     name: 'Subscription',
-//     fields: subscriptionFields,
-//   })
-//   return new GraphQLSchema({ query, mutation, subscription })
-// }
-
 const joinBaseSchema = <Models>(...schema: Array<BaseSchema<Models>>): BaseSchema<Models> =>
   schema.reduce(
     ({ queryFields, mutationFields, subscriptionFields, getModel }, schema) => ({
