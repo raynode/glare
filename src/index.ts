@@ -1,5 +1,5 @@
 import { config } from 'config'
-import { attachSentryTransport, log } from 'services/logger'
+import { attachSentryTransport, create } from 'services/logger'
 
 import * as koaCors from '@koa/cors'
 import * as Koa from 'koa'
@@ -12,6 +12,8 @@ import { models } from 'models/init'
 import { saveToBuffer } from 'services/file'
 
 import { connect } from 'routes'
+
+export const log = create({ enabled: true, transport: (c, msg) => console.log(...msg) })
 
 const main = async () => {
   process.on('unhandledRejection', rejection => {

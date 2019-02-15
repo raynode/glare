@@ -15,6 +15,7 @@ import { GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLString, printS
 
 import { eventBaseSchema } from 'functions/event'
 import { gapiBaseSchema } from 'functions/gapi'
+import { iftttNotificationBaseSchema } from 'functions/ifttt-notification'
 
 const joinBaseSchema = <Models>(...schema: Array<BaseSchema<Models>>): BaseSchema<Models> =>
   schema.reduce(
@@ -39,8 +40,9 @@ export const generateServer = async (app: Koa, log: Log) => {
 
   const baseSchema = createBaseSchemaGenerator(configuration)(models)
   const eventSchema = eventBaseSchema()
+  const iftttNotificationSchema = iftttNotificationBaseSchema()
 
-  const schema = createSchema(joinBaseSchema(baseSchema, eventSchema, gapiBaseSchema()))
+  const schema = createSchema(joinBaseSchema(baseSchema, eventSchema, iftttNotificationSchema, gapiBaseSchema()))
 
   // console.log(printSchema(schema))
 

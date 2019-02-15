@@ -28,6 +28,9 @@ export const config = {
     secret: process.env.GLARE_GOOGLE_SECRET,
     redirectUri: process.env.GLARE_GOOGLE_REDIRECT_URI,
   },
+  ifttt: {
+    webhook: process.env.IFTTT_WEBHOOK_KEY,
+  },
   sequelize: {
     logLevel: 'debug', // false, // 'debug', // LogLevel
     development: {
