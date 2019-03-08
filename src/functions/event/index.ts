@@ -17,6 +17,7 @@ export const eventBaseSchema = (): BaseSchema<any> => {
       name: { type: GraphQLNonNull(GraphQLString) },
       data: { type: JSONType },
       time: { type: GraphQLNonNull(DateType) },
+      info: { type: GraphQLString },
     },
   })
 
@@ -30,6 +31,7 @@ export const eventBaseSchema = (): BaseSchema<any> => {
         args: {
           name: { type: GraphQLNonNull(GraphQLString) },
           data: { type: JSONType },
+          info: { type: GraphQLString },
         },
         resolve: (_, args, context) => {
           log('create-event', args)
@@ -45,7 +47,7 @@ export const eventBaseSchema = (): BaseSchema<any> => {
           () => pubsub.asyncIterator([EVENT]),
           (event, variables) => variables.name === '*' || event.name === variables.name,
         ),
-        resolve: ({ name, data }) => ({ name, data, time: new Date() }),
+        resolve: ({ name, data, info }) => ({ name, data, info, time: new Date() }),
         type: EventType,
       },
     },

@@ -9,14 +9,16 @@ import { create } from 'services/logger'
 
 const log = create('functions:ifttt:webhook')
 
+const NotificationTypeFields = {
+  title: { type: GraphQLNonNull(GraphQLString) },
+  message: { type: JSONType },
+  image: { type: GraphQLString },
+}
+
 export const iftttNotificationBaseSchema = (): BaseSchema<any> => {
   const NotificationType = new GraphQLObjectType({
     name: 'Notifcation',
-    fields: {
-      title: { type: GraphQLNonNull(GraphQLString) },
-      message: { type: JSONType },
-      image: { type: GraphQLString },
-    },
+    fields: NotificationTypeFields,
   })
 
   return {
@@ -26,11 +28,7 @@ export const iftttNotificationBaseSchema = (): BaseSchema<any> => {
     },
     mutationFields: {
       sendNotification: {
-        args: {
-          title: { type: GraphQLNonNull(GraphQLString) },
-          message: { type: JSONType },
-          image: { type: GraphQLString },
-        },
+        args: NotificationTypeFields,
         resolve: (_, { title, message, image = null }, context) => {
           log('send notification', title, message, image)
           webhook({
