@@ -1,70 +1,173 @@
-import { config } from 'config'
-import { attachSentryTransport, create } from 'services/logger'
+// import { ApolloServer } from 'apollo-server-lambda'
+import { addMockFunctionsToSchema } from 'graphql-tools'
 
-import * as koaCors from '@koa/cors'
-import * as Koa from 'koa'
-import * as koaBody from 'koa-body'
-import * as Router from 'koa-router'
+import { builder } from 'graph'
+import { graphql, printSchema } from 'graphql'
 
-import * as Boom from 'boom'
+const schema = builder.build()
+console.log(printSchema(schema))
 
-import { models } from 'models/init'
-import { saveToBuffer } from 'services/file'
+// addMockFunctionsToSchema({
+//   schema,
+//   mocks: {
 
-import { connect } from 'routes'
-
-export const log = create({ enabled: true, transport: (c, msg) => console.log(...msg) })
+//   },
+//   preserveResolvers: false,
+// })
 
 const main = async () => {
-  process.on('unhandledRejection', rejection => {
-    log.error('unhandledRejection', rejection)
+  const result = await graphql({
+    schema,
+    source: `{
+      getUsers(where: {}, order: name_ASC) {
+        nodes {
+          id
+          name
+          email
+        }
+      }
+    }`,
   })
 
-  if (config.sentry.active) attachSentryTransport().catch(() => log.error('Error while connecting to sentry'))
+  if (result.errors) console.log('ERROR:', result.errors)
 
-  const { generateServer } = await import('graphql-server')
+  console.log('DATA:', result.data.getUsers.nodes)
 
-  const app = new Koa()
-  const router = new Router()
+  const result2 = await graphql({
+    schema,
+    source: `{
+      getUsers(
+        where: {}
+        order: name_DESC
+        page: {
+          limit: 1
+        }
+      ) {
+        nodes {
+          id
+          name
+          email
+        }
+        page {
+          limit
+          offset
+        }
+      }
+    }`,
+  })
 
-  connect(
-    router,
-    app,
-  )
+  const result3 = await graphql({
+    schema,
+    source: `{
+      getUsers(
+        where: {}
+        order: name_DESC
+        page: {
+          limit: 1
+          offset: 1
+        }
+      ) {
+        nodes {
+          id
+          name
+          email
+        }
+        page {
+          limit
+          offset
+        }
+      }
+    }`,
+  })
 
-  app
-    .use(koaCors())
-    .use(
-      koaBody({
-        formLimit: '10mb',
-        jsonLimit: '10mb',
-        textLimit: '10mb',
-        multipart: true,
-      }),
-    )
-    .use(router.routes())
-    .use(
-      router.allowedMethods({
-        throw: true,
-        notImplemented: () => Boom.notImplemented(),
-        methodNotAllowed: () => Boom.methodNotAllowed(),
-      }),
-    )
+  console.log('DATA:', result2.data.getUsers.nodes)
+  console.log('DATA:', result3.data.getUsers.nodes)
 
-  const { initialized, server } = await generateServer(app, log)
-
-  log('Waiting for initialization of the database')
-  await initialized
-  log('Starting http server now')
-  const httpServer = await app.listen(config.port)
-
-  log(`🚀 Server ready at http://localhost:${config.port}${server.graphqlPath}`)
-  try {
-    server.installSubscriptionHandlers(httpServer)
-    log(`🚀 Subscriptions ready at ws://localhost:${config.port}${server.subscriptionsPath}`)
-  } catch (err) {
-    log('No subscriptions due to: ', err)
-  }
+  console.log(result2.data.getUsers.page)
+  console.log(result3.data.getUsers.page)
 }
 
-main().catch(err => log.error('Main threw an error:', err))
+main()
+// const server = new ApolloServer({
+//   schema,
+// })
+
+// export const graphql = server.createHandler({
+//   cors: {
+//     origin: true,
+//     credentials: true,
+//   },
+// })
+
+// Users.findOne({
+//   order: null,
+//   where: {
+//     OR: [{
+//       name: 'A',
+//       gender: 'aa',
+//     }, {
+//       name: 'B',
+//       gender: 'bb',
+//     }],
+//     id: 'or-test',
+//     gender: 'xx',
+//   },
+// })
+
+// Users.findOne({
+//   order: null,
+//   where: {
+//     AND: [{
+//       name: 'A',
+//       gender: 'aa',
+//     }, {
+//       name: 'B',
+//       gender: 'bb',
+//     }],
+//     id: 'or-test',
+//     gender: 'xx',
+//   },
+// })
+
+// Users.findOne({
+//   order: null,
+//   where: {
+//     NOT: {
+//       AND: [{
+//         name: 'A',
+//         gender: 'aa',
+//       }, {
+//         name: 'B',
+//         gender: 'bb',
+//       }],
+//       id: 'or-test',
+//       gender: 'xx',
+//     },
+//   },
+// })
+
+// Users.findOne({
+//   order: null,
+//   where: {
+//     id_not_in: ['a', 'b'],
+//     id_in: ['c'],
+//   },
+// })
+
+// Users.findOne({
+//   order: null,
+//   where: {
+//     NOT: {
+//       id_not_in: ['a', 'b'],
+//       id_in: ['c'],
+//     },
+//   },
+// })
+
+// Users.findOne({
+//   order: null,
+//   where: {
+//     num_gt: 5,
+//     num_lt: 10,
+//   },
+// })
