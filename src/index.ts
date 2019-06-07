@@ -6,7 +6,7 @@ import * as Koa from 'koa'
 import * as koaBody from 'koa-body'
 import * as Router from 'koa-router'
 
-import * as Boom from 'boom'
+import * as Boom from '@hapi/boom'
 
 import { connect } from 'routes'
 
@@ -30,6 +30,21 @@ const main = async () => {
   )
 
   app
+    .use(async (ctx, next) => {
+      try {
+        await next()
+      } catch (error) {
+        if (Boom.isBoom(error)) {
+          const {
+            output: { statusCode, payload },
+          } = error
+          ctx.status = statusCode
+          ctx.body = payload
+          return ctx
+        }
+        throw error
+      }
+    })
     .use(koaCors())
     .use(
       koaBody({
