@@ -1,19 +1,11 @@
+import { builder } from 'graph/builder'
+export { builder }
 
-import { createSchemaBuilder } from 'gram'
-import {
-  GraphQLBoolean,
-  GraphQLInt,
-  GraphQLString,
-} from 'graphql'
+import initializeScalars from './scalars'
 
-import { Links, Users } from 'db/models'
+import initializeLink from './types/link'
+import initializeUser from './types/user'
 
-import { createService } from './base-service'
-export type SchemaContext = 'admin' | 'user'
-
-export const builder = createSchemaBuilder<SchemaContext>()
-
-const user = builder.model('User', createService(Users))
-user.attr('name', GraphQLString)
-user.attr('email', GraphQLString)
-user.attr('emailVerified', GraphQLBoolean)
+initializeScalars(builder)
+initializeUser(builder)
+initializeLink(builder)

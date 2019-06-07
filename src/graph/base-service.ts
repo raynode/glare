@@ -1,4 +1,3 @@
-
 import { createPageType, NodeType, PageData, Service, Where } from 'gram'
 import { QueryBuilder } from 'knex'
 import { identity } from 'lodash'
@@ -6,22 +5,28 @@ import { identity } from 'lodash'
 import { Model } from 'db/base-model'
 
 const internalHandleWhereFilters = (data: any, length: number, [key, b, c]: string[]) => (builder: QueryBuilder) => {
-  if(length === 1)
-    return builder.where(key, data)
-  if(b === 'not') {
-    if(length === 2)
-      return builder.whereNot(internalHandleWhereFilters(data, length - 1, [key, c]))
-    switch(c) {
-      case 'in': return builder.whereNotIn(key, data)
-      case 'contains': return builder.whereNot(key, 'like', data)
+  if (length === 1) return builder.where(key, data)
+  if (b === 'not') {
+    if (length === 2) return builder.whereNot(key, data)
+    switch (c) {
+      case 'in':
+        return builder.whereNotIn(key, data)
+      case 'contains':
+        return builder.whereRaw(`?!=ANY(${key})`, data)
+      // case 'like': return builder.whereNot(key, 'like', data)
     }
     throw new Error(`Unkown not-operator '${key}'`)
   }
-  switch(b) {
-    case 'in': return builder.whereIn(key, data)
-    case 'gt': return builder.where(key, '>', data)
-    case 'lt': return builder.where(key, '<', data)
-    case 'contains': return builder.where(key, 'like', data)
+  switch (b) {
+    case 'in':
+      return builder.whereIn(key, data)
+    case 'gt':
+      return builder.where(key, '>', data)
+    case 'lt':
+      return builder.where(key, '<', data)
+    case 'contains':
+      return builder.whereRaw(`?=ANY(${key})`, data)
+    // case 'like': return builder.where(key, 'like', data)
   }
   throw new Error(`Unkown operator '${key}'`)
 }
@@ -38,26 +43,26 @@ const handleWhereData = (data: Record<string, any>) => (builder: QueryBuilder) =
 }
 
 // creates a query modifier that handle the where-clause of a query
-const handleWhere = ({ AND, OR, NOT, ...data}: Where<any>) => (qb: QueryBuilder) => {
-  if(NOT)
-    return qb.whereNot(handleWhere(NOT))
+const handleWhere = ({ AND, OR, NOT, ...data }: Where<any>) => (qb: QueryBuilder) => {
+  if (NOT) return qb.whereNot(handleWhere(NOT))
   const queryBuilder = Object.keys(data).length ? handleWhereData(data)(qb) : qb
-  if(AND)
-    return AND.reduce((queryBuilder, where) => queryBuilder.andWhere(handleWhere(where)), queryBuilder)
-  if(OR)
-    return OR.reduce((queryBuilder, where) => queryBuilder.orWhere(handleWhere(where)), queryBuilder)
+  if (AND) return AND.reduce((queryBuilder, where) => queryBuilder.andWhere(handleWhere(where)), queryBuilder)
+  if (OR) return OR.reduce((queryBuilder, where) => queryBuilder.orWhere(handleWhere(where)), queryBuilder)
   return queryBuilder
 }
 
 // creates a query modifier that handles ordering
-const handleOrder = (order?: string) => !order ? identity : (query: QueryBuilder) => {
-  const [column, direction] = order.split('_')
-  return query.orderBy(column, direction)
-}
+const handleOrder = (order?: string) =>
+  !order
+    ? identity
+    : (query: QueryBuilder) => {
+        const [column, direction] = order.split('_')
+        return query.orderBy(column, direction)
+      }
 
 // creates a query modifier that handles pagination
-const handlePage = (page?: PageData) => !page ? identity : (query: QueryBuilder) =>
-  query.limit(page.limit).offset(page.offset)
+const handlePage = (page?: PageData) =>
+  !page ? identity : (query: QueryBuilder) => query.limit(page.limit).offset(page.offset)
 
 const firstPage: PageData = {
   offset: 0,
@@ -66,7 +71,7 @@ const firstPage: PageData = {
 
 export const createService = <Type extends NodeType, Create, Update>(
   model: Model<Type, Create, Update>,
-): Service<Type, any> => ({
+): Service<Type> => ({
   create: async (args: any) => (await model.create(args))[0],
   findOne: async ({ order, where }) => {
     const nodes = await model.find({ where: handleWhere(where), order: handleOrder(order) })

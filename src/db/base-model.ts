@@ -1,4 +1,3 @@
-
 import { NodeType } from 'gram'
 
 import { QueryBuilder } from 'knex'
@@ -34,8 +33,8 @@ export interface Model<Type extends NodeType, CreateType, UpdateType> {
 }
 
 interface ModelModifier {
-  find: (query: QueryBuilder) => QueryBuilder,
-  remove: (query: QueryBuilder) => QueryBuilder,
+  find: (query: QueryBuilder) => QueryBuilder
+  remove: (query: QueryBuilder) => QueryBuilder
 }
 
 export const deletedAtModelModifier = {
@@ -54,11 +53,18 @@ export const createModel = <Type extends NodeType, Create, Update>(
   const remove = (modelModifier && modelModifier.remove) || defaultRemoveModifier
 
   const model: Model<Type, Create, Update> = {
-    create: async ({ data }) => db.table(tableName).insert(data).returning('*'),
+    create: async ({ data }) =>
+      db
+        .table(tableName)
+        .insert(data)
+        .returning<Type>('*') as any,
     find: async ({ order = identity, where = identity, page = identity } = {}) =>
       page(order(where(find(db.table(tableName))))),
-    remove: async ({ where }) => remove(where(db.table(tableName))).returning('*'),
-    update: async ({ data, where }) => where(find(db.table(tableName))).update(data).returning('*'),
+    remove: async ({ where }) => remove(where(db.table(tableName))).returning('*') as any,
+    update: async ({ data, where }) =>
+      where(find(db.table(tableName)))
+        .update(data)
+        .returning('*') as any,
   }
   return model
 }

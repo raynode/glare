@@ -1,8 +1,7 @@
-
 import { NodeType } from 'gram'
 import { createModel, deletedAtModelModifier } from '../base-model'
 
-export interface UpdateUser {
+export interface User extends NodeType {
   givenName: string
   familyName: string
   nickname: string
@@ -21,6 +20,19 @@ export interface CreateUser extends Partial<UpdateUser> {
   email: string
 }
 
-export type User = UpdateUser & NodeType
+export type UpdateUser = Pick<
+  User,
+  | 'givenName'
+  | 'familyName'
+  | 'nickname'
+  | 'name'
+  | 'picture'
+  | 'gender'
+  | 'state'
+  | 'locale'
+  | 'email'
+  | 'googleID'
+  | 'emailVerified'
+>
 
 export const Users = createModel<User, CreateUser, Partial<UpdateUser>>('Users', deletedAtModelModifier)
