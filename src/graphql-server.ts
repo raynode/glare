@@ -39,10 +39,9 @@ export const generateServer = async (app: Koa, log: Log) => {
   // , eventSchema, iftttNotificationSchema, gapiBaseSchema()
 
   const fieldDefinition = joinFieldDefinitions(eventFieldDefinition(), builder.fields('admin'))
-  console.log(fieldDefinition)
+
   const schema = createSchema(fieldDefinition)
   // const schema = builder.build(x)
-  console.log(printSchema(schema))
 
   const engine = config.apollo.apiKey ? { apiKey: config.apollo.apiKey } : false
   const server = new ApolloServer({
