@@ -16,7 +16,7 @@ const base = {
 export const config = {
   development: {
     ...base,
-    connection: 'postgres://nox@localhost:5433/glare_dev',
+    connection: 'postgres://nox@localhost:5432/glare_dev',
   },
   test: {
     ...base,
