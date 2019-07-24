@@ -1,47 +1,23 @@
-import { ApolloServer, PlaygroundConfig } from 'apollo-server-koa'
-import { FieldDefinition } from 'gram'
-import { createSchema } from 'gram/lib/schemaBuilder'
-import { GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLString, printSchema } from 'graphql'
-import { addMockFunctionsToSchema } from 'graphql-tools'
+import { ApolloServer } from 'apollo-server-koa'
+import { makeExecutableSchema } from 'graphql-tools'
 import * as Koa from 'koa'
 
 import { config } from 'config'
 import { builder } from 'graph'
-import { Log } from 'services/logger'
-
-// import { createContext } from 'services/context'
-// import { BaseSchema, createBaseSchemaGenerator, createSchema } from '@raynode/graphql-connector'
-
 import { eventFieldDefinition } from 'graph/event'
-// import { gapiBaseSchema } from 'functions/gapi'
-// import { iftttNotificationBaseSchema } from 'functions/ifttt-notification'
-
-const joinFieldDefinitions = <Models>(...schema: FieldDefinition[]): FieldDefinition =>
-  schema.reduce(
-    ({ query, mutation, subscription }, schema) => ({
-      mutation: { ...mutation, ...schema.mutation },
-      query: { ...query, ...schema.query },
-      subscription: { ...subscription, ...schema.subscription },
-    }),
-    {
-      mutation: {},
-      query: {},
-      subscription: {},
-    },
-  )
+import { Log } from 'services/logger'
 
 export const generateServer = async (app: Koa, log: Log) => {
   const apolloLogger = log.create('apollo-server')
+  const build = builder.createBuild()
 
-  // const baseSchema = createBaseSchemaGenerator(configuration)(models)
-  // const eventSchema = eventBaseSchema()
-  // const iftttNotificationSchema = iftttNotificationBaseSchema()
-  // , eventSchema, iftttNotificationSchema, gapiBaseSchema()
+  eventFieldDefinition(build)
 
-  const fieldDefinition = joinFieldDefinitions(eventFieldDefinition(), builder.fields('admin'))
+  const { resolvers, typeDefs } = build.toTypeDefs()
 
-  const schema = createSchema(fieldDefinition)
-  // const schema = builder.build(x)
+  // console.log(typeDefs)
+
+  const schema = makeExecutableSchema({ resolvers, typeDefs })
 
   const engine = config.apollo.apiKey ? { apiKey: config.apollo.apiKey } : false
   const server = new ApolloServer({

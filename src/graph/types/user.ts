@@ -26,9 +26,9 @@ export default <Context, QueryContext>(builder: SchemaBuilder<Context, QueryCont
     new GraphQLEnumType({
       name: 'UserState',
       values: {
-        Admin: { value: 'admin' },
-        Guest: { value: 'guest' },
-        Member: { value: 'member' },
+        admin: { value: 'admin' },
+        guest: { value: 'guest' },
+        member: { value: 'member' },
       },
       description: 'Possible user states',
     }),
