@@ -53,15 +53,15 @@ export const createModel = <Type extends NodeType, Create, Update>(
   const remove = (modelModifier && modelModifier.remove) || defaultRemoveModifier
 
   const model: Model<Type, Create, Update> = {
-    create: async ({ data }) =>
+    create: ({ data }) =>
       db
         .table(tableName)
         .insert(data)
         .returning<Type>('*') as any,
-    find: async ({ order = identity, where = identity, page = identity } = {}) =>
+    find: ({ order = identity, where = identity, page = identity } = {}) =>
       page(order(where(find(db.table(tableName))))),
-    remove: async ({ where }) => remove(where(db.table(tableName))).returning('*') as any,
-    update: async ({ data, where }) =>
+    remove: ({ where }) => remove(where(db.table(tableName))).returning('*') as any,
+    update: ({ data, where }) =>
       where(find(db.table(tableName)))
         .update(data)
         .returning('*') as any,

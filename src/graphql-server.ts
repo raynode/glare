@@ -1,32 +1,14 @@
 import { ApolloServer } from 'apollo-server-koa'
-import { makeExecutableSchema } from 'graphql-tools'
 import * as Koa from 'koa'
 
 import { config } from 'config'
-import { builder } from 'graph'
-import { eventFieldDefinition } from 'graph/event'
-import { scalarTypes } from 'graph/scalars'
+import { getSchema } from 'graph'
 import { Log } from 'services/logger'
 
 export const generateServer = async (app: Koa, log: Log) => {
   const apolloLogger = log.create('apollo-server')
-  const build = builder.createBuild()
 
-  eventFieldDefinition(build)
-  scalarTypes(build)
-
-  const { resolvers, typeDefs } = build.toTypeDefs()
-
-  console.log(typeDefs)
-
-  const schema = makeExecutableSchema({
-    resolvers,
-    typeDefs,
-    resolverValidationOptions: {
-      requireResolversForResolveType: false,
-    },
-  })
-
+  const schema = getSchema()
   const engine = config.apollo.apiKey ? { apiKey: config.apollo.apiKey } : false
   const server = new ApolloServer({
     engine,

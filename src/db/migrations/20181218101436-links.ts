@@ -1,19 +1,33 @@
-
 import * as Knex from 'knex'
 import { v4 as uuid } from 'uuid'
 
-export const up = async (knex: Knex) => knex.schema
-  .createTable('Links', table => {
-    table.uuid('id').defaultTo(knex.raw('gen_random_uuid()')).notNullable().unique().primary()
+export const up = async (knex: Knex) =>
+  knex.schema.createTable('Links', table => {
+    table
+      .uuid('id')
+      .defaultTo(knex.raw('gen_random_uuid()'))
+      .notNullable()
+      .unique()
+      .primary()
     table.dateTime('datetime').defaultTo(knex.fn.now())
     table.string('title').notNullable()
-    table.string('url').notNullable().unique()
+    table
+      .string('url')
+      .notNullable()
+      .unique()
     table.string('content')
     table.specificType('tags', 'TEXT []') // add tags as an array type
 
     table.timestamps(true, true)
-    table.dateTime('deleted_at').defaultTo(null).comment('set to delete this')
-  })
+    table
+      .dateTime('deleted_at')
+      .defaultTo(null)
+      .comment('set to delete this')
+  }).raw(`
+    CREATE TRIGGER updateUsersUpdatedAt
+      BEFORE UPDATE ON "public"."Links"
+        FOR EACH ROW
+          EXECUTE PROCEDURE updateUpdatedAt()
+  `)
 
-export const down = async (knex: Knex) => knex.schema
-  .dropTable('Links')
+export const down = async (knex: Knex) => knex.schema.dropTable('Links')

@@ -101,6 +101,7 @@
     "lodash": "^4.17.15",
     "mimetype": "0.0.8",
     "node-fetch": "^2.6.0",
+    "nx-gameboard": "github:lordnox/nx-gameboard",
     "pg": "^7.12.0",
     "pluralize": "^8.0.0",
     "request": "^2.88.0",
