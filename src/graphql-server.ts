@@ -5,6 +5,7 @@ import * as Koa from 'koa'
 import { config } from 'config'
 import { builder } from 'graph'
 import { eventFieldDefinition } from 'graph/event'
+import { scalarTypes } from 'graph/scalars'
 import { Log } from 'services/logger'
 
 export const generateServer = async (app: Koa, log: Log) => {
@@ -12,12 +13,19 @@ export const generateServer = async (app: Koa, log: Log) => {
   const build = builder.createBuild()
 
   eventFieldDefinition(build)
+  scalarTypes(build)
 
   const { resolvers, typeDefs } = build.toTypeDefs()
 
-  // console.log(typeDefs)
+  console.log(typeDefs)
 
-  const schema = makeExecutableSchema({ resolvers, typeDefs })
+  const schema = makeExecutableSchema({
+    resolvers,
+    typeDefs,
+    resolverValidationOptions: {
+      requireResolversForResolveType: false,
+    },
+  })
 
   const engine = config.apollo.apiKey ? { apiKey: config.apollo.apiKey } : false
   const server = new ApolloServer({

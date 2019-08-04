@@ -3,7 +3,7 @@ import { config } from 'config'
 import { configure, create, DEBUG, join, LogLevel, split, WARN } from '@raynode/nx-logger'
 import { transport } from '@raynode/nx-logger-debug'
 import { parseError } from '@sentry/node/dist/parsers'
-import { SentryEvent, Severity } from '@sentry/types'
+import { Event as SentryEvent, Severity } from '@sentry/types'
 import { connectSentry } from 'services/sentry'
 
 const namespace = process.env.NODE_ENV === 'production' ? ['glare'] : ['glare-dev']

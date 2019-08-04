@@ -1,4 +1,4 @@
-import { createPageType, NodeType, PageData, Service, Where } from 'gram'
+import { NodeType, PageData, Service, Where } from 'gram'
 import { QueryBuilder } from 'knex'
 import { identity } from 'lodash'
 
@@ -87,7 +87,10 @@ export const createService = <Type extends NodeType, Create, Update>(
       order: handleOrder(order),
       page: handlePage(pagination),
     })
-    return createPageType(pagination, nodes)
+    return {
+      page: pagination,
+      nodes,
+    }
   },
   remove: async ({ where }) => model.remove({ where: handleWhere(where) }),
   update: async ({ data, where }: any) => model.update({ where: handleWhere(where), data }),

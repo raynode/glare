@@ -11,7 +11,7 @@ const log = create('functions:event')
 export const eventFieldDefinition = <BuildMode, Context>(build: Build<BuildMode, Context>) => {
   const EVENT = 'EVENT'
 
-  build.addType('Event', 'type', {
+  build.addType('Event', {
     fields: {
       name: 'String!',
       data: 'JSON',

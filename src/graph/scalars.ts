@@ -1,5 +1,10 @@
-import { SchemaBuilder } from 'gram'
-import * as GraphQLJSONObject from 'graphql-type-json'
+import { Build } from 'gram'
+import * as GraphQLJSON from 'graphql-type-json'
 
-export default <Context, QueryContext>(builder: SchemaBuilder<Context, QueryContext>) =>
-  builder.setScalar('JSON', GraphQLJSONObject as any)
+export const scalarTypes = <BuildMode, Context>(build: Build<BuildMode, Context>) => {
+  build.addType('JSON', {
+    parseLiteral: GraphQLJSON.GraphQLJSONObject.parseLiteral as any,
+    parseValue: GraphQLJSON.GraphQLJSONObject.parseValue as any,
+    serialize: GraphQLJSON.GraphQLJSONObject.serialize as any,
+  })
+}
