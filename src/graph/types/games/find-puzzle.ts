@@ -1,12 +1,19 @@
 import { Build } from 'gram'
 
-import { Game, GameLevel, GameLevels, Games, GameWorld, GameWorlds } from 'db/models'
+import { single } from 'db'
+import {
+  Game,
+  GameLevel,
+  GameLevels,
+  Games,
+  GameSolution,
+  GameSolutions,
+  GameWorld,
+  GameWorlds,
+  User,
+  Users,
+} from 'db/models'
 import { createService } from 'graph/base-service'
-
-export const single = async <Type>(promise: Promise<Type[]>) => {
-  const results = await promise
-  return results.length ? results[0] : null
-}
 
 export default <BuildMode, Context>(build: Build<BuildMode, Context>) => {
   build.addType('FindPuzzle', {
@@ -27,11 +34,10 @@ export default <BuildMode, Context>(build: Build<BuildMode, Context>) => {
         }),
       worlds: async (game: Game) =>
         GameWorlds.find({
-          where: query => query.where({ gameId: game.id }),
+          where: query => query.where({ worlds: game.id }),
         }),
     },
   })
-
   build.addType('FindPuzzleWorld', {
     fields: {
       id: 'ID',
@@ -79,6 +85,32 @@ export default <BuildMode, Context>(build: Build<BuildMode, Context>) => {
         single(
           GameWorlds.find({
             where: query => query.where({ id: game.worldId }),
+          }),
+        ),
+    },
+  })
+  build.addType('FindPuzzleSolution', {
+    fields: {
+      id: 'ID',
+      user: 'User!',
+      level: 'FindPuzzleLevel!',
+      data: 'JSON!',
+      createdAt: 'DateTime',
+      updatedAt: 'DateTime',
+      deletedAt: 'DateTime',
+    },
+    interface: 'Node & GameSolution',
+    resolver: {
+      user: async (solution: GameSolution) =>
+        single(
+          Users.find({
+            where: query => query.where({ id: solution.userId }),
+          }),
+        ),
+      level: async (solution: GameSolution) =>
+        single(
+          GameLevels.find({
+            where: query => query.where({ id: solution.levelId }),
           }),
         ),
     },

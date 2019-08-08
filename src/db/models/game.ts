@@ -3,6 +3,7 @@ import { createModel, deletedAtModelModifier } from '../base-model'
 
 export * from './game-level'
 export * from './game-world'
+export * from './game-solution'
 
 export interface Game extends NodeType {
   name: string

@@ -1,36 +1,38 @@
-import { Build } from 'gram'
+import { Build, SchemaBuilder } from 'gram'
 
-import { Games } from 'db/models'
+import { Games, GameSolutions } from 'db/models'
 import { createService } from 'graph/base-service'
 
-export default <BuildMode, Context>(build: Build<BuildMode, Context>) => {
-  build.addType('Game', {
-    type: 'interface',
-    fields: {
-      name: 'String!',
-      levels: '[GameLevel!]!',
-      worlds: '[GameWorld!]!',
-    },
-  })
+export const gameBuilder = <BuildMode, Context>(builder: SchemaBuilder<BuildMode, Context>) => {
+  const game = builder.model('Game').setInterface()
+  const gameWorld = builder.model('GameWorld').setInterface()
+  const gameLevel = builder.model('GameLevel').setInterface()
+  const gameSolution = builder.model('GameSolution').setInterface()
 
-  build.addType('GameWorld', {
-    type: 'interface',
-    fields: {
-      name: 'String!',
-      game: 'Game!',
-      levels: '[GameLevel!]!',
-    },
-  })
-  build.addType('GameLevel', {
-    type: 'interface',
-    fields: {
-      name: 'String',
-      game: 'Game!',
-      world: 'GameWorld',
-      data: 'JSON!',
-    },
-  })
+  // connect the levels to the user
+  builder.models.User.attr('levels', 'GameSolution')
+    .isList()
+    .resolve(async user => GameSolutions.find({ where: query => query.where({ userId: user.id }) }))
 
+  game.attr('name', 'String!')
+  game.attr('levels', '[GameLevel!]!')
+  game.attr('worlds', '[GameWorld!]!')
+
+  gameWorld.attr('name', 'String!')
+  gameWorld.attr('game', 'Game!')
+  gameWorld.attr('levels', '[GameLevel!]!')
+
+  gameLevel.attr('name', 'String')
+  gameLevel.attr('game', 'Game!')
+  gameLevel.attr('world', 'GameWorld')
+  gameLevel.attr('data', 'JSON!')
+
+  gameSolution.attr('level', 'GameLevel!')
+  gameSolution.attr('user', 'User!')
+  gameSolution.attr('data', 'JSON!')
+}
+
+export const gameBuild = <BuildMode, Context>(build: Build<BuildMode, Context>) => {
   build.addQuery(
     'getGame',
     {

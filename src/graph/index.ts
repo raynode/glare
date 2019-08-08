@@ -6,22 +6,20 @@ import { scalarTypes } from 'graph/scalars'
 import { builder } from 'graph/builder'
 export { builder }
 
-import initializeGame from './types/game'
-import initializeLink from './types/link'
-import initializeUser from './types/user'
+import { gameBuild, gameBuilder } from './types/game'
+import linkBuilder from './types/link'
+import userBuilder, { userBuild } from './types/user'
 
 import initializeFindPuzzle from './types/games/find-puzzle'
 
+const builders = [userBuilder, linkBuilder, gameBuilder]
+const buildInitializers = [eventFieldDefinition, scalarTypes, gameBuild, initializeFindPuzzle, userBuild]
+
 export const getSchema = () => {
-  initializeUser(builder)
-  initializeLink(builder)
+  builders.forEach(fn => fn(builder))
 
   const build = builder.createBuild()
-
-  eventFieldDefinition(build)
-  scalarTypes(build)
-  initializeGame(build)
-  initializeFindPuzzle(build)
+  buildInitializers.forEach(fn => fn(build))
 
   const { resolvers, typeDefs } = build.toTypeDefs()
 

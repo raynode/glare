@@ -1,6 +1,7 @@
-import { SchemaBuilder } from 'gram'
+import { Build, SchemaBuilder } from 'gram'
 import { GraphQLBoolean, GraphQLEnumType, GraphQLString } from 'graphql'
 
+import { single } from 'db'
 import { Users } from 'db/models'
 import { createService } from 'graph/base-service'
 
@@ -33,4 +34,8 @@ export default <Context, QueryContext>(builder: SchemaBuilder<Context, QueryCont
       description: 'Possible user states',
     }),
   )
+}
+
+export const userBuild = <BuildMode, Context>(build: Build<BuildMode, Context>) => {
+  build.addQuery('me', 'User', () => single(Users.find()))
 }
