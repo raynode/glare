@@ -3,6 +3,7 @@ import * as Koa from 'koa'
 
 import { config } from 'config'
 import { getSchema } from 'graph'
+import { createContext } from 'services/graphql-context'
 import { Log } from 'services/logger'
 
 export const generateServer = async (app: Koa, log: Log) => {
@@ -16,8 +17,16 @@ export const generateServer = async (app: Koa, log: Log) => {
     tracing: true,
     subscriptions: {
       path: '/graphql',
+      // onConnect: async (connectionParams: any, websocket, context) => {
+      //   const contextResult = {
+      //     hello: 'world',
+      //     ...await createAuthContext(connectionParams.authorization),
+      //   }
+      //   console.log(contextResult)
+      //   return contextResult
+      // },
     },
-    // context: createContext,
+    context: createContext,
     introspection: true,
     playground: {
       // Force setting, workaround: https://github.com/prisma/graphql-playground/issues/790

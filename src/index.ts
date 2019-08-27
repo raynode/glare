@@ -9,6 +9,7 @@ import * as Router from 'koa-router'
 import * as Boom from '@hapi/boom'
 
 import { connect } from 'routes'
+import { pubsub } from 'services/pubsub'
 
 export const log = create({ enabled: true, transport: (c, msg) => console.log(...msg) })
 

@@ -1,5 +1,4 @@
 import { NodeType } from 'gram'
-
 import { QueryBuilder } from 'knex'
 import { identity } from 'lodash'
 import { db } from '../db'
@@ -26,45 +25,41 @@ export interface RemoveArgs {
 }
 
 export interface Model<Type extends NodeType, CreateType, UpdateType> {
-  find?: (args?: FindArgs) => Promise<Type[]>
-  create?: (args: CreateArgs<CreateType>) => Promise<Type[]>
-  update?: (args: UpdateArgs<UpdateType>) => Promise<Type[]>
-  remove?: (args: RemoveArgs) => Promise<Type[]>
+  find?: <Result = Type>(args?: FindArgs) => Promise<Result[]>
+  create?: <Result = Type>(args: CreateArgs<CreateType>) => Promise<Result[]>
+  update?: <Result = Type>(args: UpdateArgs<UpdateType>) => Promise<Result[]>
+  remove?: <Result = Type>(args: RemoveArgs) => Promise<Result[]>
 }
 
-interface ModelModifier {
-  find: (query: QueryBuilder) => QueryBuilder
-  remove: (query: QueryBuilder) => QueryBuilder
+type ModelModifierFn = (tableName: string) => (query: QueryBuilder) => QueryBuilder
+
+type ModelModifier = Record<'find' | 'remove', ModelModifierFn>
+
+export const deletedAtModelModifier: ModelModifier = {
+  remove: tableName => builder => builder.update({ [`${tableName}.deleted_at`]: new Date() }),
+  find: tableName => builder => builder.where({ [`${tableName}.deleted_at`]: null }),
 }
 
-export const deletedAtModelModifier = {
-  remove: builder => builder.update({ deleted_at: new Date() }),
-  find: builder => builder.where({ deleted_at: null }),
-}
-
-const defaultFindModifier = (query: QueryBuilder) => query
-const defaultRemoveModifier = (query: QueryBuilder) => query.del()
+const defaultFindModifier: ModelModifierFn = () => (query: QueryBuilder) => query
+const defaultRemoveModifier: ModelModifierFn = () => (query: QueryBuilder) => query.del()
 
 export const createModel = <Type extends NodeType, Create, Update>(
   tableName: string,
-  modelModifier?: ModelModifier,
+  modelModifier: Partial<ModelModifier> = {},
 ) => {
-  const find = (modelModifier && modelModifier.find) || defaultFindModifier
-  const remove = (modelModifier && modelModifier.remove) || defaultRemoveModifier
+  const find = (modelModifier.find || defaultFindModifier)(tableName)
+  const remove = (modelModifier.remove || defaultRemoveModifier)(tableName)
 
   const model: Model<Type, Create, Update> = {
-    create: ({ data }) =>
+    create: <Result = Type>({ data }) =>
       db
         .table(tableName)
         .insert(data)
-        .returning<Type>('*') as any,
-    find: ({ order = identity, where = identity, page = identity } = {}) =>
+        .returning<Result>('*'),
+    find: <Result = Type>({ order = identity, where = identity, page = identity } = {}) =>
       page(order(where(find(db.table(tableName))))),
-    remove: ({ where }) => remove(where(db.table(tableName))).returning('*') as any,
-    update: ({ data, where }) =>
-      where(find(db.table(tableName)))
-        .update(data)
-        .returning('*') as any,
+    remove: <Result = Type>({ where }) => remove(where(db.table(tableName).returning('*'))),
+    update: <Result = Type>({ data, where }) => where(find(db.table(tableName).returning('*'))).update(data),
   }
   return model
 }

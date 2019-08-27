@@ -1,16 +1,14 @@
-
 import { internet, name, random } from 'faker'
 import { QueryBuilder } from 'knex'
 
 import { db } from '../db'
 import { User, Users } from './user'
 
-describe('User Model Tests', () => {
+describe.skip('User Model Tests', () => {
   beforeAll(async () => db('Users').del())
   afterAll(() => db.client.pool.destroy())
 
   describe('Basic user data', () => {
-
     const order = 'id_ASC'
     let id: string
     let userObject: User
@@ -27,13 +25,15 @@ describe('User Model Tests', () => {
     })
 
     it('should create a user', async () => {
-      userObject = (await Users.create({ data: {
-        givenName: name.lastName(),
-        familyName: name.lastName(),
-        nickname: random.word(),
-        name: name.findName(),
-        email: internet.email().toLowerCase(),
-      }}))[0]
+      userObject = (await Users.create({
+        data: {
+          givenName: name.lastName(),
+          familyName: name.lastName(),
+          nickname: random.word(),
+          name: name.findName(),
+          email: internet.email().toLowerCase(),
+        },
+      }))[0]
       id = userObject.id
     })
 
@@ -50,7 +50,7 @@ describe('User Model Tests', () => {
 
     it('should update the example users name', async () => {
       const newName = name.findName()
-      const update = await Users.update({ where: whereId(id), data: { name: newName }})
+      const update = await Users.update({ where: whereId(id), data: { name: newName } })
       userObject.name = newName
       matchUser(update[0])
     })

@@ -1,15 +1,26 @@
-import { GraphQLNonNull, GraphQLObjectType, GraphQLScalarType, GraphQLString } from 'graphql'
+import { Build } from 'gram'
 
-import { Build } from 'gram/lib/createBuild/types'
 import { builder } from 'graph/builder'
+import { create, resolveLogger } from 'services/logger'
 import { pubsub, withFilter } from 'services/pubsub'
 
-import { create } from 'services/logger'
-
 const log = create('functions:event')
+const resolveLog = resolveLogger(log)
+
+export interface EventSubscriptionArgs {
+  name: string
+  data: any
+  info: any
+}
+
+export interface EventSubscriptionArguments {
+  name?: string
+}
 
 export const eventFieldDefinition = <BuildMode, Context>(build: Build<BuildMode, Context>) => {
   const EVENT = 'EVENT'
+
+  pubsub.subscribe(EVENT, (...args) => log.debug('EVENT', args))
 
   build.addType('Event', {
     fields: {
@@ -20,23 +31,21 @@ export const eventFieldDefinition = <BuildMode, Context>(build: Build<BuildMode,
     },
   })
 
-  build.addMutation('triggerEvent', 'String', {
+  build.addMutation<never, EventSubscriptionArgs>('triggerEvent', 'String', {
     args: {
       name: 'String!',
       data: 'JSON',
       info: 'String',
     },
-    resolver: (_, args, context) => {
-      log('create-event', args)
-      return pubsub.publish(EVENT, args)
-    },
+    resolver: resolveLog.on((_, args, context) => pubsub.publish(EVENT, args)),
   })
 
-  build.addSubscription('eventListener', 'Event', {
+  build.addSubscription<EventSubscriptionArgs>('eventListener', 'Event', {
     args: { name: 'String' },
     subscribe: withFilter(
       () => pubsub.asyncIterator([EVENT]),
-      (event, variables) => variables.name === '*' || event.name === variables.name,
+      (event: EventSubscriptionArgs, variables: EventSubscriptionArguments) =>
+        ['*', event.name].includes(variables.name || '*'),
     ),
     resolve: ({ name, data, info }) => ({ name, data, info, time: new Date() }),
   })

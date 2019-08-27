@@ -20,7 +20,7 @@ export const up = async (knex: Knex) =>
     })
     .raw(
       `
-      CREATE TRIGGER updateUsersUpdatedAt
+      CREATE TRIGGER updateGamesUpdatedAt
         BEFORE UPDATE ON "public"."Games"
           FOR EACH ROW
             EXECUTE PROCEDURE updateUpdatedAt()
@@ -49,7 +49,7 @@ export const up = async (knex: Knex) =>
     })
     .raw(
       `
-      CREATE TRIGGER updateUsersUpdatedAt
+      CREATE TRIGGER updateWorldsUpdatedAt
         BEFORE UPDATE ON "public"."Worlds"
           FOR EACH ROW
             EXECUTE PROCEDURE updateUpdatedAt()
@@ -83,7 +83,7 @@ export const up = async (knex: Knex) =>
     })
     .raw(
       `
-      CREATE TRIGGER updateUsersUpdatedAt
+      CREATE TRIGGER updateLevelsUpdatedAt
         BEFORE UPDATE ON "public"."Levels"
           FOR EACH ROW
             EXECUTE PROCEDURE updateUpdatedAt()
@@ -118,7 +118,7 @@ export const up = async (knex: Knex) =>
         .defaultTo(null)
         .comment('set to delete this')
     }).raw(`
-      CREATE TRIGGER updateUsersUpdatedAt
+      CREATE TRIGGER updateSolutionsUpdatedAt
         BEFORE UPDATE ON "public"."LevelSolutions"
           FOR EACH ROW
             EXECUTE PROCEDURE updateUpdatedAt()

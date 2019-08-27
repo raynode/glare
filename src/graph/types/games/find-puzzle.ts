@@ -1,6 +1,7 @@
-import { Build } from 'gram'
+import { Build, NodeType } from 'gram'
+import { identity } from 'lodash'
 
-import { single } from 'db'
+import { findWhere, single } from 'db'
 import {
   Game,
   GameLevel,
@@ -10,109 +11,94 @@ import {
   GameSolutions,
   GameWorld,
   GameWorlds,
-  User,
-  Users,
+  Player,
+  Players,
 } from 'db/models'
 import { createService } from 'graph/base-service'
+
+import { FindPuzzleSolution } from 'games/findPuzzle'
+
+const nodeFields = {
+  id: 'ID',
+  createdAt: 'DateTime',
+  updatedAt: 'DateTime',
+  deletedAt: 'DateTime',
+}
+
+// interface
+
+import { Model } from 'db/base-model'
+/** Returns Model results by finding Model.find({ [equal] == Obj[key] }) */
+const simpleResolver = <Key extends string, Node extends NodeType, Result = Node[]>(
+  model: Model<Node, any, any>,
+  equal: string,
+  key: Key,
+  mapper: (results: Promise<Node[]>) => Promise<Result> = identity,
+) => async <Obj extends Record<Key, string>>(obj: Obj) => mapper(findWhere(model, { [equal]: obj[key] }))
+
+const resolveGameByGameId = simpleResolver(Games, 'id', 'gameId', single)
+const resolveGameWorldById = simpleResolver(GameWorlds, 'id', 'worldId', single)
+const resolvePlayerById = simpleResolver(Players, 'id', 'userId', single)
+const resolveLevelById = simpleResolver(GameLevels, 'id', 'levelId', single)
+
+const resolveGameLevelsByGameId = simpleResolver(GameLevels, 'gameId', 'id')
+const resolveGameWorldsByGameId = simpleResolver(GameWorlds, 'gameId', 'id')
+const resolveGameLevelsByWorldId = simpleResolver(GameLevels, 'worldId', 'id')
 
 export default <BuildMode, Context>(build: Build<BuildMode, Context>) => {
   build.addType('FindPuzzle', {
     fields: {
-      id: 'ID',
-      name: 'String!',
-      createdAt: 'DateTime',
-      updatedAt: 'DateTime',
-      deletedAt: 'DateTime',
+      ...nodeFields,
+      name: 'GamesList!',
       levels: '[FindPuzzleLevel!]!',
       worlds: '[FindPuzzleWorld!]!',
     },
     interface: 'Node & Game',
     resolver: {
-      levels: async (game: Game) =>
-        GameLevels.find({
-          where: query => query.where({ gameId: game.id }),
-        }),
-      worlds: async (game: Game) =>
-        GameWorlds.find({
-          where: query => query.where({ worlds: game.id }),
-        }),
+      levels: resolveGameLevelsByGameId,
+      worlds: resolveGameWorldsByGameId,
     },
   })
   build.addType('FindPuzzleWorld', {
     fields: {
-      id: 'ID',
+      ...nodeFields,
       name: 'String!',
       game: 'FindPuzzle!',
       levels: '[FindPuzzleLevel!]!',
-      createdAt: 'DateTime',
-      updatedAt: 'DateTime',
-      deletedAt: 'DateTime',
     },
     interface: 'Node & GameWorld',
     resolver: {
-      game: async (world: GameWorld) =>
-        single(
-          Games.find({
-            where: query => query.where({ id: world.gameId }),
-          }),
-        ),
-      levels: async (world: GameWorld) =>
-        GameLevels.find({
-          where: query => query.where({ worldId: world.id }),
-        }),
+      game: resolveGameByGameId,
+      levels: resolveGameLevelsByWorldId,
     },
   })
   build.addType('FindPuzzleLevel', {
     fields: {
-      id: 'ID',
+      ...nodeFields,
       name: 'String',
       game: 'FindPuzzle!',
       world: 'FindPuzzleWorld',
       data: 'JSON!',
-      createdAt: 'DateTime',
-      updatedAt: 'DateTime',
-      deletedAt: 'DateTime',
     },
     interface: 'Node & GameLevel',
     resolver: {
-      game: async (game: GameLevel) =>
-        single(
-          Games.find({
-            where: query => query.where({ id: game.gameId }),
-          }),
-        ),
-      world: async (game: GameLevel) =>
-        single(
-          GameWorlds.find({
-            where: query => query.where({ id: game.worldId }),
-          }),
-        ),
+      game: resolveGameByGameId,
+      world: resolveGameWorldById,
     },
   })
   build.addType('FindPuzzleSolution', {
     fields: {
-      id: 'ID',
-      user: 'User!',
+      ...nodeFields,
+      player: 'Player!',
       level: 'FindPuzzleLevel!',
       data: 'JSON!',
-      createdAt: 'DateTime',
-      updatedAt: 'DateTime',
-      deletedAt: 'DateTime',
+      state: 'LevelSolutionState!',
+      history: '[JSON!]!',
     },
     interface: 'Node & GameSolution',
     resolver: {
-      user: async (solution: GameSolution) =>
-        single(
-          Users.find({
-            where: query => query.where({ id: solution.userId }),
-          }),
-        ),
-      level: async (solution: GameSolution) =>
-        single(
-          GameLevels.find({
-            where: query => query.where({ id: solution.levelId }),
-          }),
-        ),
+      player: resolvePlayerById,
+      level: resolveLevelById,
     },
   })
 }

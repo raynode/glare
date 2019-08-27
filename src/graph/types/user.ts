@@ -1,11 +1,11 @@
-import { Build, SchemaBuilder } from 'gram'
+import { GQLBuild, GQLSchemaBuilder } from 'graph/builder'
 import { GraphQLBoolean, GraphQLEnumType, GraphQLString } from 'graphql'
 
 import { single } from 'db'
 import { Users } from 'db/models'
 import { createService } from 'graph/base-service'
 
-export default <Context, QueryContext>(builder: SchemaBuilder<Context, QueryContext>) => {
+export default (builder: GQLSchemaBuilder) => {
   const user = builder.model('User', createService(Users))
   user.resolve(() => ({
     createdAt: user => user.created_at,
@@ -36,6 +36,6 @@ export default <Context, QueryContext>(builder: SchemaBuilder<Context, QueryCont
   )
 }
 
-export const userBuild = <BuildMode, Context>(build: Build<BuildMode, Context>) => {
-  build.addQuery('me', 'User', () => single(Users.find()))
+export const userBuild = (build: GQLBuild) => {
+  build.addQuery('me', 'User', { resolver: (_1, _2, context) => (context.auth ? context.user : null) })
 }

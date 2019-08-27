@@ -1,0 +1,120 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Game:Find Puzzle should generate lvl 2 1`] = `
+Object {
+  "data": Object {
+    "actions": Array [
+      "cellToEmpty",
+      "cellToUnknown",
+      "cellToRabbit",
+    ],
+    "colHints": Array [
+      0,
+      1,
+    ],
+    "cols": 2,
+    "index": Array [
+      3,
+      2,
+      3,
+      3,
+    ],
+    "rowHints": Array [
+      0,
+      1,
+    ],
+    "rows": 2,
+  },
+  "history": Array [],
+  "levelId": "dummy",
+  "state": 0,
+  "userId": "dummy",
+}
+`;
+
+exports[`Game:Find Puzzle should generate lvl 3 1`] = `
+Object {
+  "data": Object {
+    "actions": Array [
+      "cellToEmpty",
+      "cellToUnknown",
+      "cellToRabbit",
+    ],
+    "colHints": Array [
+      2,
+      0,
+      2,
+    ],
+    "cols": 3,
+    "index": Array [
+      3,
+      2,
+      3,
+      2,
+      3,
+      2,
+      3,
+      2,
+      3,
+    ],
+    "rowHints": Array [
+      2,
+      0,
+      2,
+    ],
+    "rows": 3,
+  },
+  "history": Array [],
+  "levelId": "dummy",
+  "state": 0,
+  "userId": "dummy",
+}
+`;
+
+exports[`Game:Find Puzzle should not change the level! 1`] = `
+Object {
+  "data": Object {
+    "actions": Array [
+      "cellToEmpty",
+      "cellToUnknown",
+      "cellToRabbit",
+    ],
+    "colHints": Array [
+      1,
+      1,
+      1,
+      1,
+    ],
+    "cols": 4,
+    "index": Array [
+      3,
+      2,
+      3,
+      3,
+      3,
+      3,
+      2,
+      3,
+      3,
+      2,
+      3,
+      3,
+      3,
+      3,
+      2,
+      3,
+    ],
+    "rowHints": Array [
+      2,
+      0,
+      0,
+      2,
+    ],
+    "rows": 4,
+  },
+  "history": Array [],
+  "levelId": "dummy",
+  "state": 0,
+  "userId": "dummy",
+}
+`;

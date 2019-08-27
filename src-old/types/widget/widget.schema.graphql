@@ -1,9 +1,0 @@
-
-interface Widget {
-  name: String
-  type: String
-}
-
-extend type Query {
-  widgets: [Widget]
-}

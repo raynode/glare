@@ -1,6 +1,6 @@
 import { config } from 'config'
 
-import { configure, create, DEBUG, join, LogLevel, split, WARN } from '@raynode/nx-logger'
+import { configure, create, DEBUG, join, Log, LogLevel, split, TransportHandler, WARN } from '@raynode/nx-logger'
 import { transport } from '@raynode/nx-logger-debug'
 import { parseError } from '@sentry/node/dist/parsers'
 import { Event as SentryEvent, Severity } from '@sentry/types'
@@ -70,3 +70,31 @@ export const attachSentryTransport = async () => {
     })
   }
 }
+
+import { GraphQLResolveInfo } from 'graphql'
+import { GraphQLContext } from 'services/graphql-context'
+
+export type ResolverArgs = [any, Record<string, any>, GraphQLContext, GraphQLResolveInfo]
+const resolverTransport = (log: Log) => (configuration, [resolverArgs], verbosity) => {
+  const [root, args, context, info] = resolverArgs as ResolverArgs
+  const message = `${info.fieldName}(${JSON.stringify(args).slice(1, -1)})`
+  return log.configuration().transport(
+    {
+      ...configuration,
+      namespace: [...configuration.namespace, 'resolver'],
+    },
+    [message],
+    verbosity,
+  )
+}
+export const resolveLog = (log: Log) =>
+  log.create({
+    transport: resolverTransport(log),
+    verbosity: LogLevel.DEBUG,
+  })
+
+export const resolveLogger = (log: Log) =>
+  log.create({
+    transport: resolverTransport(log),
+    verbosity: LogLevel.DEBUG,
+  })
