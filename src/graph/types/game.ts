@@ -21,7 +21,7 @@ export const gameBuilder = (builder: GQLSchemaBuilder) => {
   const gameSolution = builder.model('GameSolution').setInterface()
   const player = builder.model('Player')
   player.attr('name', 'String!')
-  builder.models.User.attr('player', 'Player!').resolve(() => null)
+  builder.models.User.attr('player', 'Player!').resolve(user => playerByUser(user))
 
   // connect the levels to the player
   builder.models.Player.attr('activeLevels', 'GameSolution')
