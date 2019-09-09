@@ -1,10 +1,10 @@
 import { createFindPuzzleLevel } from 'db/seeds/seed-everything'
-import { CellStates, FindPuzzleSolution, FindPuzzleSolutionData, resolver, SolutionStates } from './findPuzzle'
+import { CellStates, FindPuzzleSolution, FindPuzzleSolutionData, reducer, SolutionStates } from './findPuzzle'
 
 const createSolution = (data: FindPuzzleSolutionData): FindPuzzleSolution => ({
   history: [],
   levelId: 'dummy',
-  userId: 'dummy',
+  playerId: 'dummy',
   state: SolutionStates.unchanged,
   data,
 })
@@ -33,7 +33,7 @@ describe('Game:Find Puzzle', () => {
   it('', () => console.log(solution))
 
   it('should handle cellToEmpty actions correctly', () => {
-    const next = resolver(solution, {
+    const next = reducer(solution, {
       type: 'cellToEmpty',
       payload: {
         index: 0,
@@ -46,13 +46,13 @@ describe('Game:Find Puzzle', () => {
   })
 
   it('should handle cellToUnkown actions correctly', () => {
-    const next = resolver(solution, {
+    const next = reducer(solution, {
       type: 'cellToEmpty',
       payload: {
         index: 0,
       },
     })
-    const nextNext = resolver(next, {
+    const nextNext = reducer(next, {
       type: 'cellToUnknown',
       payload: {
         index: 0,
@@ -65,7 +65,7 @@ describe('Game:Find Puzzle', () => {
   })
 
   it('should handle cellToEmpty actions correctly', () => {
-    const next = resolver(solution, {
+    const next = reducer(solution, {
       type: 'cellToRabbit',
       payload: {
         index: 0,
@@ -83,15 +83,15 @@ describe('Winning and Loosing', () => {
   beforeEach(() => (solution = createSolution(createSolutionData(2))))
 
   it('should solve an easy puzzle', () => {
-    const step1 = resolver(solution, {
+    const step1 = reducer(solution, {
       type: 'cellToEmpty',
       payload: { index: 0 },
     })
-    const step2 = resolver(step1, {
+    const step2 = reducer(step1, {
       type: 'cellToEmpty',
       payload: { index: 2 },
     })
-    const step3 = resolver(step2, {
+    const step3 = reducer(step2, {
       type: 'cellToRabbit',
       payload: { index: 3 },
     })

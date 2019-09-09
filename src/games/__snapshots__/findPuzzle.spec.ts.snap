@@ -27,8 +27,8 @@ Object {
   },
   "history": Array [],
   "levelId": "dummy",
+  "playerId": "dummy",
   "state": 0,
-  "userId": "dummy",
 }
 `;
 
@@ -66,8 +66,8 @@ Object {
   },
   "history": Array [],
   "levelId": "dummy",
+  "playerId": "dummy",
   "state": 0,
-  "userId": "dummy",
 }
 `;
 
@@ -114,7 +114,7 @@ Object {
   },
   "history": Array [],
   "levelId": "dummy",
+  "playerId": "dummy",
   "state": 0,
-  "userId": "dummy",
 }
 `;

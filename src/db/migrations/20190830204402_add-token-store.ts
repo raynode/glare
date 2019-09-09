@@ -13,6 +13,7 @@ export const up = async (knex: Knex) =>
     table.string('salt').notNullable()
     table
       .uuid('userId')
+      .notNullable()
       .references('id')
       .inTable('Users')
     table.binary('data')

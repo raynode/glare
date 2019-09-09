@@ -6,6 +6,19 @@ import { getSchema } from 'graph'
 import { createContext } from 'services/graphql-context'
 import { Log } from 'services/logger'
 
+import { TokenStores } from 'db/models'
+
+const id = 'ab8216d8-9c1e-44f4-8aae-94203045a6e8'
+TokenStores.create({
+  data: {
+    data: { 'my-secret': 'Zucker & Koffein = Superpowers 🔥' },
+    service: 'Super Service',
+    userId: id,
+  },
+}).then(result => {
+  console.log(result)
+})
+
 export const generateServer = async (app: Koa, log: Log) => {
   const apolloLogger = log.create('apollo-server')
 
@@ -15,6 +28,7 @@ export const generateServer = async (app: Koa, log: Log) => {
     engine,
     schema,
     tracing: true,
+
     subscriptions: {
       path: '/graphql',
       // onConnect: async (connectionParams: any, websocket, context) => {

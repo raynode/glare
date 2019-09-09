@@ -1,7 +1,9 @@
 import { NodeType } from 'gram'
 import { QueryBuilder } from 'knex'
 import { identity } from 'lodash'
-import { db } from '../db'
+
+import { db } from 'db'
+import { mapValues } from 'db/utils'
 
 export type QueryModifier = (query: QueryBuilder) => QueryBuilder
 
@@ -30,36 +32,55 @@ export interface Model<Type extends NodeType, CreateType, UpdateType> {
   update?: <Result = Type>(args: UpdateArgs<UpdateType>) => Promise<Result[]>
   remove?: <Result = Type>(args: RemoveArgs) => Promise<Result[]>
 }
+export type AnyModel<Type extends NodeType = any> = Model<Type, any, any>
+export type QueryModifierFn<Args> = (query: QueryBuilder, args?: Args) => QueryBuilder
+export type ModelModifierFn<Args = never> = (tableName: string) => QueryModifierFn<Args>
+export interface ModelModifier<Type extends NodeType, CreateType, UpdateType> {
+  create: ModelModifierFn<CreateType>
+  find: ModelModifierFn
+  postFind: (type: any) => Promise<Type>
+  preCreate: (data: CreateType) => Promise<any>
+  preUpdate: (data: UpdateType) => Promise<any>
+  remove: ModelModifierFn
+  update: ModelModifierFn<UpdateType>
+}
 
-type ModelModifierFn = (tableName: string) => (query: QueryBuilder) => QueryBuilder
-
-type ModelModifier = Record<'find' | 'remove', ModelModifierFn>
-
-export const deletedAtModelModifier: ModelModifier = {
+export const deletedAtModelModifier: Partial<ModelModifier<any, never, never>> = {
   remove: tableName => builder => builder.update({ [`${tableName}.deleted_at`]: new Date() }),
   find: tableName => builder => builder.where({ [`${tableName}.deleted_at`]: null }),
 }
 
-const defaultFindModifier: ModelModifierFn = () => (query: QueryBuilder) => query
-const defaultRemoveModifier: ModelModifierFn = () => (query: QueryBuilder) => query.del()
+export const defaultModelModifier: ModelModifier<any, any, any> = {
+  create: () => (query, data) => query.insert(data),
+  find: () => identity,
+  postFind: identity,
+  preCreate: identity,
+  preUpdate: identity,
+  remove: () => query => query.del(),
+  update: () => (query, data) => query.update(data),
+}
 
-export const createModel = <Type extends NodeType, Create, Update>(
+export const createModel = <Type extends NodeType, CreateType, UpdateType>(
   tableName: string,
-  modelModifier: Partial<ModelModifier> = {},
+  partialModelModifier: Partial<ModelModifier<Type, CreateType, UpdateType>> = {},
 ) => {
-  const find = (modelModifier.find || defaultFindModifier)(tableName)
-  const remove = (modelModifier.remove || defaultRemoveModifier)(tableName)
+  const modifiers: ModelModifier<Type, CreateType, UpdateType> = { ...defaultModelModifier, ...partialModelModifier }
+  const create = modifiers.create(tableName)
+  const find = modifiers.find(tableName)
+  const remove = modifiers.remove(tableName)
+  const update = modifiers.update(tableName)
+  const { preCreate, postFind, preUpdate } = modifiers
 
-  const model: Model<Type, Create, Update> = {
-    create: <Result = Type>({ data }) =>
-      db
-        .table(tableName)
-        .insert(data)
-        .returning<Result>('*'),
-    find: <Result = Type>({ order = identity, where = identity, page = identity } = {}) =>
-      page(order(where(find(db.table(tableName))))),
-    remove: <Result = Type>({ where }) => remove(where(db.table(tableName).returning('*'))),
-    update: <Result = Type>({ data, where }) => where(find(db.table(tableName).returning('*'))).update(data),
+  const map = async (result: Promise<any[]>) => Promise.all((await result).map(postFind) as any[])
+
+  const model: Model<Type, CreateType, UpdateType> = {
+    create: async <Result = Type>({ data }) =>
+      map(create(db.table(tableName), await preCreate(data)).returning<Result[]>('*')),
+    find: async <Result = Type>({ order = identity, where = identity, page = identity } = {}) =>
+      map(page(order(where(find(db.table(tableName)))))),
+    remove: async <Result = Type>({ where }) => map(remove(where(db.table(tableName).returning<Result>('*')))),
+    update: async <Result = Type>({ data, where }) =>
+      map(update(where(find(db.table(tableName).returning<Result[]>('*'))), await preUpdate(data))),
   }
   return model
 }

@@ -1,8 +1,8 @@
 import { GQLBuild, GQLSchemaBuilder } from 'graph/builder'
-import { GraphQLBoolean, GraphQLEnumType, GraphQLString } from 'graphql'
+import { GraphQLEnumType } from 'graphql'
 
 import { single } from 'db'
-import { Users } from 'db/models'
+import { TokenStore, TokenStores, User, Users } from 'db/models'
 import { createService } from 'graph/base-service'
 
 export default (builder: GQLSchemaBuilder) => {
@@ -12,16 +12,16 @@ export default (builder: GQLSchemaBuilder) => {
     updatedAt: user => user.updated_at,
   }))
 
-  user.attr('email', GraphQLString)
-  user.attr('emailVerified', GraphQLBoolean)
-  user.attr('familyName', GraphQLString)
-  user.attr('gender', GraphQLString)
-  user.attr('givenName', GraphQLString)
-  user.attr('googleID', GraphQLString)
-  user.attr('locale', GraphQLString)
-  user.attr('name', GraphQLString)
-  user.attr('nickname', GraphQLString)
-  user.attr('picture', GraphQLString)
+  user.attr('email', 'String')
+  user.attr('emailVerified', 'Boolean')
+  user.attr('familyName', 'String')
+  user.attr('gender', 'String')
+  user.attr('givenName', 'String')
+  user.attr('googleID', 'String')
+  user.attr('locale', 'String')
+  user.attr('name', 'String')
+  user.attr('nickname', 'String')
+  user.attr('picture', 'String')
   user.attr(
     'state',
     new GraphQLEnumType({
@@ -36,6 +36,31 @@ export default (builder: GQLSchemaBuilder) => {
   )
 }
 
-export const userBuild = (build: GQLBuild) => {
+export const userBuild = async (build: GQLBuild) => {
+  // const t = (await TokenStores.find())[0]
+
+  build.addType('Token', {
+    fields: {
+      id: 'ID!',
+      data: 'JSON!',
+      service: 'String!',
+    },
+  })
+
   build.addQuery('me', 'User', { resolver: (_1, _2, context) => (context.auth ? context.user : null) })
+  build.extendType<User>('User', {
+    fields: {
+      tokens: {
+        args: {
+          service: 'String',
+        },
+        type: '[Token!]!',
+      },
+    },
+    resolver: {
+      tokens: async (user, args, context) => {
+        return {}
+      },
+    },
+  })
 }
