@@ -32,6 +32,7 @@ export interface GoogleTokenData {
 export interface GraphQLContext {
   auth: boolean
   user: User
+  systemId: string | null
 }
 
 export const upsertUser = async (token: GoogleTokenData) => {
@@ -70,20 +71,32 @@ export const upsertUser = async (token: GoogleTokenData) => {
   )
 }
 
-export const createAuthContext = async (accessToken: string) => {
-  const token = decode(accessToken) as GoogleTokenData // for now, add others later
-  if (!token || typeof token === 'string') return { auth: false, user: null }
-  const user = await upsertUser(token)
-  return { auth: true, user }
+export const createAuthContext = async (rawContext: RawContext) => {
+  const token = decode(rawContext.authentication) as GoogleTokenData // for now, add others later
+  if (!token || typeof token === 'string') return { auth: false, user: null, systemId: rawContext.system }
+  return { auth: true, user: await upsertUser(token), systemId: rawContext.system }
 }
 
-export const createContext = async ({ ctx, connection }: CreateContext) => {
-  if (ctx) {
-    const authHeader = ctx.headers.authentication
-    if (!authHeader || !/^Bearer /.test(authHeader)) return { auth: false, user: null }
-    return createAuthContext(authHeader.substr(7))
-  }
-  if (connection && connection.context && connection.context.authorization)
-    return createAuthContext(connection.context.authorization)
-  return { auth: false, user: null }
+interface RawContext {
+  authentication: string | null
+  system: string | null
 }
+
+export const createContextFromContext = (ctx: Koa.Context): RawContext => {
+  const authHeader = ctx.headers.authentication
+  return {
+    authentication: !authHeader || !/^Bearer /.test(authHeader) ? authHeader.substr(7) : null,
+    system: ctx.headers.system,
+  }
+}
+
+export const createContextFromConnection = (connection: any) => connection.context as RawContext
+
+export const createContext = async ({ ctx, connection }: CreateContext) =>
+  createAuthContext(
+    ctx
+      ? createContextFromContext(ctx)
+      : connection
+      ? createContextFromConnection(connection)
+      : { authentication: null, system: null },
+  )

@@ -1,10 +1,10 @@
-import { SchemaBuilder } from 'gram'
+import { GQLBuild, GQLSchemaBuilder } from 'graph/builder'
 import { GraphQLBoolean, GraphQLEnumType, GraphQLList, GraphQLString } from 'graphql'
 
 import { Links } from 'db/models'
 import { createService } from 'graph/base-service'
 
-export default <Context, QueryContext>(builder: SchemaBuilder<Context, QueryContext>) => {
+export const linkBuilder = (builder: GQLSchemaBuilder) => {
   const link = builder.model('Link', createService(Links))
   link.attr('datetime', builder.getScalar('DateTime'))
   link.attr('title', GraphQLString)
@@ -12,3 +12,5 @@ export default <Context, QueryContext>(builder: SchemaBuilder<Context, QueryCont
   link.attr('content', GraphQLString)
   link.attr('tags', GraphQLList(GraphQLString))
 }
+
+export default linkBuilder

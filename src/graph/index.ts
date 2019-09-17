@@ -9,12 +9,21 @@ export { builder }
 import { gameBuild, gameBuilder } from './types/game'
 import linkBuilder from './types/link'
 import { memoryBuild } from './types/memory'
+import { systemBuild, systemBuilder } from './types/system'
 import userBuilder, { userBuild } from './types/user'
 
 import initializeFindPuzzle from './types/games/find-puzzle'
 
-const builders = [userBuilder, linkBuilder, gameBuilder]
-const buildInitializers = [eventFieldDefinition, scalarTypes, gameBuild, initializeFindPuzzle, userBuild, memoryBuild]
+const builders = [userBuilder, linkBuilder, gameBuilder, systemBuilder]
+const buildInitializers = [
+  eventFieldDefinition,
+  scalarTypes,
+  gameBuild,
+  initializeFindPuzzle,
+  userBuild,
+  memoryBuild,
+  systemBuild,
+]
 
 export const getSchema = () => {
   builders.forEach(fn => fn(builder))
