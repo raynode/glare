@@ -1,65 +1,57 @@
+import { CreateArgs, FindOneArgs, NodeType, Service } from 'gram'
+
+import { ScreenObject, ScreenObjects, ScreenObjectTypes } from 'db/models/screen-object'
+import { createService } from 'graph/base-service'
 import { GQLBuild, GQLSchemaBuilder } from 'graph/builder'
+import { GraphQLContext } from 'services/graphql-context'
 
-const toNode = <T>(obj: T, id: string = null) => ({
-  ...obj,
-  id,
-  created_at: new Date(),
-  updated_at: new Date(),
-  deleted_at: null,
-})
-
-const findOneSystem = (systemId: string) =>
-  toNode(
-    {
-      screenView: toNode({
-        style: {
-          background: 'linear-gradient(#f00, #5f0)',
-        },
-        screenObjects: [
-          toNode({
-            type: 'block',
-            style: {
-              gridRowStart: 2,
-              gridColumnStart: 2,
-              width: '100%',
-              height: '100%',
-              background: 'blue',
-            },
-          }),
-          toNode({
-            type: 'block',
-            style: {
-              gridRowStart: 1,
-              gridColumnStart: 1,
-              width: '50%',
-              height: '50%',
-              background: 'green',
-              alignSelf: 'center',
-              margin: '0 auto',
-            },
-          }),
-        ],
-      }),
-    },
-    systemId,
-  )
+export const screenObjectService = createService(ScreenObjects)
+export interface SystemType {
+  id: string | null
+}
 
 export const systemBuilder = (builder: GQLSchemaBuilder) => {
-  const system = builder.model('System')
-  const screenView = builder.model('ScreenView', {
-    findOne: async (args, context) => findOneSystem(context.systemId).screenView,
-  })
-  const screenObject = builder.model('ScreenObject')
-
-  system.attr('screenView', 'ScreenView')
-
-  screenView.attr('screenObjects', '[ScreenObject!]!')
-  screenView.attr('style', 'JSON')
-
-  screenObject.attr('style', 'JSON')
+  const screenObject = builder.model('ScreenObject', screenObjectService)
+  screenObject.attr('configuration', 'JSON!')
+  screenObject.attr('style', 'JSON!')
   screenObject.attr('type', 'String!')
+
+  const system = builder.model('System')
 }
 
 export const systemBuild = (build: GQLBuild) => {
-  build.addQuery('system', 'System', { resolver: (_, args, context) => findOneSystem(context.systemId) })
+  build.addQuery('system', 'System', {
+    resolver: (_, args, context) =>
+      context.systemId && {
+        id: context.systemId,
+      },
+  })
+
+  build.extendType<SystemType>('System', {
+    resolver: {
+      screenObjects: (system, args, context) =>
+        screenObjectService.find(
+          {
+            order: args.order || 'id_ASC',
+            where: {
+              ...(args.where || null),
+              screenId: system.id,
+            },
+            page: args.page || { offset: 0, limit: 9999 },
+          },
+          context,
+        ),
+    },
+    fields: {
+      screenObjects: {
+        args: {
+          order: 'ScreenObjectSortOrder',
+          page: 'ScreenObjectPage',
+          where: 'ScreenObjectWhere',
+        },
+
+        type: '[ScreenObject!]!',
+      },
+    },
+  })
 }

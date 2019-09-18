@@ -1,8 +1,14 @@
-import { NodeType, PageData, Service, Where } from 'gram'
+import { FindOneMany, NodeType, PageData, Service, Where } from 'gram'
 import { QueryBuilder } from 'knex'
 import { identity } from 'lodash'
 
+import { single } from 'db'
 import { Model } from 'db/base-model'
+import { GraphQLContext } from 'services/graphql-context'
+
+export interface ExtendedService<Type extends NodeType, GQLType = Type> extends Service<Type, GQLType, GraphQLContext> {
+  find: (args: FindOneMany<GQLType>, context: GraphQLContext) => Promise<Type[]>
+}
 
 const internalHandleWhereFilters = (data: any, length: number, [key, b, c]: string[]) => (builder: QueryBuilder) => {
   if (length === 1) return builder.where(key, data)
@@ -71,27 +77,34 @@ const firstPage: PageData = {
 
 export const createService = <Type extends NodeType, Create, Update>(
   model: Model<Type, Create, Update>,
-): Service<Type> => ({
-  create: async (args: any) => (await model.create(args))[0],
-  findOne: async ({ order, where }) => {
-    const nodes = await model.find({ where: handleWhere(where), order: handleOrder(order) })
-    return nodes.length ? nodes[0] : null
-  },
-  findMany: async ({ order, where, page }) => {
+): ExtendedService<Type> => {
+  const create = async (args: any) => single(model.create(args))
+  const find = async ({ order, where, page }) => {
     const pagination = {
       ...firstPage,
       ...page,
     }
-    const nodes = await model.find({
-      where: handleWhere(where),
-      order: handleOrder(order),
-      page: handlePage(pagination),
-    })
+    console.log(order, where, pagination)
+    return (
+      (await model.find({
+        where: handleWhere(where),
+        order: handleOrder(order),
+        page: handlePage(pagination),
+      })) || []
+    )
+  }
+  const findOne = async ({ order, where }) => single(find({ order, where, page: { offset: 0, limit: 1 } }))
+  const findMany = async ({ order, where, page }) => {
+    const pagination = {
+      ...firstPage,
+      ...page,
+    }
     return {
       page: pagination,
-      nodes,
+      nodes: await find({ order, where, page: pagination }),
     }
-  },
-  remove: async ({ where }) => model.remove({ where: handleWhere(where) }),
-  update: async ({ data, where }: any) => model.update({ where: handleWhere(where), data }),
-})
+  }
+  const remove = async ({ where }) => model.remove({ where: handleWhere(where) })
+  const update = async ({ data, where }: any) => model.update({ where: handleWhere(where), data })
+  return { create, find, findOne, findMany, remove, update }
+}

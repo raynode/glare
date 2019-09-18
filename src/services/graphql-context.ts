@@ -85,7 +85,8 @@ interface RawContext {
 export const createContextFromContext = (ctx: Koa.Context): RawContext => {
   const authHeader = ctx.headers.authentication
   return {
-    authentication: !authHeader || !/^Bearer /.test(authHeader) ? authHeader.substr(7) : null,
+    authentication:
+      authHeader && typeof authHeader === 'string' && /^Bearer /.test(authHeader) ? authHeader.substr(7) : null,
     system: ctx.headers.system,
   }
 }
