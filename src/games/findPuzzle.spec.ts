@@ -30,8 +30,6 @@ describe('Game:Find Puzzle', () => {
   it('should generate lvl 3', () => expect(createSolution(createSolutionData(3))).toMatchSnapshot())
   it('should generate lvl 2', () => expect(createSolution(createSolutionData(2))).toMatchSnapshot())
 
-  it('', () => console.log(solution))
-
   it('should handle cellToEmpty actions correctly', () => {
     const next = reducer(solution, {
       type: 'cellToEmpty',

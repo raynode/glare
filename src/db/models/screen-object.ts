@@ -30,4 +30,11 @@ export enum ScreenObjectTypes {
 export const ScreenObjects = createModel<ScreenObject, CreateScreenObject, Partial<UpdateScreenObject>>(
   'ScreenObjects',
   deletedAtModelModifier,
+  {
+    create: () => (query, context, data) => query.insert({ ...data, screenId: context.systemId }),
+    find: () => (query, context) => query.where({ screenId: context.systemId }), // deletedAt will take over
+    remove: () => (query, context) => query.where({ screenId: context.systemId }), // deletedAt will take over
+    update: () => (query, context, data) => query.where({ screenId: context.systemId }).update(data),
+  },
+  // @TODO add modifier that takes the screen id from context
 )

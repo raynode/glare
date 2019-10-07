@@ -17,7 +17,7 @@ export interface CreateTokenStore extends Partial<UpdateTokenStore> {
 
 export type TokenStore = UpdateTokenStore & NodeType
 export const TokenStores = createModel<TokenStore, CreateTokenStore, UpdateTokenStore>('TokenStore', {
-  preCreate: async ({ userId, data, ...rest }) => {
+  preCreate: async (context, { userId, data, ...rest }) => {
     const salt = createSalt()
     return {
       ...rest,
@@ -26,7 +26,7 @@ export const TokenStores = createModel<TokenStore, CreateTokenStore, UpdateToken
       data: await encrypt(JSON.stringify(data), ENCRYPTION_KEY, salt),
     }
   },
-  postFind: async ({ salt, data: encrypted, ...rest }) => {
+  postFind: async (context, { salt, data: encrypted, ...rest }) => {
     return {
       ...rest,
       data: JSON.parse(await decrypt(encrypted.toString('utf8'), ENCRYPTION_KEY, salt)),

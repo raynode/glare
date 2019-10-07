@@ -3,12 +3,19 @@ import * as Koa from 'koa'
 
 import { single } from 'db'
 import { User, Users } from 'db/models'
+import { createObjectGuard } from 'services/guards'
 import { pubsub } from 'services/pubsub'
 
-export interface CreateContext {
-  ctx: Koa.Context
+export interface CreateCtxContext {
+  ctx: Koa.ExtendableContext
+}
+export interface CreateConnectionContext {
   connection: any
 }
+export type CreateContext = CreateCtxContext | CreateConnectionContext
+
+export const isCreateCtxContext = createObjectGuard<CreateCtxContext>('ctx')
+export const isCreateConnectionContext = createObjectGuard<CreateConnectionContext>('connection')
 
 export interface GoogleTokenData {
   given_name: string
@@ -36,10 +43,10 @@ export interface GraphQLContext {
 }
 
 export const upsertUser = async (token: GoogleTokenData) => {
-  const user = await single(Users.find({ where: query => query.where({ email: token.email }) }))
+  const user = await single(Users.find(null, { where: query => query.where({ email: token.email }) }))
   if (!user)
     return single(
-      Users.create({
+      Users.create(null, {
         data: {
           givenName: token.given_name,
           familyName: token.family_name,
@@ -55,7 +62,7 @@ export const upsertUser = async (token: GoogleTokenData) => {
       }),
     )
   return single(
-    Users.update({
+    Users.update(null, {
       data: {
         givenName: token.given_name,
         familyName: token.family_name,
@@ -82,7 +89,7 @@ interface RawContext {
   system: string | null
 }
 
-export const createContextFromContext = (ctx: Koa.Context): RawContext => {
+export const createContextFromContext = (ctx: Koa.ExtendableContext): RawContext => {
   const authHeader = ctx.headers.authentication
   return {
     authentication:
@@ -93,11 +100,11 @@ export const createContextFromContext = (ctx: Koa.Context): RawContext => {
 
 export const createContextFromConnection = (connection: any) => connection.context as RawContext
 
-export const createContext = async ({ ctx, connection }: CreateContext) =>
+export const createContext = async (createContext: CreateContext) =>
   createAuthContext(
-    ctx
-      ? createContextFromContext(ctx)
-      : connection
-      ? createContextFromConnection(connection)
+    isCreateCtxContext(createContext)
+      ? createContextFromContext(createContext.ctx)
+      : createContext.connection
+      ? createContextFromConnection(createContext.connection)
       : { authentication: null, system: null },
   )

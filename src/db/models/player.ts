@@ -3,6 +3,8 @@ import { NodeType } from 'gram'
 import { createModel, deletedAtModelModifier } from '../base-model'
 import { User } from './user'
 
+import { GraphQLContext } from 'services/graphql-context'
+
 export interface Player extends NodeType {
   name: string
   userId: string
@@ -20,10 +22,11 @@ export const Players = createModel<Player, CreatePlayer, Partial<UpdatePlayer>>(
   remove: tableName => query => query.update({ [`${tableName}.userId`]: null }),
 })
 
-export const playerByUser = async (user: User) => {
+export const playerByUser = async (context: GraphQLContext) => {
   // try to find a player object associated with the user
+  const { user } = context
   const player = await single(
-    Players.find({
+    Players.find(context, {
       where: query => query.where({ userId: user.id }),
     }),
   )
@@ -31,7 +34,7 @@ export const playerByUser = async (user: User) => {
   if (player) return player
   // else create a new one
   return single(
-    Players.create({
+    Players.create(context, {
       data: {
         name: user.nickname || user.name,
         userId: user.id,

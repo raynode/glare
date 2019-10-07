@@ -1,14 +1,17 @@
 import { CreateArgs, FindOneArgs, NodeType, Service } from 'gram'
 
 import { ScreenObject, ScreenObjects, ScreenObjectTypes } from 'db/models/screen-object'
-import { createService } from 'graph/base-service'
+import { createService, ExtendedService } from 'graph/base-service'
 import { GQLBuild, GQLSchemaBuilder } from 'graph/builder'
 import { GraphQLContext } from 'services/graphql-context'
 
 export const screenObjectService = createService(ScreenObjects)
+
 export interface SystemType {
   id: string | null
 }
+
+screenObjectService.create({ data: { type: 'block' } }, { systemId: 'test', auth: null, user: null })
 
 export const systemBuilder = (builder: GQLSchemaBuilder) => {
   const screenObject = builder.model('ScreenObject', screenObjectService)

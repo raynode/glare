@@ -1,14 +1,25 @@
-import { FindOneMany, NodeType, PageData, Service, Where } from 'gram'
+import {
+  FindOneArgs,
+  FindOneMany,
+  NodeType,
+  PageData,
+  RemoveArgs,
+  Service,
+  UpdateArgs as GramUpdateArgs,
+  Where,
+} from 'gram'
 import { QueryBuilder } from 'knex'
 import { identity } from 'lodash'
 
 import { single } from 'db'
-import { Model } from 'db/base-model'
+import { CreateArgs, Model, UpdateArgs as ModelUpdateArgs } from 'db/base-model'
 import { GraphQLContext } from 'services/graphql-context'
 
 export interface ExtendedService<Type extends NodeType, GQLType = Type> extends Service<Type, GQLType, GraphQLContext> {
   find: (args: FindOneMany<GQLType>, context: GraphQLContext) => Promise<Type[]>
 }
+
+export type UpdateArgs<Update, Type> = Pick<GramUpdateArgs<Type>, 'where'> & Pick<ModelUpdateArgs<Update>, 'data'>
 
 const internalHandleWhereFilters = (data: any, length: number, [key, b, c]: string[]) => (builder: QueryBuilder) => {
   if (length === 1) return builder.where(key, data)
@@ -78,33 +89,36 @@ const firstPage: PageData = {
 export const createService = <Type extends NodeType, Create, Update>(
   model: Model<Type, Create, Update>,
 ): ExtendedService<Type> => {
-  const create = async (args: any) => single(model.create(args))
-  const find = async ({ order, where, page }) => {
+  const create = async (args: CreateArgs<Create>, context: GraphQLContext) => single(model.create(context, args))
+  const find = async ({ order, where, page }: FindOneMany<Type>, context: GraphQLContext) => {
     const pagination = {
       ...firstPage,
       ...page,
     }
-    console.log(order, where, pagination)
     return (
-      (await model.find({
+      (await model.find(context, {
         where: handleWhere(where),
         order: handleOrder(order),
         page: handlePage(pagination),
       })) || []
     )
   }
-  const findOne = async ({ order, where }) => single(find({ order, where, page: { offset: 0, limit: 1 } }))
-  const findMany = async ({ order, where, page }) => {
+  const findOne = async ({ order, where }: FindOneArgs<Type>, context: GraphQLContext) =>
+    single(find({ order, where, page: { offset: 0, limit: 1 } }, context))
+  const findMany = async ({ order, where, page }: FindOneMany<Type>, context: GraphQLContext) => {
     const pagination = {
       ...firstPage,
       ...page,
     }
     return {
       page: pagination,
-      nodes: await find({ order, where, page: pagination }),
+      nodes: await find({ order, where, page: pagination }, context),
     }
   }
-  const remove = async ({ where }) => model.remove({ where: handleWhere(where) })
-  const update = async ({ data, where }: any) => model.update({ where: handleWhere(where), data })
+  const remove = async ({ where }: RemoveArgs<Type>, context: GraphQLContext) =>
+    model.remove(context, { where: handleWhere(where) })
+  const update = async ({ data, where }: UpdateArgs<Update, Type>, context: GraphQLContext) =>
+    model.update(context, { where: handleWhere(where), data })
+
   return { create, find, findOne, findMany, remove, update }
 }
