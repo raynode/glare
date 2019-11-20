@@ -1,15 +1,31 @@
 import { GQLBuild, GQLSchemaBuilder } from 'graph/builder'
 
-import { Links } from 'db/models'
+import { ApiKeys, User } from 'db/models'
 import { createService } from 'graph/base-service'
 
-export const linkBuilder = (builder: GQLSchemaBuilder) => {
-  const link = builder.model('Link', createService(Links))
-  link.attr('datetime', 'DateTime')
-  link.attr('title', 'String')
-  link.attr('url', 'String!')
-  link.attr('content', 'String')
-  link.attr('tags', '[String!]!')
-}
+export const apiKeyBuild = (build: GQLBuild) => {
+  build.addType('ApiKey', {
+    fields: {
+      key: 'String!',
+      service: 'String!',
+      User: 'User!',
+    },
+  })
 
-export default linkBuilder
+  build.extendType<User>('User', {
+    fields: {
+      apiKeys: {
+        args: {
+          service: 'String',
+        },
+        type: '[ApiKey!]!',
+      },
+    },
+    resolver: {
+      apiKeys: async (user, args, context) =>
+        ApiKeys.find(context, {
+          where: query => query.where({ ...args, userId: user.id }),
+        }),
+    },
+  })
+}

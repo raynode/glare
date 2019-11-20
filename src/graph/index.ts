@@ -6,6 +6,7 @@ import { scalarTypes } from 'graph/scalars'
 import { builder } from 'graph/builder'
 export { builder }
 
+import { apiKeyBuild } from './types/api-keys'
 import { gameBuild, gameBuilder } from './types/game'
 import linkBuilder from './types/link'
 import { memoryBuild } from './types/memory'
@@ -16,13 +17,14 @@ import initializeFindPuzzle from './types/games/find-puzzle'
 
 const builders = [userBuilder, linkBuilder, gameBuilder, systemBuilder]
 const buildInitializers = [
+  apiKeyBuild,
   eventFieldDefinition,
-  scalarTypes,
   gameBuild,
   initializeFindPuzzle,
-  userBuild,
   memoryBuild,
+  scalarTypes,
   systemBuild,
+  userBuild,
 ]
 
 export const getSchema = () => {

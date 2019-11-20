@@ -81,7 +81,8 @@ export const upsertUser = async (token: GoogleTokenData) => {
 export const createAuthContext = async (rawContext: RawContext) => {
   const token = decode(rawContext.authentication) as GoogleTokenData // for now, add others later
   if (!token || typeof token === 'string') return { auth: false, user: null, systemId: rawContext.system }
-  return { auth: true, user: await upsertUser(token), systemId: rawContext.system }
+  const user = await upsertUser(token)
+  return { auth: true, user, systemId: rawContext.system }
 }
 
 interface RawContext {

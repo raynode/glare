@@ -122,7 +122,7 @@ export const createModel = <Type extends NodeType, CreateType, UpdateType>(
   const modifiers = modelModifierReducer(tableName, defaultModelModifier, partialModelModifiers)
   const { create, find, preCreate, postFind, preUpdate, remove, update } = modifiers
 
-  const map = async (context, result: Promise<any[]>) =>
+  const map = async (context, result: Promise<any[]> | QueryBuilder<any[]>) =>
     Promise.all((await result).map(res => postFind(context, res)) as any[])
 
   const model: Model<Type, CreateType, UpdateType> = {

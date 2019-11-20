@@ -59,7 +59,9 @@ export const userBuild = async (build: GQLBuild) => {
     },
     resolver: {
       tokens: async (user, args, context) => {
-        return {}
+        return TokenStores.find(context, {
+          where: query => query.where({ ...args, userId: user.id }),
+        })
       },
     },
   })

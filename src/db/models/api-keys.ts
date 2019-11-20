@@ -18,4 +18,4 @@ export interface CreateApiKey extends Partial<UpdateApiKey> {
   userId: string
 }
 
-export const ApiKeys = createModel<ApiKey, CreateApiKey, UpdateApiKey>('ApiKey')
+export const ApiKeys = createModel<ApiKey, CreateApiKey, UpdateApiKey>('ApiKeys')
