@@ -34,7 +34,7 @@ export const getSchema = () => {
   const { resolvers, typeDefs } = build.toTypeDefs()
 
   // console.log(build.getState())
-  console.log(build.toTypeDefs().typeDefs)
+  // console.log(build.toTypeDefs().typeDefs)
 
   return makeExecutableSchema({
     resolvers,

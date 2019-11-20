@@ -11,8 +11,6 @@ export interface SystemType {
   id: string | null
 }
 
-screenObjectService.create({ data: { type: 'block' } }, { systemId: 'test', auth: null, user: null })
-
 export const systemBuilder = (builder: GQLSchemaBuilder) => {
   const screenObject = builder.model('ScreenObject', screenObjectService)
   screenObject.attr('configuration', 'JSON!')
