@@ -8,6 +8,8 @@ import { Log } from 'services/logger'
 
 import { TokenStores } from 'db/models'
 
+import { startUpdater } from 'graph/types/history'
+
 export const generateServer = async (app: Koa, log: Log) => {
   const apolloLogger = log.create('apollo-server')
 
@@ -39,6 +41,9 @@ export const generateServer = async (app: Koa, log: Log) => {
       },
     },
   })
+
+  log('Starting history:')
+  startUpdater()
 
   server.applyMiddleware({ app, path: config.path })
 

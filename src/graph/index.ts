@@ -8,6 +8,7 @@ export { builder }
 
 import { apiKeyBuild } from './types/api-keys'
 import { gameBuild, gameBuilder } from './types/game'
+import { historyBuild } from './types/history'
 import linkBuilder from './types/link'
 import { memoryBuild } from './types/memory'
 import { systemBuild, systemBuilder } from './types/system'
@@ -21,6 +22,7 @@ const buildInitializers = [
   eventFieldDefinition,
   gameBuild,
   initializeFindPuzzle,
+  historyBuild,
   memoryBuild,
   scalarTypes,
   systemBuild,
