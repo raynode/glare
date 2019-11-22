@@ -16,7 +16,8 @@ const base = {
 export const config = {
   development: {
     ...base,
-    connection: 'postgres://nox@localhost:5432/glare_dev',
+    // tslint:disable-next-line
+    connection: `postgres://${process.env.DEV_DB_USERNAME}:${process.env.DEV_DB_PASSWORD}@localhost:5432/${process.env.DEV_DB_NAME}`,
   },
   test: {
     ...base,
