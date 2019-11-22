@@ -1,5 +1,5 @@
 import { Build } from 'gram'
-import { getMemoryHumanReadable } from 'services/memory'
+import { getMemory } from 'services/memory'
 
 const stack = []
 const stackSize = 100
@@ -9,9 +9,9 @@ let interval: ReturnType<typeof setInterval> | false = false
 const updater = () => {
   stack.unshift({
     time: Date.now(),
-    ...getMemoryHumanReadable(),
+    ...getMemory(),
   })
-  if (stack.length > stackSize) stack.pop()
+  if (stack.length - 1 > stackSize) stack.pop()
 }
 
 export const startUpdater = () => {
@@ -34,10 +34,10 @@ export const historyBuild = <BuildMode, Context>(build: Build<BuildMode, Context
     type: 'type',
     fields: {
       time: 'DateTime!',
-      rss: 'String!',
-      heapTotal: 'String!',
-      heapUsed: 'String!',
-      external: 'String!',
+      rss: 'Int!',
+      heapTotal: 'Int!',
+      heapUsed: 'Int!',
+      external: 'Int!',
     },
   })
   build.addType('History', {
