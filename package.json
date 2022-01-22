@@ -103,7 +103,7 @@
     "koa-static": "^5.0.0",
     "lodash": "^4.17.15",
     "mimetype": "0.0.8",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^3.1.1",
     "nx-gameboard": "github:lordnox/nx-gameboard",
     "pg": "^7.13.0",
     "pluralize": "^8.0.0",
